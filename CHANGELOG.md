@@ -13,3 +13,8 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 - Pluggable signer interface with structured transaction receipts.
 - Fail-closed spending policy with per-transaction and per-session limits.
 - Tests and a read-only quickstart.
+
+### Fixed
+
+- Resolve the package self-reference to source during development so clean CI environments can
+  typecheck the quickstart before `dist/` exists.

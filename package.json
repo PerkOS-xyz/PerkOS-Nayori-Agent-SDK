@@ -1,0 +1,67 @@
+{
+  "name": "@perkos/agent-sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for agent identity, escrow settlement, and reputation on Stacks.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "SECURITY.md",
+    "docs",
+    "examples",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "npm run typecheck && npm test && npm run build",
+    "prequickstart": "npm run build",
+    "quickstart": "node --import tsx examples/quickstart.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PerkOS-xyz/PerkOS-Agent-SDK.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PerkOS-xyz/PerkOS-Agent-SDK/issues"
+  },
+  "homepage": "https://stacks.perkos.xyz",
+  "keywords": [
+    "ai-agents",
+    "agentic-commerce",
+    "stacks",
+    "sbtc",
+    "escrow",
+    "bitcoin"
+  ],
+  "author": "PerkOS",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@stacks/network": "^7.6.0",
+    "@stacks/transactions": "^7.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.23.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  }
+}

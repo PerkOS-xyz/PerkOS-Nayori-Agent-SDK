@@ -29,9 +29,35 @@ disclosure.
 - Exact escrow-contract post-conditions for completion, rejection, and refunds.
 - Contract and asset allowlists.
 - Required per-transaction and per-session funding limits.
+- Funding-limit checks occur before requesting a signer address.
 - Signer-address matching for funding plans.
 - No automatic environment-variable or private-key loading.
 - No arbitrary URL or payment-destination execution surface in the core SDK.
+- Strict validation and normalization of signer-returned Stacks transaction IDs.
+- Bounded, cancellable confirmation polling with explicit abort, dropped, and timeout states.
+- Network mismatch rejection in both browser and headless signer adapters.
+
+## Key handling
+
+`StacksConnectSigner` delegates signing to the wallet extension and never receives a private key.
+The host application must select the intended account and show the wallet approval surface.
+
+`HeadlessSigner` calls an application-owned `privateKeyProvider` only when it needs to derive the
+public address or sign. It caches only the public address. When the provider returns a
+`Uint8Array`, the SDK signs with a copy and zeroes that local copy after the operation. JavaScript
+strings are immutable and cannot be reliably erased; use binary key material and an isolated
+secret provider when the runtime permits it.
+
+The SDK does not make an unsafe runtime safe. Restrict process access, rotate credentials, separate
+client/provider/evaluator identities, and use an HSM, KMS, or isolated signer for material funds.
+
+## Confirmation handling
+
+A broadcast receipt means a node accepted the transaction, not that the contract call succeeded.
+Automated workflows should call `confirm` or `executeAndConfirm`, require `success`, inspect the
+Clarity result, and choose an additional confirmation threshold appropriate to the value at risk.
+Treat transaction APIs as external dependencies and retain the transaction ID for independent
+verification.
 
 ## Trust boundaries
 

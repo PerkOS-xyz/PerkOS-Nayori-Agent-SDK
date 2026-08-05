@@ -4,12 +4,15 @@ import type {
   ContractCallPlan,
   PerkOSSigner,
   ReadOnlyTransport,
+  TransactionTrackerLike,
 } from "../src/index.js";
 import { PerkOSClient, PerkOSError } from "../src/index.js";
 
 const CLIENT = "SP1VY24ADP27HERH4XMQTK44XB9QX4ZASPMPJKPVF";
 const PROVIDER = "SP3DQCVZ26XCDGZFYB4TXJC6TMMZAVXZTER1DP8HV";
 const EVALUATOR = "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE";
+const BROADCAST_TXID = `0x${"ab".repeat(32)}`;
+const SETTLED_TXID = `0x${"cd".repeat(32)}`;
 
 function jobResponse() {
   return Cl.ok(
@@ -100,9 +103,10 @@ describe("PerkOSClient", () => {
   });
 
   it("does not invoke a signer when policy rejects funding", async () => {
+    const getAddress = vi.fn(async () => CLIENT);
     const signAndBroadcast = vi.fn(async () => ({ txid: "0xdenied" }));
     const signer: PerkOSSigner = {
-      getAddress: async () => CLIENT,
+      getAddress,
       signAndBroadcast,
     };
     const client = new PerkOSClient({ network: "mainnet", signer });
@@ -110,6 +114,7 @@ describe("PerkOSClient", () => {
     await expect(
       client.fundJob({ asset: "sbtc", jobId: 7n, amount: 1n })
     ).rejects.toBeInstanceOf(PerkOSError);
+    expect(getAddress).not.toHaveBeenCalled();
     expect(signAndBroadcast).not.toHaveBeenCalled();
   });
 
@@ -119,7 +124,7 @@ describe("PerkOSClient", () => {
       getAddress: async () => CLIENT,
       signAndBroadcast: async (plan) => {
         seen.push(plan);
-        return { txid: "0xabc123" };
+        return { txid: BROADCAST_TXID };
       },
     };
     const client = new PerkOSClient({
@@ -144,7 +149,7 @@ describe("PerkOSClient", () => {
       amount: "25000",
     });
     expect(receipt).toMatchObject({
-      txid: "0xabc123",
+      txid: BROADCAST_TXID,
       operation: "fund-job",
       asset: "sbtc",
       amount: 25_000n,
@@ -164,7 +169,7 @@ describe("PerkOSClient", () => {
       getAddress: async () => EVALUATOR,
       signAndBroadcast: async (plan) => {
         signedPlan = plan;
-        return { txid: "0xsettled" };
+        return { txid: SETTLED_TXID };
       },
     };
     const client = new PerkOSClient({
@@ -179,6 +184,46 @@ describe("PerkOSClient", () => {
     expect(signedPlan?.postConditions[0]).toMatchObject({
       address: client.config.contracts.sbtcCommerce,
       amount: "25000",
+    });
+  });
+
+  it("can execute and wait for a normalized confirmation receipt", async () => {
+    const signer: PerkOSSigner = {
+      getAddress: async () => CLIENT,
+      signAndBroadcast: async () => ({ txid: BROADCAST_TXID }),
+    };
+    const waitForConfirmation = vi.fn(async (txid: string) => ({
+      txid,
+      network: "mainnet" as const,
+      status: "success" as const,
+      observedAt: "2026-08-05T00:00:00.000Z",
+      blockHeight: 12,
+    }));
+    const tracker: TransactionTrackerLike = {
+      getStatus: waitForConfirmation,
+      waitForConfirmation,
+    };
+    const client = new PerkOSClient({
+      network: "mainnet",
+      signer,
+      transactionTracker: tracker,
+    });
+    const plan = client.transactions.registerAgent({
+      name: "Research Agent",
+      description: "Produces cited reports",
+      wallet: CLIENT,
+    });
+
+    const receipt = await client.executeAndConfirm(plan, { timeoutMs: 30_000 });
+
+    expect(receipt.broadcast.txid).toBe(BROADCAST_TXID);
+    expect(receipt.confirmation).toMatchObject({
+      txid: BROADCAST_TXID,
+      status: "success",
+      blockHeight: 12,
+    });
+    expect(waitForConfirmation).toHaveBeenCalledWith(BROADCAST_TXID, {
+      timeoutMs: 30_000,
     });
   });
 });

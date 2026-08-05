@@ -27,7 +27,9 @@
     "test:watch": "vitest",
     "verify": "npm run typecheck && npm test && npm run build",
     "prequickstart": "npm run build",
-    "quickstart": "node --import tsx examples/quickstart.ts"
+    "quickstart": "node --import tsx examples/quickstart.ts",
+    "prequickstart:testnet": "npm run build",
+    "quickstart:testnet": "node --import tsx examples/testnet-lifecycle.ts"
   },
   "repository": {
     "type": "git",

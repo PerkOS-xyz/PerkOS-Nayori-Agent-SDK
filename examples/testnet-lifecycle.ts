@@ -9,6 +9,7 @@ import type {
   TransactionConfirmation,
   TransactionReceipt,
 } from "@perkos/agent-sdk";
+import { fetchChainTip } from "./testnet-api.js";
 
 const NETWORK = "testnet" as const;
 const DEFAULT_API_URL = "https://api.testnet.hiro.so";
@@ -141,20 +142,6 @@ function amountFromEnvironment(): bigint {
   return BigInt(value);
 }
 
-async function chainTip(apiUrl: string): Promise<bigint> {
-  const response = await fetch(`${apiUrl}/extended/v1/info`, {
-    headers: { accept: "application/json" },
-  });
-  if (!response.ok) throw new Error(`Stacks API returned HTTP ${response.status}.`);
-  const body: unknown = await response.json();
-  if (!body || typeof body !== "object") throw new Error("Invalid Stacks API info response.");
-  const height = (body as Record<string, unknown>).stacks_tip_height;
-  if (typeof height !== "number" || !Number.isSafeInteger(height) || height < 0) {
-    throw new Error("Stacks API did not return a valid stacks_tip_height.");
-  }
-  return BigInt(height);
-}
-
 function okUint(confirmation: TransactionConfirmation, label: string): bigint {
   const repr = confirmation.result?.repr;
   const match = repr?.match(/^\(ok u(\d+)\)$/);
@@ -234,7 +221,7 @@ async function liveRun(): Promise<void> {
     clientSigner.getAddress(),
     providerSigner.getAddress(),
     evaluatorSigner.getAddress(),
-    chainTip(apiUrl),
+    fetchChainTip(apiUrl),
   ]);
   if (new Set([clientAddress, providerAddress, evaluatorAddress]).size !== 3) {
     throw new Error("Client, provider, and evaluator keys must control distinct addresses.");

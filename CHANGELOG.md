@@ -26,3 +26,5 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 - Resolve the package self-reference to source during development so clean CI environments can
   typecheck the quickstart before `dist/` exists.
 - Reject malformed signer results instead of accepting non-transaction identifiers as broadcasts.
+- Use the Stacks node `/v2/info` endpoint for the transactional quickstart chain height and cover
+  the request with a regression test.

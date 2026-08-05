@@ -51,6 +51,41 @@ describe("TransactionTracker", () => {
     });
   });
 
+  it("hydrates a missing v3 Clarity result from transaction detail", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          status: "success",
+          block: { height: 456, hash: "0xblock" },
+          result: null,
+        })
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          tx_status: "success",
+          tx_result: { hex: "0x0701", repr: "(ok u2)" },
+        })
+      );
+    const tracker = new TransactionTracker({ network: "testnet", fetch });
+
+    await expect(tracker.getStatus(TXID)).resolves.toMatchObject({
+      status: "success",
+      blockHeight: 456,
+      result: { hex: "0x0701", repr: "(ok u2)" },
+    });
+    expect(fetch).toHaveBeenNthCalledWith(
+      1,
+      `https://api.testnet.hiro.so/extended/v3/transactions/${TXID}`,
+      { headers: { accept: "application/json" } }
+    );
+    expect(fetch).toHaveBeenNthCalledWith(
+      2,
+      `https://api.testnet.hiro.so/extended/v1/tx/${TXID}`,
+      { headers: { accept: "application/json" } }
+    );
+  });
+
   it.each([
     ["abort_by_response", "abort"],
     ["dropped_replace_by_fee", "dropped"],
@@ -69,7 +104,12 @@ describe("TransactionTracker", () => {
     const fetch = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse({ status: "pending" }))
-      .mockResolvedValueOnce(jsonResponse({ status: "success" }));
+      .mockResolvedValueOnce(
+        jsonResponse({
+          status: "success",
+          result: { hex: "0x0703", repr: "(ok true)" },
+        })
+      );
     const sleep = vi.fn(async () => undefined);
     const onStatus = vi.fn();
     const tracker = new TransactionTracker({

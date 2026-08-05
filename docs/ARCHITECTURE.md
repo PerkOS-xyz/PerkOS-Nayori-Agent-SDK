@@ -77,7 +77,9 @@ Both adapters reject plans from a network other than the network fixed at constr
 `TransactionTracker` queries the Hiro Stacks API v3 transaction endpoint and maps API states into
 `pending`, `success`, `abort`, `dropped`, or `timeout`. A not-yet-indexed transaction is pending,
 not failed. Waiting is bounded, cancellable, and emits status observations through an optional
-callback.
+callback. Because the v3 endpoint may return `result: null` for successful contract calls, terminal
+receipts make a best-effort transaction-detail lookup to hydrate the Clarity result without
+replacing v3 as the status and block-metadata source.
 
 `PerkOSClient.executeAndConfirm` keeps broadcast information and confirmation evidence separate in
 one receipt. API-reported success is evidence of transaction execution, but applications may still

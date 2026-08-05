@@ -110,6 +110,22 @@ export function principalMatchesNetwork(principal: string, network: PerkOSNetwor
     : principal.startsWith("ST") || principal.startsWith("SN");
 }
 
+export function normalizeApiUrl(value: string, field = "apiUrl"): string {
+  const normalized = value.trim();
+  let parsed: URL;
+  try {
+    parsed = new URL(normalized);
+  } catch (cause) {
+    throw new PerkOSError("CONFIG_INVALID", `${field} must be a valid URL.`, {
+      cause,
+    });
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    throw new PerkOSError("CONFIG_INVALID", `${field} must use HTTP or HTTPS.`);
+  }
+  return normalized.replace(/\/+$/, "");
+}
+
 export function resolveConfig(input: {
   network: PerkOSNetwork;
   apiUrl?: string;
@@ -119,17 +135,7 @@ export function resolveConfig(input: {
     throw new PerkOSError("CONFIG_INVALID", 'network must be "mainnet" or "testnet".');
   }
 
-  if (input.apiUrl) {
-    let parsed: URL;
-    try {
-      parsed = new URL(input.apiUrl);
-    } catch (cause) {
-      throw new PerkOSError("CONFIG_INVALID", "apiUrl must be a valid URL.", { cause });
-    }
-    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-      throw new PerkOSError("CONFIG_INVALID", "apiUrl must use HTTP or HTTPS.");
-    }
-  }
+  const apiUrl = input.apiUrl ? normalizeApiUrl(input.apiUrl) : undefined;
 
   const contracts: PerkOSContracts = {
     ...DEFAULT_DEPLOYMENTS[input.network],
@@ -149,7 +155,7 @@ export function resolveConfig(input: {
 
   return {
     network: input.network,
-    ...(input.apiUrl ? { apiUrl: input.apiUrl.replace(/\/+$/, "") } : {}),
+    ...(apiUrl ? { apiUrl } : {}),
     contracts,
   };
 }

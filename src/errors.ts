@@ -7,7 +7,9 @@ export type PerkOSErrorCode =
   | "SIGNER_MISMATCH"
   | "POLICY_DENIED"
   | "POLICY_LIMIT_REQUIRED"
-  | "SIGNING_FAILED";
+  | "SIGNING_FAILED"
+  | "BROADCAST_REJECTED"
+  | "CONFIRMATION_FAILED";
 
 export interface PerkOSErrorDetails {
   readonly clarityCode?: bigint;

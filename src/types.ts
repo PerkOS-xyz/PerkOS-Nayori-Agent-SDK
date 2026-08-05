@@ -27,6 +27,7 @@ export interface PerkOSConfig {
   readonly signer?: PerkOSSigner;
   readonly spendingPolicy?: SpendingPolicyInput;
   readonly readOnlyTransport?: ReadOnlyTransport;
+  readonly transactionTracker?: TransactionTrackerLike;
 }
 
 export interface ResolvedPerkOSConfig {
@@ -136,6 +137,51 @@ export interface TransactionReceipt {
   readonly jobId?: bigint;
   readonly explorerUrl: string;
   readonly raw?: unknown;
+}
+
+export type TransactionConfirmationStatus =
+  | "pending"
+  | "success"
+  | "abort"
+  | "dropped"
+  | "timeout";
+
+export interface TransactionResultValue {
+  readonly hex?: string;
+  readonly repr?: string;
+}
+
+export interface TransactionConfirmation {
+  readonly txid: string;
+  readonly network: PerkOSNetwork;
+  readonly status: TransactionConfirmationStatus;
+  readonly observedAt: string;
+  readonly blockHeight?: number;
+  readonly blockHash?: string;
+  readonly result?: TransactionResultValue;
+  readonly raw?: unknown;
+}
+
+export interface ConfirmationOptions {
+  readonly pollIntervalMs?: number;
+  readonly timeoutMs?: number;
+  readonly signal?: AbortSignal;
+  readonly onStatus?: (
+    confirmation: TransactionConfirmation
+  ) => void | Promise<void>;
+}
+
+export interface TransactionTrackerLike {
+  getStatus(txid: string): Promise<TransactionConfirmation>;
+  waitForConfirmation(
+    txid: string,
+    options?: ConfirmationOptions
+  ): Promise<TransactionConfirmation>;
+}
+
+export interface ConfirmedTransactionReceipt {
+  readonly broadcast: TransactionReceipt;
+  readonly confirmation: TransactionConfirmation;
 }
 
 export interface ReadOnlyCall {

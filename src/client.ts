@@ -15,9 +15,13 @@ import {
 import { PerkOSError } from "./errors.js";
 import { PerkOSTransactionBuilder } from "./builders.js";
 import { SpendingPolicy } from "./policy.js";
+import { TransactionTracker } from "./tracker.js";
+import { normalizeTxid } from "./txid.js";
 import type {
   AgentRecord,
   AssignProviderInput,
+  ConfirmationOptions,
+  ConfirmedTransactionReceipt,
   ContractCallPlan,
   ContractId,
   CreateJobInput,
@@ -34,7 +38,9 @@ import type {
   SettleJobInput,
   SpendingApproval,
   SubmitWorkInput,
+  TransactionConfirmation,
   TransactionReceipt,
+  TransactionTrackerLike,
   UpdateAgentInput,
 } from "./types.js";
 import { assertPrincipal, parseContractId, resolveConfig, toUint } from "./validation.js";
@@ -63,6 +69,7 @@ export class PerkOSClient {
   readonly config;
   readonly transactions: PerkOSTransactionBuilder;
   readonly policy: SpendingPolicy;
+  readonly tracker: TransactionTrackerLike;
   private readonly signer;
   private readonly readOnlyTransport: ReadOnlyTransport;
 
@@ -72,6 +79,12 @@ export class PerkOSClient {
     this.policy = new SpendingPolicy(this.config, input.spendingPolicy);
     this.signer = input.signer;
     this.readOnlyTransport = input.readOnlyTransport ?? defaultReadOnlyTransport;
+    this.tracker =
+      input.transactionTracker ??
+      new TransactionTracker({
+        network: this.config.network,
+        ...(this.config.apiUrl ? { apiUrl: this.config.apiUrl } : {}),
+      });
   }
 
   preview(plan: ContractCallPlan): SpendingApproval {
@@ -92,6 +105,7 @@ export class PerkOSClient {
       );
     }
 
+    this.policy.authorize(plan);
     const signerAddress = await this.signer.getAddress();
     assertPrincipal(signerAddress, "signer address", this.config.network);
     if (plan.intent.sender && signerAddress !== plan.intent.sender) {
@@ -100,16 +114,13 @@ export class PerkOSClient {
         `Funding plan expects ${plan.intent.sender}, but the signer controls ${signerAddress}.`
       );
     }
-    this.policy.authorize(plan);
 
     try {
       const result = await this.signer.signAndBroadcast(plan);
-      if (!result.txid) {
-        throw new Error("Signer returned an empty txid.");
-      }
+      const txid = normalizeTxid(result.txid);
       this.policy.record(plan);
       return {
-        txid: result.txid,
+        txid,
         status: "broadcast",
         network: plan.network,
         contract: plan.contract,
@@ -117,7 +128,7 @@ export class PerkOSClient {
         ...(plan.intent.asset ? { asset: plan.intent.asset } : {}),
         ...(plan.intent.amount !== undefined ? { amount: plan.intent.amount } : {}),
         ...(plan.intent.jobId !== undefined ? { jobId: plan.intent.jobId } : {}),
-        explorerUrl: `https://explorer.hiro.so/txid/${result.txid}?chain=${plan.network}`,
+        explorerUrl: `https://explorer.hiro.so/txid/${txid}?chain=${plan.network}`,
         ...(result.raw !== undefined ? { raw: result.raw } : {}),
       };
     } catch (cause) {
@@ -128,6 +139,33 @@ export class PerkOSClient {
         functionName: plan.functionName,
       });
     }
+  }
+
+  async confirm(
+    receiptOrTxid: TransactionReceipt | string,
+    options: ConfirmationOptions = {}
+  ): Promise<TransactionConfirmation> {
+    if (
+      typeof receiptOrTxid !== "string" &&
+      receiptOrTxid.network !== this.config.network
+    ) {
+      throw new PerkOSError(
+        "POLICY_DENIED",
+        `Receipt network ${receiptOrTxid.network} does not match client network ${this.config.network}.`
+      );
+    }
+    const txid =
+      typeof receiptOrTxid === "string" ? receiptOrTxid : receiptOrTxid.txid;
+    return this.tracker.waitForConfirmation(txid, options);
+  }
+
+  async executeAndConfirm(
+    plan: ContractCallPlan,
+    options: ConfirmationOptions = {}
+  ): Promise<ConfirmedTransactionReceipt> {
+    const broadcast = await this.execute(plan);
+    const confirmation = await this.confirm(broadcast, options);
+    return { broadcast, confirmation };
   }
 
   async getAgentCount(): Promise<bigint> {
@@ -292,8 +330,22 @@ export class PerkOSClient {
   }
 
   async fundJob(input: FundJobInput): Promise<TransactionReceipt> {
+    const jobId = toUint(input.jobId, "jobId");
+    const amount = toUint(input.amount, "amount");
+    this.policy.authorize({
+      type: "contract-call",
+      network: this.config.network,
+      contract: contractForAsset(this.config.contracts, input.asset),
+      functionName: "fund-job",
+      functionArgs: [],
+      postConditions: [],
+      postConditionMode: "deny",
+      intent: { operation: "fund-job", asset: input.asset, amount, jobId },
+    });
     const sender = input.sender ?? (await this.requireSignerAddress());
-    return this.execute(this.transactions.fundJob({ ...input, sender }));
+    return this.execute(
+      this.transactions.fundJob({ ...input, jobId, amount, sender })
+    );
   }
 
   assignProvider(input: AssignProviderInput): Promise<TransactionReceipt> {

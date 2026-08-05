@@ -28,3 +28,5 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 - Reject malformed signer results instead of accepting non-transaction identifiers as broadcasts.
 - Use the Stacks node `/v2/info` endpoint for the transactional quickstart chain height and cover
   the request with a regression test.
+- Hydrate terminal Clarity results from transaction detail when the v3 status response returns a
+  null result.

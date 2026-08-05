@@ -151,7 +151,8 @@ if (confirmation.status !== "success") {
 
 Confirmation status is normalized to `pending`, `success`, `abort`, `dropped`, or `timeout`, with
 block and Clarity-result fields when the API supplies them. Polling supports cancellation through
-an `AbortSignal`.
+an `AbortSignal`. If the v3 status response omits a terminal Clarity result, the tracker hydrates
+that field from the transaction-detail endpoint.
 
 ## Spending policy
 

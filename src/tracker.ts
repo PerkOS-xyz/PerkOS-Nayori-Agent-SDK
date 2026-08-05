@@ -169,19 +169,41 @@ export class TransactionTracker implements TransactionTrackerLike {
       record.block && typeof record.block === "object"
         ? (record.block as Record<string, unknown>)
         : undefined;
-    const result = resultFromApi(record.result ?? record.tx_result);
+    const status = statusFromApi(record.status ?? record.tx_status);
+    let result = resultFromApi(record.result ?? record.tx_result);
+    if (!result && status !== "pending") {
+      result = await this.getExecutionResult(txid);
+    }
     const blockHeight = optionalNumber(block?.height ?? record.block_height);
     const blockHash = optionalString(block?.hash ?? record.block_hash);
     return {
       txid,
       network: this.network,
-      status: statusFromApi(record.status ?? record.tx_status),
+      status,
       observedAt,
       ...(blockHeight !== undefined ? { blockHeight } : {}),
       ...(blockHash ? { blockHash } : {}),
       ...(result ? { result } : {}),
       raw,
     };
+  }
+
+  private async getExecutionResult(
+    txid: string
+  ): Promise<TransactionResultValue | undefined> {
+    try {
+      const response = await this.fetch(
+        `${this.apiUrl}/extended/v1/tx/${encodeURIComponent(txid)}`,
+        { headers: { accept: "application/json" } }
+      );
+      if (!response.ok) return undefined;
+      const raw: unknown = await response.json();
+      if (!raw || typeof raw !== "object") return undefined;
+      const record = raw as Record<string, unknown>;
+      return resultFromApi(record.tx_result ?? record.result);
+    } catch {
+      return undefined;
+    }
   }
 
   async waitForConfirmation(

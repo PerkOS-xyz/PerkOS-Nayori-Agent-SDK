@@ -5,8 +5,8 @@
 `@perkos/agent-sdk` 0.1.0 is an M2 foundation release and has not completed the external security
 review required for the PerkOS Stacks Endowment milestone.
 
-Do not use an unreleased build to control material funds. Review every transaction plan in the
-signer and configure explicit spending limits.
+Do not use this developer release to control material funds without your own review. Inspect every
+transaction plan in the signer and configure explicit spending limits.
 
 ## Reporting a vulnerability
 

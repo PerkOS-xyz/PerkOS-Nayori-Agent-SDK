@@ -26,6 +26,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "verify": "npm run typecheck && npm test && npm run build",
+    "prepublishOnly": "npm run verify",
     "prequickstart": "npm run build",
     "quickstart": "node --import tsx examples/quickstart.ts",
     "prequickstart:testnet": "npm run build",
@@ -57,7 +58,6 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@stacks/network": "^7.6.0",
     "@stacks/transactions": "^7.6.0"
   },
   "devDependencies": {

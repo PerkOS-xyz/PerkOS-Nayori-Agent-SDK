@@ -5,10 +5,10 @@ TypeScript SDK for agent identity, escrow settlement, and reputation on Stacks.
 PerkOS gives AI agents a programmable path to register, hire, fund work with STX or sBTC,
 submit deliverables, settle escrow, and build job-linked reputation.
 
-> Status: M2 developer release. Read clients, transaction builders, browser and headless signer
+> Status: 0.1.0 developer release. Read clients, transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
-> implemented. x402/MCP adapters, package publication, external review, and adoption evidence
-> remain before Milestone 2 completion.
+> implemented. x402/MCP adapters, external review, and adoption evidence remain before Milestone 2
+> completion.
 
 ## Requirements
 
@@ -21,9 +21,11 @@ submit deliverables, settle escrow, and build job-linked reputation.
 npm install @perkos/agent-sdk
 ```
 
-Until the first npm release, clone the repository and run:
+To develop from source:
 
 ```bash
+git clone https://github.com/PerkOS-xyz/PerkOS-Agent-SDK.git
+cd PerkOS-Agent-SDK
 npm install
 npm run verify
 npm run quickstart
@@ -41,7 +43,10 @@ npm run quickstart:testnet
 
 Live testnet execution requires three distinct funded roles and the exact opt-in documented in
 [`examples/testnet.env.example`](examples/testnet.env.example). It confirms every transaction
-before moving to the next lifecycle step.
+before moving to the next lifecycle step. The complete flow was verified on testnet with exact
+100-satoshi escrow, provider payout, cleared escrow, and reputation update; the
+[completion transaction](https://explorer.hiro.so/txid/0x5cf34295641a9291a2b6785d6db95a5c56b4d3b40d4281c86da194acd4c64248?chain=testnet)
+is publicly inspectable.
 
 ## Read on-chain state
 

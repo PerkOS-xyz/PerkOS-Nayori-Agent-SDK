@@ -13,11 +13,17 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 - A client scheme adapter that validates the on-chain job, reuses SDK signing and spending policy,
   confirms escrow funding, and returns a transaction proof.
 - A safe x402 header quickstart, protocol design record, and regression coverage.
+- A Stacks x402 facilitator that independently verifies current Hiro v3 transaction/event
+  evidence, exact escrow funding and confirmation freshness before settlement.
+- An injected atomic replay-store contract, process-local implementation for demos/tests, and a
+  public fail-closed facilitator quickstart using historical mainnet evidence.
 
 ### Security
 
 - Documented that the client proof requires independent Stacks transaction verification and replay
   protection before a production resource server can authorize access.
+- Documented the remaining bearer-proof front-running boundary and the requirement for durable
+  shared replay storage and request binding before high-value production use.
 
 ## 0.1.0 - 2026-08-24
 

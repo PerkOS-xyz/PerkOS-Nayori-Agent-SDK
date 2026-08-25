@@ -1,6 +1,6 @@
 # Stacks x402 verifier and facilitator
 
-Date: 2026-08-25  
+Date: 2026-08-25
 Status: approved for implementation by the M2 continuation
 
 ## Milestone boundary
@@ -51,7 +51,8 @@ then performs the atomic replay-state transition before returning success.
 
 `src/x402-facilitator.ts` will contain:
 
-1. `HiroX402TransactionSource`, a read-only client for transaction detail and chain tip.
+1. `HiroX402TransactionSource`, a read-only client for current v3 transaction/event detail and
+   the chain tip.
 2. Strict parsers for the minimum Hiro response fields needed by the mechanism.
 3. Verification of requirement/payload equality, confirmation depth, freshness, payer, contract
    call, function arguments, asset transfer event, amount, and client proof block metadata.
@@ -70,12 +71,12 @@ A payment is valid only when all checks pass:
 - The payload and supplied requirement are deeply equal and both pass the existing PerkOS x402
   parser.
 - The transaction ID and claimed payer are valid for the configured Stacks network.
-- Hiro returns a canonical, anchored, successful `contract_call` transaction.
+- Hiro v3 returns a successful, indexed `contract_call` with an anchored block record.
 - The transaction sender equals the payload payer.
 - The contract and function are exactly the configured asset-specific commerce contract and
   `fund-job`.
-- The first Clarity argument is the exact job ID. For sBTC, the token argument is the configured
-  canonical token.
+- The decoded contract `job-funded` print event contains the exact job ID and amount. For sBTC, its
+  token principal is the configured canonical token.
 - A matching on-chain transfer event moves the exact requirement amount from the payer to the
   commerce contract: canonical SIP-010 sBTC for sBTC, or micro-STX for STX.
 - The API block height/hash match any block metadata included in the client proof.
@@ -124,8 +125,8 @@ CAIP-2 network, and exact atomic amount. It never claims to have broadcast anoth
 
 Unit tests will cover sBTC and STX success, official facilitator registration, malformed payloads,
 cross-network/requirement mismatch, wrong sender/contract/function/job/token/amount, missing or
-incorrect transfer events, failed/noncanonical/unanchored transactions, insufficient confirmation,
-expiry, block metadata mismatch, API failure, and concurrent replay consumption.
+incorrect print/transfer events, failed or incomplete transaction evidence, insufficient
+confirmation, expiry, block metadata mismatch, API failure, and concurrent replay consumption.
 
 A wallet-free quickstart will inspect the public M1 mainnet sBTC funding transaction through Hiro
 and demonstrate that its contract call and transfer event match the expected escrow fields while

@@ -7,7 +7,8 @@ submit deliverables, settle escrow, and build job-linked reputation.
 
 > Status: 0.1.0 developer release. Read clients, transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
-> implemented. x402/MCP adapters, external review, and adoption evidence remain before Milestone 2
+> implemented. The x402 v2 client foundation is implemented; independent resource-server
+> verification, MCP adapters, external review, and adoption evidence remain before Milestone 2
 > completion.
 
 ## Requirements
@@ -33,6 +34,13 @@ npm run quickstart
 
 The quickstart performs public read-only calls and does not require a wallet or private key.
 Set `PERKOS_NETWORK=testnet` to read the testnet deployment.
+
+The x402 foundation example is also read-only and requires no wallet. It creates and round-trips
+the official v2 `PAYMENT-REQUIRED` header for an existing PerkOS escrow job:
+
+```bash
+npm run quickstart:x402
+```
 
 The transactional quickstart is also safe by default: it only prints a seven-step sBTC testnet
 lifecycle and its funding-policy decision.
@@ -184,6 +192,63 @@ await perkos.fundJob({
 The policy also limits networks and contract principals. Funding attempts without explicit
 per-transaction and per-session limits are rejected before the signer is called.
 
+## x402 v2 client foundation
+
+The SDK uses the official `@x402/core` v2 envelope and header codecs while preserving the PerkOS
+escrow lifecycle. A protected resource describes an existing, open job and its exact atomic
+budget. The scheme client validates that quote against on-chain state, funds it through the
+configured SDK signer and spending policy, waits for successful confirmation, and produces the
+`PAYMENT-SIGNATURE` payload.
+
+```ts
+import { x402Client } from "@x402/core/client";
+import {
+  PerkOSClient,
+  PerkOSX402SchemeClient,
+  createPerkOSX402PaymentRequired,
+  encodePaymentRequiredHeader,
+  toStacksX402Network,
+} from "@perkos/agent-sdk";
+
+const perkos = new PerkOSClient({
+  network: "mainnet",
+  signer,
+  spendingPolicy: {
+    allowedAssets: ["sbtc"],
+    maxPerTransaction: { sbtc: 25_000n },
+    maxPerSession: { sbtc: 50_000n },
+  },
+});
+
+const required = createPerkOSX402PaymentRequired(perkos.config, {
+  resource: {
+    url: "https://agent.example/jobs/7/fund",
+    description: "Fund job 7 escrow",
+    mimeType: "application/json",
+  },
+  asset: "sbtc",
+  jobId: 7n,
+  amount: 25_000n,
+});
+
+const network = toStacksX402Network(perkos.config.network);
+const paymentClient = new x402Client()
+  .setSpendControls({
+    allowedAssets: [
+      { network, asset: required.accepts[0].asset, maxAmountPerPayment: "25000" },
+    ],
+  })
+  .register(network, new PerkOSX402SchemeClient({ client: perkos }));
+
+const paymentPayload = await paymentClient.createPaymentPayload(required);
+console.log(encodePaymentRequiredHeader(required), paymentPayload);
+```
+
+The proof produced here is client-side confirmation evidence, not authorization for a production
+paywall. A resource server must independently inspect the Stacks transaction, match the contract
+call, payer, job, asset and amount, require its confirmation policy, and prevent replay. That
+verifier/facilitator is intentionally a follow-up to this foundation.
+
 ## Supported lifecycle
 
 - Register, update, and deactivate agents.
@@ -205,6 +270,7 @@ per-transaction and per-session limits are rejected before the signer is called.
 - `execute` refuses plans created for a different network or signer.
 - Broadcast receipts require a valid 32-byte Stacks transaction ID.
 - Automated workflows can wait for an explicit terminal confirmation before their next action.
+- x402 quotes are bound to the configured network, escrow contract, asset, job, and exact budget.
 
 This package has not yet completed the external security review required for PerkOS Milestone 2.
 Do not treat the developer release as audited software.

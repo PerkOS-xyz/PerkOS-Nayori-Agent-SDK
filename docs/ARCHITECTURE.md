@@ -97,6 +97,20 @@ post-conditions:
 This difference stays inside the builder so frameworks do not duplicate asset-specific Clarity
 logic.
 
+## x402 v2 client adapter
+
+The x402 adapter uses the official v2 schemas and HTTP header codecs. It maps mainnet and testnet
+to their Stacks CAIP-2 identifiers and binds every payment requirement to the configured commerce
+contract, settlement asset, job ID, and exact atomic budget. `PerkOSX402SchemeClient` then reuses
+the normal read path, spending policy, signer, exact post-conditions, and confirmation tracker to
+produce a confirmed escrow-funding proof.
+
+This is a client-side integration boundary, not a facilitator. The proof is untrusted input until
+a resource server independently hydrates the Stacks transaction, verifies its successful contract
+call and requirement fields, applies a confirmation policy, and consumes the transaction in a
+replay store. The existing custom application headers are outside the SDK and are not implicitly
+treated as x402 v2.
+
 ## Settlement safety
 
 Completion, rejection, and expiry may transfer funds held by the escrow contract rather than by
@@ -106,6 +120,6 @@ exact amount expected to leave it.
 
 ## Future adapters
 
-- x402 v2 resource-server and client adapters.
+- x402 v2 Stacks resource-server verifier/facilitator with replay protection.
 - MCP tools with typed inputs, allowlists, and the same spending policy.
 - Optional framework-specific integrations and higher-confirmation settlement policies.

@@ -2,6 +2,23 @@
 
 All notable changes to `@perkos/agent-sdk` are documented here.
 
+## Unreleased
+
+### Added
+
+- Official x402 v2 payment-requirement, signature, and response header codecs through
+  `@x402/core`.
+- Strict Stacks CAIP-2, escrow-contract, asset, job, and amount validation for STX and sBTC x402
+  requirements.
+- A client scheme adapter that validates the on-chain job, reuses SDK signing and spending policy,
+  confirms escrow funding, and returns a transaction proof.
+- A safe x402 header quickstart, protocol design record, and regression coverage.
+
+### Security
+
+- Documented that the client proof requires independent Stacks transaction verification and replay
+  protection before a production resource server can authorize access.
+
 ## 0.1.0 - 2026-08-24
 
 ### Added

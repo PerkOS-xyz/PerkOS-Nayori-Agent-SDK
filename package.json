@@ -29,6 +29,8 @@
     "prepublishOnly": "npm run verify",
     "prequickstart": "npm run build",
     "quickstart": "node --import tsx examples/quickstart.ts",
+    "prequickstart:x402": "npm run build",
+    "quickstart:x402": "node --import tsx examples/x402-foundation.ts",
     "prequickstart:testnet": "npm run build",
     "quickstart:testnet": "node --import tsx examples/testnet-lifecycle.ts"
   },
@@ -58,7 +60,8 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@stacks/transactions": "^7.6.0"
+    "@stacks/transactions": "^7.6.0",
+    "@x402/core": "^2.23.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

@@ -9,7 +9,9 @@ export type PerkOSErrorCode =
   | "POLICY_LIMIT_REQUIRED"
   | "SIGNING_FAILED"
   | "BROADCAST_REJECTED"
-  | "CONFIRMATION_FAILED";
+  | "CONFIRMATION_FAILED"
+  | "X402_INVALID"
+  | "X402_PAYMENT_FAILED";
 
 export interface PerkOSErrorDetails {
   readonly clarityCode?: bigint;

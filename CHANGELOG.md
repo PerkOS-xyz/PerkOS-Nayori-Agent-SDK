@@ -6,6 +6,15 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ### Added
 
+- A compatibility-first `stacks-signed-tx-v1` x402 profile for direct STX, sBTC, and USDCx
+  payments, with canonical internal CAIP-19 identities and explicit `upfront` semantics.
+- Short-lived canonical request quotes and deterministic 31-byte memo fingerprints binding method,
+  URL, body digest, network, asset, exact amount, recipient, merchant, and expiry.
+- A side-effect-free signed-transaction verifier for canonical Stacks encoding, origin signature,
+  payer, network, exact STX/SIP-010 transfer templates, memo, deny mode, and exact post-conditions.
+- Deterministic quote vectors and adversarial coverage for request, requirement, network, signature,
+  asset, recipient, amount, memo, contract, function, and post-condition tampering.
+
 - Official x402 v2 payment-requirement, signature, and response header codecs through
   `@x402/core`.
 - Strict Stacks CAIP-2, escrow-contract, asset, job, and amount validation for STX and sBTC x402
@@ -19,6 +28,12 @@ All notable changes to `@perkos/agent-sdk` are documented here.
   public fail-closed facilitator quickstart using historical mainnet evidence.
 
 ### Security
+
+- Kept direct-payment verification separate from merchant authentication, signed-quote trust,
+  durable replay/idempotency, balance/nonce preflight, simulation, sponsorship, broadcast,
+  confirmation, and resource delivery; those remain mandatory hosted-facilitator boundaries.
+- Omit a final `transactionId` for origin-signed sponsored payments until the sponsor adds its
+  signature, preventing an incomplete transaction hash from being represented as a network txid.
 
 - Documented that the client proof requires independent Stacks transaction verification and replay
   protection before a production resource server can authorize access.

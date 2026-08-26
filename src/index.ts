@@ -33,6 +33,23 @@ export {
   PerkOSX402VerificationError,
   perkosX402ReplayKey,
 } from "./x402-facilitator.js";
+export {
+  NAYORI_X402_DIRECT_ASSETS,
+  NAYORI_X402_DIRECT_ASSET_TRANSFER_METHOD,
+  NAYORI_X402_DIRECT_PAYMENT_FLOW,
+  NAYORI_X402_QUOTE_FINGERPRINT_PREFIX,
+  NAYORI_X402_QUOTE_VERSION,
+  NayoriX402DirectVerificationError,
+  canonicalizeNayoriX402Quote,
+  canonicalizeNayoriX402ResourceUrl,
+  createNayoriX402DirectPaymentPayload,
+  createNayoriX402PaymentRequirements,
+  createNayoriX402Quote,
+  createNayoriX402QuoteFingerprint,
+  getNayoriX402Asset,
+  hashNayoriX402RequestBody,
+  verifyNayoriX402DirectPayment,
+} from "./x402-direct.js";
 
 export type {
   HeadlessSignerOptions,
@@ -111,3 +128,14 @@ export type {
   PerkOSX402VerifiedPayment,
   X402VerifierFetch,
 } from "./x402-facilitator.js";
+export type {
+  NayoriStacksX402Network,
+  NayoriX402AssetDefinition,
+  NayoriX402DirectPaymentPayloadInput,
+  NayoriX402PaymentAsset,
+  NayoriX402ProtectedRequest,
+  NayoriX402Quote,
+  NayoriX402QuoteInput,
+  NayoriX402VerifiedDirectPayment,
+  VerifyNayoriX402DirectPaymentInput,
+} from "./x402-direct.js";

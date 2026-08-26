@@ -31,6 +31,8 @@
     "quickstart": "node --import tsx examples/quickstart.ts",
     "prequickstart:x402": "npm run build",
     "quickstart:x402": "node --import tsx examples/x402-foundation.ts",
+    "prequickstart:x402:facilitator": "npm run build",
+    "quickstart:x402:facilitator": "node --import tsx examples/x402-facilitator.ts",
     "prequickstart:testnet": "npm run build",
     "quickstart:testnet": "node --import tsx examples/testnet-lifecycle.ts"
   },

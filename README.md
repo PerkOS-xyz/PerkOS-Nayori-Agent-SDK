@@ -7,9 +7,9 @@ submit deliverables, settle escrow, and build job-linked reputation.
 
 > Status: 0.1.0 developer release. Read clients, transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
-> implemented. The x402 v2 client foundation is implemented; independent resource-server
-> verification, MCP adapters, external review, and adoption evidence remain before Milestone 2
-> completion.
+> implemented. The x402 v2 client and Stacks facilitator foundations are implemented; durable
+> hosting/request binding, MCP adapters, external review, and adoption evidence remain before
+> Milestone 2 completion.
 
 ## Requirements
 
@@ -40,6 +40,14 @@ the official v2 `PAYMENT-REQUIRED` header for an existing PerkOS escrow job:
 
 ```bash
 npm run quickstart:x402
+```
+
+The facilitator example uses public Hiro v3 transaction and event data to inspect the historical
+M1 mainnet funding transaction. It proves the verifier fails closed when that otherwise matching
+proof is outside its payment window; it does not write replay state or submit a transaction:
+
+```bash
+npm run quickstart:x402:facilitator
 ```
 
 The transactional quickstart is also safe by default: it only prints a seven-step sBTC testnet
@@ -244,10 +252,46 @@ const paymentPayload = await paymentClient.createPaymentPayload(required);
 console.log(encodePaymentRequiredHeader(required), paymentPayload);
 ```
 
-The proof produced here is client-side confirmation evidence, not authorization for a production
-paywall. A resource server must independently inspect the Stacks transaction, match the contract
-call, payer, job, asset and amount, require its confirmation policy, and prevent replay. That
-verifier/facilitator is intentionally a follow-up to this foundation.
+The proof produced here is client-side confirmation evidence, not authorization by itself. Use the
+facilitator below to independently inspect the Stacks transaction, match its payment fields, apply
+a confirmation policy, and consume it through a replay store.
+
+## x402 v2 Stacks facilitator
+
+`PerkOSX402Facilitator` implements the official `SchemeNetworkFacilitator` interface. It reloads
+the transaction and events from Hiro, then matches the successful contract call, payer, commerce
+contract, decoded `job-funded` event, exact STX/sBTC transfer, job, amount, token, block metadata,
+confirmation depth, and payment-window freshness. Its `settle` method does not broadcast another
+transaction: for the upfront flow it atomically consumes the already-confirmed funding proof.
+
+```ts
+import { x402Facilitator } from "@x402/core/facilitator";
+import {
+  InMemoryX402ReplayStore,
+  PerkOSX402Facilitator,
+  STACKS_X402_NETWORKS,
+} from "@perkos/agent-sdk";
+
+const stacks = new PerkOSX402Facilitator({
+  config: perkos.config,
+  replayStore: new InMemoryX402ReplayStore(),
+  minConfirmations: 2,
+});
+const facilitator = new x402Facilitator().register(
+  STACKS_X402_NETWORKS.mainnet,
+  stacks
+);
+```
+
+The in-memory replay store is only for tests, examples, local development, and a single-process
+demo. Production must inject a durable shared implementation whose `consume` operation is atomic,
+such as a database unique constraint or Redis `SET NX`.
+
+The current Stacks proof is an already-public funding transaction rather than a request-bound
+off-chain authorization. Freshness and one-time consumption prevent stale reuse, but a party that
+obtains the proof before settlement could try to consume it first. Do not use this release for a
+high-value production paywall until request binding is added through a payer signature/challenge
+or facilitator-submitted signed transaction.
 
 ## Supported lifecycle
 
@@ -271,6 +315,7 @@ verifier/facilitator is intentionally a follow-up to this foundation.
 - Broadcast receipts require a valid 32-byte Stacks transaction ID.
 - Automated workflows can wait for an explicit terminal confirmation before their next action.
 - x402 quotes are bound to the configured network, escrow contract, asset, job, and exact budget.
+- x402 settlement verifies current chain evidence and atomically consumes each funding txid once.
 
 This package has not yet completed the external security review required for PerkOS Milestone 2.
 Do not treat the developer release as audited software.

@@ -26,6 +26,13 @@ export {
   parsePerkOSX402Requirement,
   toStacksX402Network,
 } from "./x402.js";
+export {
+  HiroX402TransactionSource,
+  InMemoryX402ReplayStore,
+  PerkOSX402Facilitator,
+  PerkOSX402VerificationError,
+  perkosX402ReplayKey,
+} from "./x402-facilitator.js";
 
 export type {
   HeadlessSignerOptions,
@@ -95,3 +102,12 @@ export type {
   ResourceInfo,
   SettleResponse,
 } from "./x402.js";
+export type {
+  HiroX402TransactionSourceOptions,
+  PerkOSX402FacilitatorOptions,
+  PerkOSX402ReplayRecord,
+  PerkOSX402ReplayStore,
+  PerkOSX402TransactionSource,
+  PerkOSX402VerifiedPayment,
+  X402VerifierFetch,
+} from "./x402-facilitator.js";

@@ -105,11 +105,20 @@ contract, settlement asset, job ID, and exact atomic budget. `PerkOSX402SchemeCl
 the normal read path, spending policy, signer, exact post-conditions, and confirmation tracker to
 produce a confirmed escrow-funding proof.
 
-This is a client-side integration boundary, not a facilitator. The proof is untrusted input until
-a resource server independently hydrates the Stacks transaction, verifies its successful contract
-call and requirement fields, applies a confirmation policy, and consumes the transaction in a
-replay store. The existing custom application headers are outside the SDK and are not implicitly
-treated as x402 v2.
+`PerkOSX402Facilitator` closes the server-side observation boundary. It uses current Hiro v3
+transaction and event responses plus the Stacks chain tip, decodes the commerce contract's
+`job-funded` Clarity print event, matches the exact asset transfer, and atomically consumes the
+network-prefixed transaction ID through an injected replay store. The facilitator broadcasts no
+second transaction because the declared x402 payment flow is upfront.
+
+The included in-memory replay store is process-local and not production durability. A deployed
+resource server must inject shared atomic storage. The existing custom application headers are
+outside the SDK and are not implicitly treated as x402 v2.
+
+The confirmed funding transaction is public before its proof reaches the resource server. Replay
+consumption and a short freshness window do not cryptographically bind that bearer proof to one
+HTTP request, so a later request-bound signature/challenge or facilitator-submitted transaction is
+required before a high-value production paywall migration.
 
 ## Settlement safety
 
@@ -120,6 +129,7 @@ exact amount expected to leave it.
 
 ## Future adapters
 
-- x402 v2 Stacks resource-server verifier/facilitator with replay protection.
+- Durable replay-store and hosted HTTP adapters for the x402 Stacks facilitator.
+- Request-bound payer authorization for front-running resistance.
 - MCP tools with typed inputs, allowlists, and the same spending policy.
 - Optional framework-specific integrations and higher-confirmation settlement policies.

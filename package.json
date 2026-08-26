@@ -38,12 +38,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PerkOS-xyz/PerkOS-Agent-SDK.git"
+    "url": "git+https://github.com/PerkOS-xyz/PerkOS-Nayori-Agent-SDK.git"
   },
   "bugs": {
-    "url": "https://github.com/PerkOS-xyz/PerkOS-Agent-SDK/issues"
+    "url": "https://github.com/PerkOS-xyz/PerkOS-Nayori-Agent-SDK/issues"
   },
-  "homepage": "https://stacks.perkos.xyz",
+  "homepage": "https://nayori.ai",
   "keywords": [
     "ai-agents",
     "agentic-commerce",

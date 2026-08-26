@@ -8,8 +8,9 @@ submit deliverables, settle escrow, and build job-linked reputation.
 > Status: 0.1.0 developer release. Read clients, transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
 > implemented. The x402 v2 client and Stacks facilitator foundations are implemented; durable
-> hosting/request binding, MCP adapters, external review, and adoption evidence remain before
-> Milestone 2 completion.
+> hosting, settlement, replay storage, MCP adapters, external review, and adoption evidence remain
+> before Milestone 2 completion. The direct x402 profile includes request-bound pure verification
+> for STX, sBTC, and USDCx but does not broadcast transactions.
 
 ## Requirements
 
@@ -255,6 +256,60 @@ console.log(encodePaymentRequiredHeader(required), paymentPayload);
 The proof produced here is client-side confirmation evidence, not authorization by itself. Use the
 facilitator below to independently inspect the Stacks transaction, match its payment fields, apply
 a confirmation policy, and consume it through a replay store.
+
+## Direct x402 payments on Stacks
+
+The separate `stacks-signed-tx-v1` profile covers immediate pay-per-call resources. It uses the
+official x402 v2 `exact` scheme and explicit `upfront` flow because the facilitator must commit the
+signed Stacks transaction before the resource handler runs. It supports:
+
+| Asset | Wire `asset` | Canonical internal identity | Atomic unit |
+|---|---|---|---|
+| STX | `STX` | CAIP-19 `slip44:5757` | micro-STX |
+| sBTC | canonical `address.contract` | CAIP-19 SIP-010 | satoshi |
+| USDCx | canonical `address.contract` | CAIP-19 SIP-010 | 10^-6 USDCx |
+
+Create a short-lived request quote and compatibility-first requirement without a wallet or network
+call:
+
+```ts
+import {
+  createNayoriX402PaymentRequirements,
+  createNayoriX402Quote,
+} from "@perkos/agent-sdk";
+
+const quote = await createNayoriX402Quote({
+  quoteId: "quote-weather-001",
+  merchantId: "merchant-weather",
+  network: "testnet",
+  asset: "usdcx",
+  amount: 100_000n,
+  payTo: "ST...",
+  method: "POST",
+  url: "https://api.example.com/v1/weather",
+  body: JSON.stringify({ city: "Miami" }),
+  issuedAt: Math.floor(Date.now() / 1000),
+  expiresAt: Math.floor(Date.now() / 1000) + 300,
+});
+
+const requirement = await createNayoriX402PaymentRequirements(quote);
+```
+
+The quote fingerprint is placed in the 34-byte Stacks/SIP-010 memo, so the origin signature binds
+the transaction to the HTTP method, canonical URL, body digest, network, asset, exact amount,
+recipient, merchant, and expiry. `verifyNayoriX402DirectPayment` then validates the x402 envelope,
+trusted quote, actual request, canonical transaction encoding, origin signature, payer, network,
+memo, transfer template, amount, recipient, token contract, function arguments, deny mode, and
+exact post-condition.
+
+The verifier is intentionally pure: it does not authenticate the merchant, validate a quote
+signature, read balances/nonces, simulate, persist replay state, sponsor, broadcast, confirm, or
+deliver a resource. A hosted facilitator must perform those controls before using the verified
+plan. For origin-signed sponsored transactions the result omits `transactionId` until a sponsor
+adds its signature; `transactionHash` identifies only the supplied serialization.
+
+Direct payments and `perkos-escrow-v1` are complementary. Use direct payments for immediate
+resources and escrow for jobs that require delivery, evaluation, payout, or reputation.
 
 ## x402 v2 Stacks facilitator
 

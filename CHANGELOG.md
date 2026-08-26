@@ -4,6 +4,10 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+No changes yet.
+
+## 0.2.0 - 2026-08-26
+
 ### Changed
 
 - Renamed the existing GitHub repository from `PerkOS-Agent-SDK` to

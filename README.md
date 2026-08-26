@@ -5,6 +5,10 @@ TypeScript SDK for agent identity, escrow settlement, and reputation on Stacks.
 PerkOS gives AI agents a programmable path to register, hire, fund work with STX or sBTC,
 submit deliverables, settle escrow, and build job-linked reputation.
 
+This repository is the continuation of `PerkOS-xyz/PerkOS-Agent-SDK`, renamed to connect the
+public SDK with the Nayori product identity. The npm package remains `@perkos/agent-sdk` and the
+complete Git history, releases, issues, and pull requests are preserved.
+
 > Status: 0.1.0 developer release. Read clients, transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
 > implemented. The x402 v2 client and Stacks facilitator foundations are implemented; durable
@@ -26,8 +30,8 @@ npm install @perkos/agent-sdk
 To develop from source:
 
 ```bash
-git clone https://github.com/PerkOS-xyz/PerkOS-Agent-SDK.git
-cd PerkOS-Agent-SDK
+git clone https://github.com/PerkOS-xyz/PerkOS-Nayori-Agent-SDK.git
+cd PerkOS-Nayori-Agent-SDK
 npm install
 npm run verify
 npm run quickstart

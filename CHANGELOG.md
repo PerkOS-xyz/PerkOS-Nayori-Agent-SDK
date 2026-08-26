@@ -4,6 +4,12 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+### Changed
+
+- Renamed the existing GitHub repository from `PerkOS-Agent-SDK` to
+  `PerkOS-Nayori-Agent-SDK` without changing the public npm package name or its API. GitHub
+  history, releases, issues, pull requests, and legacy URL redirects remain intact.
+
 ### Added
 
 - A compatibility-first `stacks-signed-tx-v1` x402 profile for direct STX, sBTC, and USDCx

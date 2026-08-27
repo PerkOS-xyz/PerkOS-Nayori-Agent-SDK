@@ -2,7 +2,7 @@
 
 ## Release status
 
-`@perkos/agent-sdk` 0.2.0 is an M2 developer release and has not completed the external security
+`@perkos/agent-sdk` 0.4.0 is an M2 developer release and has not completed the external security
 review required for the PerkOS Stacks Endowment milestone.
 
 Do not use this developer release to control material funds without your own review. Inspect every
@@ -40,6 +40,10 @@ disclosure.
 - Explicit direct-payment recipient, HTTPS origin, merchant, amount, fee, and session limits.
 - Concurrent payment reservations that prevent asynchronous agents from oversubscribing a budget.
 - Independent verification of every signed direct-payment transaction before facilitator submission.
+- Invitation-bound partner enrollment through exact Stacks message signing, with compressed public
+  key and recoverable-signature validation before API submission.
+- OAuth client secrets and tokens remain caller-owned and are never persisted or automatically
+  refreshed by the SDK.
 
 ## Key handling
 
@@ -61,6 +65,12 @@ unsigned transaction; its application callback should call an isolated custody s
 in-process policy is defense in depth and can be bypassed by a malicious host application, so the
 custody service must independently authenticate callers, revalidate intent, enforce durable limits,
 and keep keys outside the agent/LLM process.
+
+`createStacksConnectPartnerSigner` uses `stx_signMessage` only for the exact partner-enrollment
+challenge. This signature authorizes OAuth client creation, not a payment. The host must show the
+message, network and selected address to the user, move the returned one-time client secret into a
+secret manager and keep invitations, signatures, secrets and access tokens out of telemetry and
+prompts.
 
 ## Confirmation handling
 

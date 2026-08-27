@@ -4,6 +4,12 @@ export { SpendingPolicy } from "./policy.js";
 export { HeadlessSigner, StacksConnectSigner } from "./signers.js";
 export { TransactionTracker } from "./tracker.js";
 export { PerkOSError } from "./errors.js";
+export {
+  NAYORI_PARTNER_SCOPES,
+  NayoriPartnerApiError,
+  NayoriPartnerClient,
+  createStacksConnectPartnerSigner,
+} from "./partner.js";
 export { DEFAULT_DEPLOYMENTS, JOB_STATUS, CLARITY_ERROR_MESSAGES } from "./constants.js";
 export { resolveConfig, toUint } from "./validation.js";
 export { normalizeTxid } from "./txid.js";
@@ -118,6 +124,17 @@ export type {
   UpdateAgentInput,
 } from "./types.js";
 export type { PerkOSErrorCode, PerkOSErrorDetails } from "./errors.js";
+export type {
+  NayoriPartnerAccessToken,
+  NayoriPartnerChallenge,
+  NayoriPartnerCredentials,
+  NayoriPartnerFetch,
+  NayoriPartnerMessageSignature,
+  NayoriPartnerMessageSigner,
+  NayoriPartnerNetwork,
+  NayoriPartnerScope,
+  StacksConnectMessageRequest,
+} from "./partner.js";
 export type {
   ParsedPerkOSX402Requirement,
   PaymentPayload,

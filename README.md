@@ -9,14 +9,15 @@ This repository is the continuation of `PerkOS-xyz/PerkOS-Agent-SDK`, renamed to
 public SDK with the Nayori product identity. The npm package remains `@perkos/agent-sdk` and the
 complete Git history, releases, issues, and pull requests are preserved.
 
-> Status: 0.3.2 developer release. Read clients, transaction builders, browser and headless signer
+> Status: 0.4.0 developer release. Read clients, transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
-> implemented. The x402 v2 client and Stacks facilitator foundations are implemented; hosted quote
-> infrastructure now exists separately, while production settlement enablement, MCP adapters,
-> external review, and adoption evidence remain before Milestone 2 completion. The direct x402
+> implemented. The x402 v2 client and Stacks facilitator foundations are implemented; this release
+> adds wallet-linked OAuth and MCP support for the planned invite-only testnet pilot. Hosted rollout,
+> external review and adoption evidence remain before Milestone 2 completion. The direct x402
 > profile includes request-bound pure verification
 > and payer-side intent, policy, Leather, and remote-signer foundations for STX, sBTC, and USDCx.
-> It does not broadcast transactions, and hosted production settlement remains disabled.
+> Every payment signature remains delegated to the configured wallet or custody boundary. Mainnet
+> facilitator settlement remains disabled.
 
 ## Requirements
 
@@ -147,6 +148,43 @@ const perkos = new PerkOSClient({ network: "mainnet", signer });
 
 Install `@stacks/connect` in the browser application. Wallet discovery and account selection stay
 at the application boundary so the SDK cannot silently choose an account.
+
+## Invite-only partner OAuth and MCP
+
+`NayoriPartnerClient` enrolls an invited partner without taking custody of a wallet. It requests a
+single-use challenge, delegates the exact plaintext to Leather through `stx_signMessage`, submits
+the signature and returns the generated OAuth client secret once. OAuth authorizes API/MCP access
+only; every payment remains a separate wallet-signed transaction.
+
+```ts
+import { request } from "@stacks/connect";
+import {
+  NayoriPartnerClient,
+  createStacksConnectPartnerSigner,
+} from "@perkos/agent-sdk";
+
+const partners = new NayoriPartnerClient();
+const credentials = await partners.enroll({
+  invitationToken,
+  walletAddress: connectedTestnetAddress,
+  signMessage: createStacksConnectPartnerSigner(request),
+});
+
+// Move the one-time secret directly into the application's secret manager.
+const token = await partners.requestToken({
+  clientId: credentials.clientId,
+  clientSecret: credentials.clientSecret,
+  scopes: ["mcp:invoke"],
+});
+
+const tools = await partners.callMcp({
+  accessToken: token.accessToken,
+  method: "tools/list",
+});
+```
+
+See [Partner pilot](docs/PARTNER_PILOT.md) for the complete enrollment, scope and secret-handling
+boundary.
 
 ## Headless signer
 
@@ -391,11 +429,16 @@ or facilitator-submitted signed transaction.
 - Automated workflows can wait for an explicit terminal confirmation before their next action.
 - x402 quotes are bound to the configured network, escrow contract, asset, job, and exact budget.
 - x402 settlement verifies current chain evidence and atomically consumes each funding txid once.
+- Partner OAuth enrollment signs an exact, short-lived, invitation-bound message in the wallet;
+  the SDK normalizes the public signature but never receives a private key.
+- OAuth client secrets and access tokens are application secrets. The SDK returns them to the
+  caller but does not persist, log or refresh them automatically.
 
 This package has not yet completed the external security review required for PerkOS Milestone 2.
 Do not treat the developer release as audited software.
 
-See [Architecture](docs/ARCHITECTURE.md) and [Security](SECURITY.md) for the trust boundaries and
+See [Architecture](docs/ARCHITECTURE.md), [Partner pilot](docs/PARTNER_PILOT.md) and
+[Security](SECURITY.md) for the trust boundaries and
 responsible disclosure process.
 
 ## Development

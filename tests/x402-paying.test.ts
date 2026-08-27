@@ -178,14 +178,21 @@ describe("Nayori x402 payment intent", () => {
     await expect(
       createNayoriX402PaymentIntent({ ...base, publicKey: OTHER_PUBLIC_KEY })
     ).rejects.toMatchObject({ code: "SIGNER_MISMATCH" });
+    await expect(
+      createNayoriX402PaymentIntent({ ...base, nonce: -1n })
+    ).rejects.toMatchObject({ code: "INPUT_INVALID" });
   });
 });
 
 describe("Nayori x402 payment signers and client", () => {
-  it.each(["stx", "sbtc", "usdcx"] as const)(
+  it.each([
+    ["stx", 0n],
+    ["sbtc", 7n],
+    ["usdcx", 7n],
+  ] as const)(
     "prepares and locally verifies a direct %s settlement request with a remote signer",
-    async (asset) => {
-      const { input } = await quoteFor(asset);
+    async (asset, nonce) => {
+      const { input } = await quoteFor(asset, { nonce });
       const paymentPolicy = policy();
       const sign = vi.fn(async ({ transaction, intent }) => {
         expect(intent).not.toHaveProperty("privateKey");
@@ -204,10 +211,11 @@ describe("Nayori x402 payment signers and client", () => {
         asset,
         payer: PAYER,
         payTo: PAY_TO,
-        originNonce: 7n,
+        originNonce: nonce,
         originFee: 300n,
         sponsored: false,
       });
+      expect(prepared.intent.nonce).toBe(nonce.toString());
       expect(prepared.settlementRequest).toMatchObject({
         signedQuote: input.signedQuote,
         paymentRequirements: input.paymentRequirements,

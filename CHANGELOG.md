@@ -4,7 +4,20 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
-No changes yet.
+### Added
+
+- `NayoriPartnerClient` for invitation-bound wallet challenges, one-time OAuth client enrollment,
+  minimum-scope client-credentials tokens and authenticated MCP JSON-RPC calls.
+- `createStacksConnectPartnerSigner` adapter for Leather-compatible `stx_signMessage` responses
+  without giving the SDK wallet key material.
+- Partner-pilot documentation covering exact-message review, one-time secret handling, scopes,
+  MCP tools and the separate wallet payment-signing boundary.
+
+### Security
+
+- Normalize and validate recoverable signatures and compressed public keys before registration.
+- Keep OAuth credentials caller-owned: the SDK does not persist, log, refresh or treat them as
+  payment authorization.
 
 ## 0.3.2 - 2026-08-27
 

@@ -6,6 +6,16 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 No changes yet.
 
+## 0.3.1 - 2026-08-27
+
+### Fixed
+
+- Accept the canonical initial Stacks account nonce `0` when constructing an x402 payment intent.
+  Amounts, fees, limits and other positive-only fields remain unchanged, while negative or
+  malformed nonces continue to fail closed.
+- Cover a complete STX payer flow that builds, signs and independently verifies a transaction with
+  origin nonce `0`, plus rejection of negative nonce input.
+
 ## 0.3.0 - 2026-08-27
 
 ### Added

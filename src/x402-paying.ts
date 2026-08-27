@@ -354,7 +354,7 @@ export async function createNayoriX402PaymentIntent(
 
   const identity = validateSignerIdentity(context.network, input.payer, input.publicKey);
   const fee = toUint(input.fee, "fee");
-  const nonce = toUint(input.nonce, "nonce");
+  const nonce = toUint(input.nonce, "nonce", true);
   if (fee === 0n) {
     throw new PerkOSError("INPUT_INVALID", "fee must be greater than zero.");
   }

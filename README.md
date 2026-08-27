@@ -11,10 +11,12 @@ complete Git history, releases, issues, and pull requests are preserved.
 
 > Status: 0.2.0 developer release. Read clients, transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
-> implemented. The x402 v2 client and Stacks facilitator foundations are implemented; durable
-> hosting, settlement, replay storage, MCP adapters, external review, and adoption evidence remain
-> before Milestone 2 completion. The direct x402 profile includes request-bound pure verification
-> for STX, sBTC, and USDCx but does not broadcast transactions.
+> implemented. The x402 v2 client and Stacks facilitator foundations are implemented; hosted quote
+> infrastructure now exists separately, while production settlement enablement, MCP adapters,
+> external review, and adoption evidence remain before Milestone 2 completion. The direct x402
+> profile includes request-bound pure verification
+> and payer-side intent, policy, Leather, and remote-signer foundations for STX, sBTC, and USDCx.
+> It does not broadcast transactions, and hosted production settlement remains disabled.
 
 ## Requirements
 
@@ -53,6 +55,14 @@ proof is outside its payment window; it does not write replay state or submit a 
 
 ```bash
 npm run quickstart:x402:facilitator
+```
+
+The payer quickstart creates a request-bound USDCx intent, reserves explicit spending and fee
+limits, and builds a canonical unsigned Stacks transaction. It contains no private key, performs no
+network call, and does not request a wallet signature or broadcast:
+
+```bash
+npm run quickstart:x402:payer
 ```
 
 The transactional quickstart is also safe by default: it only prints a seven-step sBTC testnet
@@ -311,6 +321,12 @@ signature, read balances/nonces, simulate, persist replay state, sponsor, broadc
 deliver a resource. A hosted facilitator must perform those controls before using the verified
 plan. For origin-signed sponsored transactions the result omits `transactionId` until a sponsor
 adds its signature; `transactionHash` identifies only the supplied serialization.
+
+`NayoriX402PaymentClient` completes the payer side without weakening those boundaries. It creates
+an immutable `PaymentIntent`, applies recipient/origin/asset and amount/fee limits, constructs the
+canonical unsigned transfer, delegates signing to `LeatherSigner` (`broadcast: false`) or a
+`PolicySigner` backed by external custody, and verifies the signed result before returning the exact
+facilitator request body. See [`docs/X402_PAYMENTS.md`](docs/X402_PAYMENTS.md) for both integrations.
 
 Direct payments and `perkos-escrow-v1` are complementary. Use direct payments for immediate
 resources and escrow for jobs that require delivery, evaluation, payout, or reputation.

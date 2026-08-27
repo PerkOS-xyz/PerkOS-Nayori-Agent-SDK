@@ -49,7 +49,18 @@ export {
   getNayoriX402Asset,
   hashNayoriX402RequestBody,
   verifyNayoriX402DirectPayment,
+  validateNayoriX402PaymentContext,
 } from "./x402-direct.js";
+export {
+  LeatherSigner,
+  NAYORI_X402_PAYMENT_INTENT_PREFIX,
+  NAYORI_X402_PAYMENT_INTENT_VERSION,
+  NayoriX402PaymentClient,
+  NayoriX402PaymentPolicy,
+  PolicySigner,
+  buildNayoriX402UnsignedPaymentTransaction,
+  createNayoriX402PaymentIntent,
+} from "./x402-paying.js";
 
 export type {
   HeadlessSignerOptions,
@@ -137,5 +148,27 @@ export type {
   NayoriX402Quote,
   NayoriX402QuoteInput,
   NayoriX402VerifiedDirectPayment,
+  NayoriX402ValidatedPaymentContext,
+  ValidateNayoriX402PaymentContextInput,
   VerifyNayoriX402DirectPaymentInput,
 } from "./x402-direct.js";
+export type {
+  LeatherRequest,
+  LeatherSignTransactionParams,
+  LeatherSignerOptions,
+  NayoriX402PaymentAuthorization,
+  NayoriX402PaymentClientOptions,
+  NayoriX402PaymentIntent,
+  NayoriX402PaymentIntentInput,
+  NayoriX402PaymentPolicyInput,
+  NayoriX402PaymentSessionUsage,
+  NayoriX402PaymentSignRequest,
+  NayoriX402PaymentSigner,
+  NayoriX402PreparePaymentInput,
+  NayoriX402PreparedPayment,
+  NayoriX402SettlementRequest,
+  NayoriX402SignedTransaction,
+  PolicySignerCallback,
+  PolicySignerOptions,
+  PolicySignerRequest,
+} from "./x402-paying.js";

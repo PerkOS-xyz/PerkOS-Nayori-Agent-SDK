@@ -4,6 +4,10 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+No changes yet.
+
+## 0.3.0 - 2026-08-27
+
 ### Added
 
 - Deterministic, request-bound x402 `PaymentIntent` construction for direct STX, sBTC, and USDCx

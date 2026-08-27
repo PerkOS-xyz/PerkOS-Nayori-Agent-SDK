@@ -264,6 +264,41 @@ describe("Nayori x402 payment signers and client", () => {
     );
   });
 
+  it("accepts a lower positive wallet fee and commits the verified fee", async () => {
+    const { input } = await quoteFor("stx");
+    const paymentPolicy = policy();
+    const signer = remoteSigner(async ({ intent }) => {
+      const transaction = await makeSTXTokenTransfer({
+        recipient: intent.payTo,
+        amount: BigInt(intent.amount),
+        memo: intent.quoteFingerprint,
+        senderKey: PAYER_PRIVATE_KEY,
+        network: intent.network,
+        fee: 30n,
+        nonce: BigInt(intent.nonce),
+        sponsored: false,
+      });
+      return transactionToHex(transaction);
+    });
+    const client = new NayoriX402PaymentClient({
+      signer,
+      policy: paymentPolicy,
+      nowSeconds: () => NOW,
+      clockSkewSeconds: 0,
+    });
+
+    const prepared = await client.preparePayment(input);
+
+    expect(prepared.intent.fee).toBe("300");
+    expect(prepared.verifiedPayment.originFee).toBe(30n);
+    expect(paymentPolicy.usage("stx")).toMatchObject({
+      spent: BigInt(input.quote.amount),
+      reserved: 0n,
+      feeSpent: 30n,
+      feeReserved: 0n,
+    });
+  });
+
   it("rejects a wallet result that contains only a broadcast txid", async () => {
     const { input } = await quoteFor("stx");
     const signer = new LeatherSigner({
@@ -305,7 +340,7 @@ describe("Nayori x402 payment signers and client", () => {
     });
   });
 
-  it("rejects a signer that mutates the authorized fee", async () => {
+  it.each([0n, 301n])("rejects an origin fee outside the authorized bound: %s", async (fee) => {
     const { input } = await quoteFor("stx");
     const paymentPolicy = policy();
     const signer = remoteSigner(async ({ intent }) => {
@@ -315,7 +350,7 @@ describe("Nayori x402 payment signers and client", () => {
         memo: intent.quoteFingerprint,
         senderKey: PAYER_PRIVATE_KEY,
         network: intent.network,
-        fee: BigInt(intent.fee) + 1n,
+        fee,
         nonce: BigInt(intent.nonce),
         sponsored: false,
       });
@@ -328,8 +363,16 @@ describe("Nayori x402 payment signers and client", () => {
       clockSkewSeconds: 0,
     });
 
-    await expect(client.preparePayment(input)).rejects.toMatchObject({ code: "SIGNING_FAILED" });
-    expect(paymentPolicy.usage("stx").spent).toBe(0n);
+    await expect(client.preparePayment(input)).rejects.toMatchObject({
+      code: "SIGNING_FAILED",
+      details: { reason: "origin_fee_out_of_bounds" },
+    });
+    expect(paymentPolicy.usage("stx")).toMatchObject({
+      spent: 0n,
+      reserved: 0n,
+      feeSpent: 0n,
+      feeReserved: 0n,
+    });
   });
 
   it("releases policy reservations after remote signer cancellation", async () => {
@@ -406,6 +449,36 @@ describe("Nayori x402 payment policy", () => {
     const second = paymentPolicy.reserve(secondIntent);
     second.commit();
     expect(paymentPolicy.usage("stx")).toMatchObject({ spent: 600n, reserved: 0n });
+  });
+
+  it("commits an actual fee below the reservation and rejects invalid overrides safely", async () => {
+    const paymentPolicy = policy();
+    const accepted = paymentPolicy.reserve(await intent(10n));
+    accepted.commit(30n);
+    expect(paymentPolicy.usage("stx")).toMatchObject({
+      spent: 600n,
+      reserved: 0n,
+      feeSpent: 30n,
+      feeReserved: 0n,
+    });
+
+    const rejected = paymentPolicy.reserve(await intent(11n));
+    expect(() => rejected.commit(301n)).toThrowError(
+      expect.objectContaining({ code: "POLICY_DENIED" })
+    );
+    expect(paymentPolicy.usage("stx")).toMatchObject({
+      spent: 600n,
+      reserved: 600n,
+      feeSpent: 30n,
+      feeReserved: 300n,
+    });
+    rejected.release();
+    expect(paymentPolicy.usage("stx")).toMatchObject({
+      spent: 600n,
+      reserved: 0n,
+      feeSpent: 30n,
+      feeReserved: 0n,
+    });
   });
 
   it("denies fee, recipient, origin, merchant, and quote-validity violations", async () => {

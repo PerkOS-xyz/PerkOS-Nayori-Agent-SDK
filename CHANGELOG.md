@@ -6,6 +6,18 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 No changes yet.
 
+## 0.3.2 - 2026-08-27
+
+### Fixed
+
+- Treat the payment intent fee as a strict upper bound when an interactive wallet returns a lower
+  positive origin fee. Fees above the authorized value and zero fees continue to fail closed;
+  payer, nonce, amount, recipient, memo and non-sponsored authorization remain exact.
+- Commit the independently verified origin fee to session usage while reserving the full authorized
+  fee during asynchronous signing. This preserves concurrent fee caps and reports actual spend.
+- Cover Leather-compatible lower-fee signing, out-of-bounds rejection, reservation release and
+  actual-fee policy accounting.
+
 ## 0.3.1 - 2026-08-27
 
 ### Fixed

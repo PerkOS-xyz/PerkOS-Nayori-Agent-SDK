@@ -171,6 +171,22 @@ export interface VerifyNayoriX402DirectPaymentInput {
   readonly clockSkewSeconds?: number;
 }
 
+export interface ValidateNayoriX402PaymentContextInput {
+  readonly paymentRequirements: PaymentRequirements;
+  /** The hosted layer must authenticate the merchant and validate the quote signature first. */
+  readonly trustedQuote: NayoriX402Quote;
+  readonly request: NayoriX402ProtectedRequest;
+  readonly nowSeconds?: number;
+  readonly clockSkewSeconds?: number;
+}
+
+export interface NayoriX402ValidatedPaymentContext {
+  readonly quote: NayoriX402Quote;
+  readonly network: PerkOSNetwork;
+  readonly assetDefinition: NayoriX402AssetDefinition;
+  readonly quoteFingerprint: string;
+}
+
 export interface NayoriX402VerifiedDirectPayment {
   readonly network: PerkOSNetwork;
   readonly x402Network: NayoriStacksX402Network;
@@ -185,6 +201,7 @@ export interface NayoriX402VerifiedDirectPayment {
   /** Final network transaction ID for standard payments; omitted until a sponsor signs. */
   readonly transactionId?: string;
   readonly originNonce: bigint;
+  readonly originFee: bigint;
   readonly sponsored: boolean;
   readonly quoteId: string;
   readonly quoteFingerprint: string;
@@ -560,6 +577,51 @@ async function validateRequirement(
   return definition;
 }
 
+export async function validateNayoriX402PaymentContext(
+  input: ValidateNayoriX402PaymentContextInput
+): Promise<NayoriX402ValidatedPaymentContext> {
+  const quote = normalizeQuote(input.trustedQuote);
+  const nowSeconds = input.nowSeconds ?? Math.floor(Date.now() / 1_000);
+  const clockSkewSeconds = input.clockSkewSeconds ?? DEFAULT_CLOCK_SKEW_SECONDS;
+  if (!Number.isSafeInteger(nowSeconds) || nowSeconds < 0) {
+    throw verificationError("invalid_verifier_config", "nowSeconds must be a safe timestamp.");
+  }
+  if (!Number.isSafeInteger(clockSkewSeconds) || clockSkewSeconds < 0) {
+    throw verificationError(
+      "invalid_verifier_config",
+      "clockSkewSeconds must be a non-negative safe integer."
+    );
+  }
+  if (nowSeconds < quote.issuedAt - clockSkewSeconds) {
+    throw verificationError("quote_not_yet_valid", "The trusted quote is not valid yet.");
+  }
+  if (nowSeconds > quote.expiresAt + clockSkewSeconds) {
+    throw verificationError("quote_expired", "The trusted quote has expired.");
+  }
+
+  const requestMethod = normalizeMethod(input.request.method);
+  const requestUrl = canonicalizeNayoriX402ResourceUrl(input.request.url);
+  const requestBodySha256 = await hashNayoriX402RequestBody(input.request.body);
+  if (
+    requestMethod !== quote.method ||
+    requestUrl !== quote.url ||
+    requestBodySha256 !== quote.bodySha256
+  ) {
+    throw verificationError(
+      "request_mismatch",
+      "The protected request does not match the trusted quote."
+    );
+  }
+
+  const assetDefinition = await validateRequirement(input.paymentRequirements, quote);
+  return {
+    quote,
+    network: fromStacksX402Network(quote.network),
+    assetDefinition,
+    quoteFingerprint: await createNayoriX402QuoteFingerprint(quote),
+  };
+}
+
 function parseTransaction(transactionValue: unknown) {
   if (typeof transactionValue !== "string") {
     throw verificationError("invalid_transaction", "payload.transaction must be hex.");
@@ -743,38 +805,16 @@ function verifySip010Transfer(
 export async function verifyNayoriX402DirectPayment(
   input: VerifyNayoriX402DirectPaymentInput
 ): Promise<NayoriX402VerifiedDirectPayment> {
-  const quote = normalizeQuote(input.trustedQuote);
-  const nowSeconds = input.nowSeconds ?? Math.floor(Date.now() / 1_000);
-  const clockSkewSeconds = input.clockSkewSeconds ?? DEFAULT_CLOCK_SKEW_SECONDS;
-  if (!Number.isSafeInteger(nowSeconds) || nowSeconds < 0) {
-    throw verificationError("invalid_verifier_config", "nowSeconds must be a safe timestamp.");
-  }
-  if (!Number.isSafeInteger(clockSkewSeconds) || clockSkewSeconds < 0) {
-    throw verificationError(
-      "invalid_verifier_config",
-      "clockSkewSeconds must be a non-negative safe integer."
-    );
-  }
-  if (nowSeconds < quote.issuedAt - clockSkewSeconds) {
-    throw verificationError("quote_not_yet_valid", "The trusted quote is not valid yet.");
-  }
-  if (nowSeconds > quote.expiresAt + clockSkewSeconds) {
-    throw verificationError("quote_expired", "The trusted quote has expired.");
-  }
-
-  const requestMethod = normalizeMethod(input.request.method);
-  const requestUrl = canonicalizeNayoriX402ResourceUrl(input.request.url);
-  const requestBodySha256 = await hashNayoriX402RequestBody(input.request.body);
-  if (
-    requestMethod !== quote.method ||
-    requestUrl !== quote.url ||
-    requestBodySha256 !== quote.bodySha256
-  ) {
-    throw verificationError(
-      "request_mismatch",
-      "The protected request does not match the trusted quote."
-    );
-  }
+  const context = await validateNayoriX402PaymentContext({
+    paymentRequirements: input.paymentRequirements,
+    trustedQuote: input.trustedQuote,
+    request: input.request,
+    ...(input.nowSeconds === undefined ? {} : { nowSeconds: input.nowSeconds }),
+    ...(input.clockSkewSeconds === undefined
+      ? {}
+      : { clockSkewSeconds: input.clockSkewSeconds }),
+  });
+  const { quote, network, assetDefinition: definition, quoteFingerprint: fingerprint } = context;
 
   try {
     validatePaymentPayload(input.paymentPayload);
@@ -802,9 +842,7 @@ export async function verifyNayoriX402DirectPayment(
     );
   }
 
-  const definition = await validateRequirement(input.paymentRequirements, quote);
   const parsed = parseTransaction(input.paymentPayload.payload.transaction);
-  const network = fromStacksX402Network(quote.network);
   const expectedEncoding = expectedNetworkEncoding(network);
   if (
     parsed.transaction.transactionVersion !== expectedEncoding.transactionVersion ||
@@ -824,7 +862,6 @@ export async function verifyNayoriX402DirectPayment(
 
   const payer = originPayer(parsed.transaction, network);
   const amount = BigInt(quote.amount);
-  const fingerprint = await createNayoriX402QuoteFingerprint(quote);
   if (definition.kind === "stx") {
     verifyStxTransfer(parsed.transaction, amount, payer, quote.payTo, fingerprint);
   } else {
@@ -853,6 +890,7 @@ export async function verifyNayoriX402DirectPayment(
       ? { transactionId: transactionHash }
       : {}),
     originNonce: parsed.transaction.auth.spendingCondition.nonce,
+    originFee: parsed.transaction.auth.spendingCondition.fee,
     sponsored: parsed.transaction.auth.authType === AuthType.Sponsored,
     quoteId: quote.quoteId,
     quoteFingerprint: fingerprint,

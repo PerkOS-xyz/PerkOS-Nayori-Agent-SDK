@@ -4,7 +4,28 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
-No changes yet.
+### Added
+
+- Deterministic, request-bound x402 `PaymentIntent` construction for direct STX, sBTC, and USDCx
+  payments, including explicit payer, fee, nonce, quote fingerprint, and expiry.
+- A concurrency-safe, fail-closed payment policy with network, asset, recipient, origin, merchant,
+  per-transaction, per-session, fee, and remaining-quote-validity controls.
+- `LeatherSigner` using Stacks Connect `stx_signTransaction` with `broadcast: false`, plus a
+  `PolicySigner` callback for KMS/HSM/isolated wallet services that never supplies a private key to
+  the SDK.
+- `NayoriX402PaymentClient`, which builds a canonical unsigned transaction, reserves policy budget,
+  delegates signing, independently verifies the result, and emits the hosted facilitator body
+  without broadcasting.
+- An offline payer quickstart and integration guide for interactive wallets and automated agents.
+
+### Security
+
+- Re-verify signer output against the trusted quote and exact request, including origin signature,
+  payer, fee, nonce, amount, recipient, asset, memo, deny mode, and post-conditions.
+- Reserve concurrent amount and fee usage before signing, release on failure, and permanently count
+  valid signatures against the in-process session budget.
+- Freeze cloned quote, request, requirement, payment payload, and settlement structures to avoid
+  caller mutation across asynchronous wallet or remote-signer boundaries.
 
 ## 0.2.0 - 2026-08-26
 

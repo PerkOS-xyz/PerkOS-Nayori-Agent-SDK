@@ -2,7 +2,7 @@
 
 ## Release status
 
-`@perkos/agent-sdk` 0.1.0 is an M2 foundation release and has not completed the external security
+`@perkos/agent-sdk` 0.2.0 is an M2 developer release and has not completed the external security
 review required for the PerkOS Stacks Endowment milestone.
 
 Do not use this developer release to control material funds without your own review. Inspect every
@@ -36,6 +36,10 @@ disclosure.
 - Strict validation and normalization of signer-returned Stacks transaction IDs.
 - Bounded, cancellable confirmation polling with explicit abort, dropped, and timeout states.
 - Network mismatch rejection in both browser and headless signer adapters.
+- Request-bound direct STX, sBTC, and USDCx payment intents with immutable economic fields.
+- Explicit direct-payment recipient, HTTPS origin, merchant, amount, fee, and session limits.
+- Concurrent payment reservations that prevent asynchronous agents from oversubscribing a budget.
+- Independent verification of every signed direct-payment transaction before facilitator submission.
 
 ## Key handling
 
@@ -50,6 +54,13 @@ secret provider when the runtime permits it.
 
 The SDK does not make an unsafe runtime safe. Restrict process access, rotate credentials, separate
 client/provider/evaluator identities, and use an HSM, KMS, or isolated signer for material funds.
+
+`LeatherSigner` uses `stx_signTransaction` with `broadcast: false` and requires Leather/Stacks
+Connect to return the signed transaction bytes. `PolicySigner` receives only an immutable intent and
+unsigned transaction; its application callback should call an isolated custody service. The SDK's
+in-process policy is defense in depth and can be bypassed by a malicious host application, so the
+custody service must independently authenticate callers, revalidate intent, enforce durable limits,
+and keep keys outside the agent/LLM process.
 
 ## Confirmation handling
 

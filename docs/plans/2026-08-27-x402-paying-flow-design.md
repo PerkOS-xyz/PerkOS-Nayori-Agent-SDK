@@ -91,7 +91,8 @@ stx_signTransaction({ transaction: unsignedHex, broadcast: false })
 
 `PolicySigner` is configured with the same public identity and a remote callback. That callback may
 talk to a KMS/HSM/wallet service and must return a fully signed serialized transaction. No example
-uses an environment variable or local raw private key.
+introduced for this payer flow uses an environment variable or local raw private key. The older,
+explicitly opt-in escrow lifecycle example remains separate from this x402 custody boundary.
 
 Neither signer result is trusted. The client runs the existing pure x402 verifier and additionally
 checks payer, nonce, fee, non-sponsored authorization, and the canonical intent fields before
@@ -112,3 +113,13 @@ quote expiry, signer mutation, invalid signatures, cancellation, concurrent rese
 failure, and duplicate-intent prevention. `npm run verify`, `npm audit --audit-level=high`, package
 contents inspection, and a clean-room consumer import are required before the PR is opened.
 
+## Primary references
+
+- Stacks Connect `request` API and normalized `stx_signTransaction` result:
+  https://docs.stacks.co/reference/stacks.js/stacks-connect/request/request
+- Stacks Connect wallet compatibility, including Leather support:
+  https://docs.stacks.co/stacks-connect/wallet-support
+- Stacks transaction construction and unsigned transaction primitives:
+  https://docs.stacks.co/stacks.js/build-transactions
+- Stacks node raw transaction broadcast boundary:
+  https://docs.stacks.co/reference/api/stacks-node-rpc/transactions

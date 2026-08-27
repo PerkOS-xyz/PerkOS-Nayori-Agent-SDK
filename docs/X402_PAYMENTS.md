@@ -41,9 +41,11 @@ const policy = new NayoriX402PaymentPolicy({
 ```
 
 All values are atomic units: micro-STX, satoshis, or 10^-6 USDCx. Fee limits are micro-STX.
-Authorization reserves amount and fee before asynchronous signing. A valid signature commits that
-usage even if settlement later becomes ambiguous. Failed or cancelled signing releases it. Active
-reservations count toward session limits, so concurrent agents cannot oversubscribe the budget.
+Authorization reserves the amount and full construction fee before asynchronous signing. A wallet
+may return a lower positive origin fee, which is accepted and committed as the actual fee spent;
+zero or any fee above the intent is rejected. A valid signature commits usage even if settlement
+later becomes ambiguous. Failed or cancelled signing releases it. Active reservations count toward
+session limits, so concurrent agents cannot oversubscribe the budget.
 
 ## Interactive Leather signing
 
@@ -83,7 +85,8 @@ const prepared = await payer.preparePayment({
 
 `LeatherSigner` calls only `stx_signTransaction` with `broadcast: false`. It rejects a wallet result
 that contains only a txid because the Nayori facilitator must receive, reserve, and broadcast the
-signed bytes exactly once.
+signed bytes exactly once. The client independently verifies the returned origin fee: Leather may
+lower it, but cannot increase it above the fee authorized in the payment intent.
 
 ## Automated agent signing
 

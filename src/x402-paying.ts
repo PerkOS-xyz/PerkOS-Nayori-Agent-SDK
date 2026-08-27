@@ -63,6 +63,7 @@ export interface NayoriX402PaymentIntent {
   readonly payTo: string;
   readonly payer: string;
   readonly publicKey: string;
+  /** Construction fee and maximum origin fee the signer may return, in micro-STX. */
   readonly fee: string;
   readonly nonce: string;
   readonly method: string;
@@ -94,7 +95,7 @@ export interface NayoriX402PaymentAuthorization {
   readonly spentThisSession: bigint;
   readonly reservedThisSession: bigint;
   readonly remainingThisSession: bigint;
-  commit(): void;
+  commit(actualFee?: AmountLike): void;
   release(): void;
 }
 
@@ -591,10 +592,23 @@ export class NayoriX402PaymentPolicy {
     this.active.set(intent.intentId, { intent, amount, fee });
     this.activeQuotes.add(intent.quoteFingerprint);
     let finished = false;
-    const finish = (commit: boolean): void => {
+    const finish = (commit: boolean, actualFee?: AmountLike): void => {
       if (finished) return;
+      let committedFee: bigint | undefined;
+      if (commit) {
+        committedFee = actualFee === undefined ? fee : toUint(actualFee, "actualFee");
+        if (committedFee === 0n) {
+          throw new PerkOSError("INPUT_INVALID", "actualFee must be greater than zero.");
+        }
+        if (committedFee > fee) {
+          throw new PerkOSError(
+            "POLICY_DENIED",
+            "actualFee cannot exceed the authorized transaction fee."
+          );
+        }
+      }
+      this.finish(intent.intentId, commit, committedFee);
       finished = true;
-      this.finish(intent.intentId, commit);
     };
     return Object.freeze({
       intentId: intent.intentId,
@@ -604,7 +618,7 @@ export class NayoriX402PaymentPolicy {
       spentThisSession,
       reservedThisSession,
       remainingThisSession: sessionLimit - nextAmount,
-      commit: () => finish(true),
+      commit: (actualFee?: AmountLike) => finish(true, actualFee),
       release: () => finish(false),
     });
   }
@@ -622,7 +636,7 @@ export class NayoriX402PaymentPolicy {
     });
   }
 
-  private finish(intentId: string, commit: boolean): void {
+  private finish(intentId: string, commit: boolean, actualFee?: bigint): void {
     const record = this.active.get(intentId);
     if (!record) return;
     this.active.delete(intentId);
@@ -631,7 +645,7 @@ export class NayoriX402PaymentPolicy {
     this.feeReserved -= record.fee;
     if (commit) {
       this.spent[record.intent.asset] += record.amount;
-      this.feeSpent += record.fee;
+      this.feeSpent += actualFee ?? record.fee;
       this.committed.add(intentId);
       this.committedQuotes.add(record.intent.quoteFingerprint);
     }
@@ -896,7 +910,6 @@ export class NayoriX402PaymentClient {
       if (
         verifiedPayment.payer !== intent.payer ||
         verifiedPayment.originNonce !== BigInt(intent.nonce) ||
-        verifiedPayment.originFee !== BigInt(intent.fee) ||
         verifiedPayment.sponsored
       ) {
         throw new PerkOSError(
@@ -905,7 +918,17 @@ export class NayoriX402PaymentClient {
           { intentId: intent.intentId }
         );
       }
-      authorization.commit();
+      if (
+        verifiedPayment.originFee === 0n ||
+        verifiedPayment.originFee > BigInt(intent.fee)
+      ) {
+        throw new PerkOSError(
+          "SIGNING_FAILED",
+          "The signed transaction fee is outside the authorized payment intent.",
+          { intentId: intent.intentId, reason: "origin_fee_out_of_bounds" }
+        );
+      }
+      authorization.commit(verifiedPayment.originFee);
       const settlementRequest = Object.freeze({
         signedQuote: input.signedQuote,
         paymentRequirements,

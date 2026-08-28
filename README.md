@@ -9,13 +9,15 @@ This repository is the continuation of `PerkOS-xyz/PerkOS-Agent-SDK`, renamed to
 public SDK with the Nayori product identity. The npm package remains `@perkos/agent-sdk` and the
 complete Git history, releases, issues, and pull requests are preserved.
 
-> Status: 0.4.0 developer release. Read clients, transaction builders, browser and headless signer
+> Status: 0.5.0 developer release. Read clients, transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
 > implemented. The x402 v2 client and Stacks facilitator foundations are implemented; this release
 > adds wallet-linked OAuth and MCP support for the planned invite-only testnet pilot. Hosted rollout,
 > external review and adoption evidence remain before Milestone 2 completion. The direct x402
 > profile includes request-bound pure verification
 > and payer-side intent, policy, Leather, and remote-signer foundations for STX, sBTC, and USDCx.
+> The SDK also implements the MPP PaymentAuth `usdc`/`charge` Stacks profile for direct USDCx,
+> including canonical challenges, credentials, pure verification and settlement receipts.
 > Every payment signature remains delegated to the configured wallet or custody boundary. Mainnet
 > facilitator settlement remains disabled.
 
@@ -64,6 +66,14 @@ network call, and does not request a wallet signature or broadcast:
 
 ```bash
 npm run quickstart:x402:payer
+```
+
+The MPP PaymentAuth quickstart creates a standard `WWW-Authenticate: Payment` USDCx challenge,
+applies the same payer policy and builds an unsigned `OnChainOnly` Stacks transaction. It is
+offline, contains no private key and does not request a wallet signature or broadcast:
+
+```bash
+npm run quickstart:mpp
 ```
 
 The transactional quickstart is also safe by default: it only prints a seven-step sBTC testnet
@@ -369,6 +379,44 @@ facilitator request body. See [`docs/X402_PAYMENTS.md`](docs/X402_PAYMENTS.md) f
 Direct payments and `perkos-escrow-v1` are complementary. Use direct payments for immediate
 resources and escrow for jobs that require delivery, evaluation, payout, or reputation.
 
+## MPP PaymentAuth with USDCx on Stacks
+
+MPP is a separate standards-based commerce path beside x402. Nayori implements the official
+`Payment` HTTP authentication scheme with `method="usdc"`, `intent="charge"` and the direct Stacks
+USDCx profile. The server issues a canonical `WWW-Authenticate: Payment` challenge and selects
+`Payment-Authorization` for the payment credential, leaving `Authorization: Bearer` available for
+OAuth.
+
+```ts
+import {
+  createNayoriMppUsdcStacksChallenge,
+  createNayoriMppUsdcStacksCredential,
+  encodeNayoriMppCredentialHeader,
+} from "@perkos/agent-sdk";
+
+const { challenge, wwwAuthenticate } =
+  await createNayoriMppUsdcStacksChallenge({
+    quote: trustedUsdcxQuote,
+    realm: "api.nayori.ai",
+    description: "Nayori paid agent request",
+  });
+
+const credential = createNayoriMppUsdcStacksCredential({
+  challenge,
+  source: `stacks:2147483648:${payerAddress}`,
+  transaction: walletSignedTransactionHex,
+});
+
+console.log(wwwAuthenticate);
+console.log(encodeNayoriMppCredentialHeader(credential));
+```
+
+The verifier reuses Nayori's exact request-bound Stacks transaction checks and adds the MPP rules:
+RFC 8785 envelopes, CAIP-10 source, canonical official USDCx identity, `OnChainOnly`, standard
+single-signature authorization and low-s signing. Replay persistence, nonce/balance preflight,
+broadcast, confirmations, receipt delivery and merchant authentication remain hosted Platform
+responsibilities. See [MPP payments](docs/MPP_PAYMENTS.md) for the complete flow and trust boundary.
+
 ## x402 v2 Stacks facilitator
 
 `PerkOSX402Facilitator` implements the official `SchemeNetworkFacilitator` interface. It reloads
@@ -429,6 +477,9 @@ or facilitator-submitted signed transaction.
 - Automated workflows can wait for an explicit terminal confirmation before their next action.
 - x402 quotes are bound to the configured network, escrow contract, asset, job, and exact budget.
 - x402 settlement verifies current chain evidence and atomically consumes each funding txid once.
+- MPP USDCx credentials echo a request-bound challenge and require a canonical, low-s,
+  `OnChainOnly` Stacks transfer; hosted settlement must still consume challenge and replay keys
+  atomically before broadcast.
 - Partner OAuth enrollment signs an exact, short-lived, invitation-bound message in the wallet;
   the SDK normalizes the public signature but never receives a private key.
 - OAuth client secrets and access tokens are application secrets. The SDK returns them to the
@@ -437,7 +488,8 @@ or facilitator-submitted signed transaction.
 This package has not yet completed the external security review required for PerkOS Milestone 2.
 Do not treat the developer release as audited software.
 
-See [Architecture](docs/ARCHITECTURE.md), [Partner pilot](docs/PARTNER_PILOT.md) and
+See [Architecture](docs/ARCHITECTURE.md), [x402 payments](docs/X402_PAYMENTS.md),
+[MPP payments](docs/MPP_PAYMENTS.md), [Partner pilot](docs/PARTNER_PILOT.md) and
 [Security](SECURITY.md) for the trust boundaries and
 responsible disclosure process.
 

@@ -67,6 +67,31 @@ export {
   buildNayoriX402UnsignedPaymentTransaction,
   createNayoriX402PaymentIntent,
 } from "./x402-paying.js";
+export {
+  MPP_PAYMENT_SCHEME,
+  NAYORI_MPP_CREDENTIAL_HEADER,
+  NAYORI_MPP_INTENT,
+  NAYORI_MPP_METHOD,
+  NAYORI_MPP_PROFILE,
+  NAYORI_MPP_TRANSACTION_FORMAT,
+  NayoriMppVerificationError,
+  buildNayoriMppUnsignedPaymentTransaction,
+  canonicalizeNayoriMppJson,
+  createNayoriMppUsdcStacksChallenge,
+  createNayoriMppUsdcStacksCredential,
+  createNayoriMppUsdcStacksReceipt,
+  decodeNayoriMppChallengeHeader,
+  decodeNayoriMppCredentialHeader,
+  decodeNayoriMppJson,
+  decodeNayoriMppReceiptHeader,
+  decodeNayoriMppUsdcStacksRequest,
+  encodeNayoriMppChallengeHeader,
+  encodeNayoriMppCredentialHeader,
+  encodeNayoriMppJson,
+  encodeNayoriMppReceiptHeader,
+  nayoriMppStacksReplayKey,
+  verifyNayoriMppUsdcStacksPayment,
+} from "./mpp.js";
 
 export type {
   HeadlessSignerOptions,
@@ -169,6 +194,21 @@ export type {
   ValidateNayoriX402PaymentContextInput,
   VerifyNayoriX402DirectPaymentInput,
 } from "./x402-direct.js";
+export type {
+  CreateNayoriMppChallengeInput,
+  CreateNayoriMppCredentialInput,
+  CreateNayoriMppReceiptInput,
+  NayoriMppChallenge,
+  NayoriMppChallengeBundle,
+  NayoriMppJsonValue,
+  NayoriMppUsdcStacksCredential,
+  NayoriMppUsdcStacksDetails,
+  NayoriMppUsdcStacksPayload,
+  NayoriMppUsdcStacksReceipt,
+  NayoriMppUsdcStacksRequest,
+  NayoriMppVerifiedUsdcStacksPayment,
+  VerifyNayoriMppUsdcStacksPaymentInput,
+} from "./mpp.js";
 export type {
   LeatherRequest,
   LeatherSignTransactionParams,

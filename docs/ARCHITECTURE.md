@@ -120,6 +120,25 @@ consumption and a short freshness window do not cryptographically bind that bear
 HTTP request, so a later request-bound signature/challenge or facilitator-submitted transaction is
 required before a high-value production paywall migration.
 
+## MPP PaymentAuth adapter
+
+The MPP adapter is independent of the x402 HTTP envelope but deliberately reuses the same trusted
+quote, memo fingerprint, payer intent and exact Stacks transaction verifier. It implements the
+official `Payment` authentication scheme with `method="usdc"`, `intent="charge"` and the Stacks
+USDCx profile. Challenges and credentials use RFC 8785 canonical JSON and unpadded base64url;
+signed Stacks consensus bytes use standard base64 inside the credential.
+
+Nayori selects `Payment-Authorization` in every challenge so an OAuth Bearer token can remain in
+the ordinary `Authorization` header. The MPP layer additionally enforces CAIP-10 payer identity,
+the official six-decimal USDCx tuple, `OnChainOnly`, standard single-signature authorization and a
+low-s origin signature. It emits a structured receipt only for a settlement reference supplied by
+the hosted layer.
+
+The adapter is still pure. Merchant authentication, quote-signature trust, live nonce and balance
+checks, token-control policy, durable challenge/replay reservation, broadcast, reconciliation,
+confirmation and resource delivery remain in Platform. Sponsorship is disabled in the initial
+profile.
+
 ## Settlement safety
 
 Completion, rejection, and expiry may transfer funds held by the escrow contract rather than by
@@ -130,6 +149,6 @@ exact amount expected to leave it.
 ## Future adapters
 
 - Durable replay-store and hosted HTTP adapters for the x402 Stacks facilitator.
-- Request-bound payer authorization for front-running resistance.
+- Hosted MPP challenge consumption, settlement reconciliation and confirmed receipt delivery.
 - MCP tools with typed inputs, allowlists, and the same spending policy.
 - Optional framework-specific integrations and higher-confirmation settlement policies.

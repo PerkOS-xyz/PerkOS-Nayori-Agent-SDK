@@ -2,7 +2,7 @@
 
 ## Release status
 
-`@perkos/agent-sdk` 0.4.0 is an M2 developer release and has not completed the external security
+`@perkos/agent-sdk` 0.5.0 is an M2 developer release and has not completed the external security
 review required for the PerkOS Stacks Endowment milestone.
 
 Do not use this developer release to control material funds without your own review. Inspect every
@@ -40,6 +40,10 @@ disclosure.
 - Explicit direct-payment recipient, HTTPS origin, merchant, amount, fee, and session limits.
 - Concurrent payment reservations that prevent asynchronous agents from oversubscribing a budget.
 - Independent verification of every signed direct-payment transaction before facilitator submission.
+- MPP PaymentAuth challenge binding, canonical JCS/base64url envelopes, CAIP-10 source matching,
+  official USDCx identity, `OnChainOnly`, standard single-signature authorization and low-s checks.
+- MPP sponsorship is disabled; the pure verifier never represents a wallet approval, broadcast or
+  mempool response as confirmed settlement.
 - Invitation-bound partner enrollment through exact Stacks message signing, with compressed public
   key and recoverable-signature validation before API submission.
 - OAuth client secrets and tokens remain caller-owned and are never persisted or automatically
@@ -86,3 +90,8 @@ The SDK prepares, validates, and submits transaction plans through an applicatio
 signer. It does not prove that the signer implementation is safe. Applications must protect
 private keys, verify wallet prompts, authenticate agent commands, and treat external tool or
 model output as untrusted.
+
+The MPP verifier does not authenticate merchants, check live nonces or balances, inspect token
+pause/blocklist controls, persist challenge or transaction replay state, broadcast, reconcile,
+confirm or deliver resources. A hosted deployment must enforce those controls atomically and must
+only issue `Payment-Receipt` after its configured confirmation threshold is met.

@@ -4,6 +4,31 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+## 0.5.0 - 2026-08-28
+
+### Added
+
+- A standards-based MPP PaymentAuth adapter for `method="usdc"`, `intent="charge"` and the direct
+  USDCx on Stacks profile, separate from the existing x402 routes.
+- RFC 8785 canonical challenge, credential and receipt codecs; `WWW-Authenticate: Payment`
+  challenges select `Payment-Authorization` so OAuth Bearer credentials remain independent.
+- Official mainnet and testnet USDCx method details, CAIP-10 payer sources, base64 SIP-005
+  transaction credentials and `Payment-Receipt` settlement pointers.
+- An MPP-specific unsigned transaction builder that reuses the existing payer intent and spending
+  policy while selecting the required `OnChainOnly` anchor mode.
+- Public integration documentation and a safe offline MPP/USDCx quickstart.
+
+### Security
+
+- Bind each MPP challenge to a trusted Nayori quote and actual protected request, including HTTP
+  body digest, amount, recipient, asset, merchant and expiry.
+- Reuse exact SIP-010 transfer, memo, signature and post-condition verification, adding strict
+  profile fields, canonical envelopes, standard single-signature authorization and low-s signing.
+- Keep sponsorship disabled and leave live nonce/balance checks, durable replay reservation,
+  broadcast, confirmation and delivery at the hosted Platform boundary.
+
+## 0.4.0 - 2026-08-28
+
 ### Added
 
 - `NayoriPartnerClient` for invitation-bound wallet challenges, one-time OAuth client enrollment,

@@ -1,6 +1,6 @@
 {
   "name": "@perkos/agent-sdk",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "TypeScript SDK for agent identity, escrow settlement, and reputation on Stacks.",
   "type": "module",
   "main": "./dist/index.js",
@@ -35,6 +35,8 @@
     "quickstart:x402:facilitator": "node --import tsx examples/x402-facilitator.ts",
     "prequickstart:x402:payer": "npm run build",
     "quickstart:x402:payer": "node --import tsx examples/x402-payment-intent.ts",
+    "prequickstart:mpp": "npm run build",
+    "quickstart:mpp": "node --import tsx examples/mpp-usdcx.ts",
     "prequickstart:testnet": "npm run build",
     "quickstart:testnet": "node --import tsx examples/testnet-lifecycle.ts"
   },
@@ -49,8 +51,12 @@
   "keywords": [
     "ai-agents",
     "agentic-commerce",
+    "mpp",
+    "paymentauth",
     "stacks",
     "sbtc",
+    "usdcx",
+    "x402",
     "escrow",
     "bitcoin"
   ],

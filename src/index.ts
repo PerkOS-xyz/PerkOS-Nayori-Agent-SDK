@@ -134,6 +134,7 @@ export type {
   ReadOnlyTransport,
   RegisterAgentInput,
   ReputationRecord,
+  ReputationSyncRecord,
   ResolvedPerkOSConfig,
   SettleJobInput,
   SignerResult,

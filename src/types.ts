@@ -57,7 +57,8 @@ export type JobStatus =
   | "submitted"
   | "completed"
   | "rejected"
-  | "expired";
+  | "expired"
+  | "timeout-paid";
 
 export interface JobRecord {
   readonly id: bigint;
@@ -71,6 +72,17 @@ export interface JobRecord {
   readonly status: JobStatus;
   readonly statusCode: bigint;
   readonly deliverable?: string;
+  readonly submittedAtBurn?: bigint;
+  readonly reviewDeadline?: bigint;
+}
+
+export interface ReputationSyncRecord {
+  readonly jobId: bigint;
+  readonly asset: PaymentAsset;
+  readonly outcome: "completed" | "disputed";
+  readonly outcomeCode: bigint;
+  readonly pending: boolean;
+  readonly lastError: bigint;
 }
 
 export interface ReputationRecord {
@@ -94,6 +106,8 @@ export type PerkOSOperation =
   | "complete-job"
   | "reject-job"
   | "expire-job"
+  | "settle-review-timeout"
+  | "retry-reputation-sync"
   | "rate-provider";
 
 export interface TransactionIntent {
@@ -260,6 +274,7 @@ export interface SettleJobInput {
   readonly jobId: AmountLike;
   readonly amount: AmountLike;
   readonly recipient: string;
+  readonly sbtcToken?: ContractId;
 }
 
 export interface RateProviderInput {

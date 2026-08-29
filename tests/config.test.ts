@@ -22,6 +22,24 @@ describe("configuration", () => {
     ).toThrowError(PerkOSError);
   });
 
+  it("accepts explicit same-network versioned contract overrides without changing defaults", () => {
+    const candidate = resolveConfig({
+      network: "testnet",
+      contracts: {
+        stxCommerce:
+          "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.agentic-commerce-v3",
+        sbtcCommerce:
+          "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.sbtc-commerce-v2",
+        reputationRegistry:
+          "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.reputation-registry-v3",
+      },
+    });
+
+    expect(candidate.contracts.stxCommerce).toContain(".agentic-commerce-v3");
+    expect(candidate.contracts.sbtcCommerce).toContain(".sbtc-commerce-v2");
+    expect(DEFAULT_DEPLOYMENTS.testnet.stxCommerce).toContain(".agentic-commerce-v2");
+  });
+
   it("normalizes a custom API URL", () => {
     const config = resolveConfig({
       network: "testnet",

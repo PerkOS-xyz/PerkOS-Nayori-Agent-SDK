@@ -1,4 +1,4 @@
-import { ClarityType } from "@stacks/transactions";
+import { Cl, ClarityType } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_DEPLOYMENTS,
@@ -10,8 +10,21 @@ import {
 const CLIENT = "SP1VY24ADP27HERH4XMQTK44XB9QX4ZASPMPJKPVF";
 const PROVIDER = "SP3DQCVZ26XCDGZFYB4TXJC6TMMZAVXZTER1DP8HV";
 const EVALUATOR = "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE";
+const PINNED_SBTC =
+  "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.historical-sbtc" as const;
 const config = resolveConfig({ network: "mainnet" });
 const builder = new PerkOSTransactionBuilder(config);
+const candidateBuilder = new PerkOSTransactionBuilder(
+  resolveConfig({
+    network: "mainnet",
+    contracts: {
+      stxCommerce: "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.agentic-commerce-v3",
+      sbtcCommerce: "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.sbtc-commerce-v2",
+      reputationRegistry:
+        "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.reputation-registry-v3",
+    },
+  })
+);
 
 describe("transaction builders", () => {
   it("serializes agent registration and endpoints", () => {
@@ -88,6 +101,60 @@ describe("transaction builders", () => {
       address: DEFAULT_DEPLOYMENTS.mainnet.sbtcCommerce,
       condition: "eq",
       amount: "25000",
+    });
+  });
+
+  it("builds exact timeout payout plans for both versioned assets", () => {
+    const sbtc = candidateBuilder.settleReviewTimeout({
+      asset: "sbtc",
+      jobId: 7n,
+      amount: 25_000n,
+      recipient: PROVIDER,
+      sbtcToken: PINNED_SBTC,
+    });
+    const stx = candidateBuilder.settleReviewTimeout({
+      asset: "stx",
+      jobId: 8n,
+      amount: 1_500_000n,
+      recipient: PROVIDER,
+    });
+
+    expect(sbtc.functionName).toBe("settle-review-timeout");
+    expect(sbtc.functionArgs).toHaveLength(2);
+    expect(sbtc.functionArgs[1]).toEqual(
+      Cl.contractPrincipal(
+        "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH",
+        "historical-sbtc"
+      )
+    );
+    expect(sbtc.postConditionMode).toBe("deny");
+    expect(sbtc.postConditions[0]).toMatchObject({
+      type: "ft-postcondition",
+      address: candidateBuilder.config.contracts.sbtcCommerce,
+      condition: "eq",
+      amount: "25000",
+      asset: `${PINNED_SBTC}::sbtc-token`,
+    });
+    expect(stx.functionArgs).toHaveLength(1);
+    expect(stx.postConditions[0]).toMatchObject({
+      type: "stx-postcondition",
+      address: candidateBuilder.config.contracts.stxCommerce,
+      condition: "eq",
+      amount: "1500000",
+    });
+  });
+
+  it("builds a deny-mode permissionless reputation retry with no asset transfer", () => {
+    const plan = candidateBuilder.retryReputationSync("sbtc", 7n);
+
+    expect(plan.functionName).toBe("retry-reputation-sync");
+    expect(plan.functionArgs).toHaveLength(1);
+    expect(plan.postConditionMode).toBe("deny");
+    expect(plan.postConditions).toEqual([]);
+    expect(plan.intent).toMatchObject({
+      operation: "retry-reputation-sync",
+      asset: "sbtc",
+      jobId: 7n,
     });
   });
 

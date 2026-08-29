@@ -47,31 +47,36 @@ function plan(
   };
 }
 
-function tokenArg(config: ResolvedPerkOSConfig): ClarityValue {
-  const token = parseContractId(config.contracts.sbtcToken, "contracts.sbtcToken", config.network);
+function tokenArg(
+  config: ResolvedPerkOSConfig,
+  tokenContract: ContractId = config.contracts.sbtcToken
+): ClarityValue {
+  const token = parseContractId(tokenContract, "sbtcToken", config.network);
   return Cl.contractPrincipal(token.address, token.name);
 }
 
 function escrowArgs(
   config: ResolvedPerkOSConfig,
   asset: PaymentAsset,
-  baseArgs: readonly ClarityValue[]
+  baseArgs: readonly ClarityValue[],
+  sbtcToken?: ContractId
 ): readonly ClarityValue[] {
-  return asset === "sbtc" ? [...baseArgs, tokenArg(config)] : baseArgs;
+  return asset === "sbtc" ? [...baseArgs, tokenArg(config, sbtcToken)] : baseArgs;
 }
 
 function exactTransfer(
   config: ResolvedPerkOSConfig,
   asset: PaymentAsset,
   sender: string,
-  amount: bigint
+  amount: bigint,
+  sbtcToken?: ContractId
 ): PostCondition {
   if (asset === "stx") {
     return Pc.principal(sender).willSendEq(amount).ustx();
   }
   return Pc.principal(sender)
     .willSendEq(amount)
-    .ft(config.contracts.sbtcToken, config.contracts.sbtcAssetName);
+    .ft(sbtcToken ?? config.contracts.sbtcToken, config.contracts.sbtcAssetName);
 }
 
 function deliverableBuffer(value: string | Uint8Array): Uint8Array {
@@ -264,6 +269,24 @@ export class PerkOSTransactionBuilder {
     return this.settlement("expire-job", input);
   }
 
+  settleReviewTimeout(input: SettleJobInput): ContractCallPlan {
+    return this.settlement("settle-review-timeout", input);
+  }
+
+  retryReputationSync(
+    asset: PaymentAsset,
+    jobIdInput: bigint | number | string
+  ): ContractCallPlan {
+    const jobId = toUint(jobIdInput, "jobId");
+    return plan(
+      this.config,
+      commerceContract(this.config, asset),
+      "retry-reputation-sync",
+      [Cl.uint(jobId)],
+      { operation: "retry-reputation-sync", asset, jobId }
+    );
+  }
+
   rateProvider(input: RateProviderInput): ContractCallPlan {
     const jobId = toUint(input.jobId, "jobId");
     const score = toUint(input.score, "score");
@@ -281,20 +304,31 @@ export class PerkOSTransactionBuilder {
   }
 
   private settlement(
-    operation: "complete-job" | "reject-job" | "expire-job",
+    operation:
+      | "complete-job"
+      | "reject-job"
+      | "expire-job"
+      | "settle-review-timeout",
     input: SettleJobInput
   ): ContractCallPlan {
     const jobId = toUint(input.jobId, "jobId");
     const amount = toUint(input.amount, "amount", true);
     assertPrincipal(input.recipient, "recipient", this.config.network);
     const contract = commerceContract(this.config, input.asset);
+    const sbtcToken =
+      input.asset === "sbtc"
+        ? input.sbtcToken ?? this.config.contracts.sbtcToken
+        : undefined;
+    if (sbtcToken) parseContractId(sbtcToken, "sbtcToken", this.config.network);
     const postConditions =
-      amount > 0n ? [exactTransfer(this.config, input.asset, contract, amount)] : [];
+      amount > 0n
+        ? [exactTransfer(this.config, input.asset, contract, amount, sbtcToken)]
+        : [];
     return plan(
       this.config,
       contract,
       operation,
-      escrowArgs(this.config, input.asset, [Cl.uint(jobId)]),
+      escrowArgs(this.config, input.asset, [Cl.uint(jobId)], sbtcToken),
       {
         operation,
         asset: input.asset,

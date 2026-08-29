@@ -4,6 +4,23 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+### Added
+
+- Candidate-aware job parsing for Bitcoin submission/review heights and the distinct
+  `timeout-paid` (`u6`) terminal state.
+- Exact deny-mode STX/sBTC `settleReviewTimeout` plans and high-level client execution after the
+  candidate contract's evaluator deadline.
+- Durable reputation synchronization reads and permissionless `retryReputationSync` plans.
+- Versioned Clarity error mappings and same-network contract-override guidance while leaving all
+  published deployment defaults unchanged.
+
+### Security
+
+- Timeout settlement reads the current escrow, provider, and job-pinned sBTC token before
+  constructing a contract-principal post-condition for the exact amount and funded token.
+- Reputation retry has no asset transfer and remains deny-mode. The SDK does not interpret a
+  timeout payout as completion or reputation evidence.
+
 ## 0.5.0 - 2026-08-28
 
 ### Added

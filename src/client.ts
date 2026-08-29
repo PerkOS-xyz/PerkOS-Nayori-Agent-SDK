@@ -10,6 +10,7 @@ import {
   expectUint,
   optionalBuffer,
   optionalPrincipal,
+  optionalUint,
   unwrapResponse,
 } from "./clarity.js";
 import { PerkOSError } from "./errors.js";
@@ -35,6 +36,7 @@ import type {
   ReadOnlyTransport,
   RegisterAgentInput,
   ReputationRecord,
+  ReputationSyncRecord,
   SettleJobInput,
   SpendingApproval,
   SubmitWorkInput,
@@ -240,6 +242,14 @@ export class PerkOSClient {
       }
       const provider = optionalPrincipal(tuple.provider, "job.provider");
       const deliverable = optionalBuffer(tuple.deliverable, "job.deliverable");
+      const submittedAtBurn = optionalUint(
+        tuple["submitted-at-burn"],
+        "job.submitted-at-burn"
+      );
+      const reviewDeadline = optionalUint(
+        tuple["review-deadline"],
+        "job.review-deadline"
+      );
       return {
         id: jobId,
         asset,
@@ -252,12 +262,17 @@ export class PerkOSClient {
         status,
         statusCode,
         ...(deliverable ? { deliverable } : {}),
+        ...(submittedAtBurn !== undefined ? { submittedAtBurn } : {}),
+        ...(reviewDeadline !== undefined ? { reviewDeadline } : {}),
       };
     } catch (error) {
       if (
         error instanceof PerkOSError &&
         error.code === "CONTRACT_ERROR" &&
-        (error.details?.clarityCode === 202n || error.details?.clarityCode === 302n)
+        (error.details?.clarityCode === 202n ||
+          error.details?.clarityCode === 302n ||
+          error.details?.clarityCode === 602n ||
+          error.details?.clarityCode === 702n)
       ) {
         return null;
       }
@@ -285,6 +300,77 @@ export class PerkOSClient {
       "get-payment-token"
     );
     return expectPrincipal(value, "get-payment-token");
+  }
+
+  async getJobPaymentToken(
+    jobIdInput: bigint | number | string
+  ): Promise<ContractId> {
+    const jobId = toUint(jobIdInput, "jobId");
+    const value = unwrapResponse(
+      await this.read(this.config.contracts.sbtcCommerce, "get-job-payment-token", [
+        Cl.uint(jobId),
+      ]),
+      "get-job-payment-token"
+    );
+    const token = expectPrincipal(value, "get-job-payment-token");
+    parseContractId(token, "get-job-payment-token", this.config.network);
+    return token as ContractId;
+  }
+
+  async getReviewWindow(asset: PaymentAsset): Promise<bigint> {
+    const value = unwrapResponse(
+      await this.read(contractForAsset(this.config.contracts, asset), "get-review-window"),
+      "get-review-window"
+    );
+    return expectUint(value, "get-review-window");
+  }
+
+  async getReputationSync(
+    asset: PaymentAsset,
+    jobIdInput: bigint | number | string
+  ): Promise<ReputationSyncRecord | null> {
+    const jobId = toUint(jobIdInput, "jobId");
+    try {
+      const value = unwrapResponse(
+        await this.read(
+          contractForAsset(this.config.contracts, asset),
+          "get-reputation-sync",
+          [Cl.uint(jobId)]
+        ),
+        "get-reputation-sync"
+      );
+      const tuple = expectTuple(value, "get-reputation-sync");
+      const outcomeCode = expectUint(tuple.outcome, "reputation-sync.outcome");
+      const outcome =
+        outcomeCode === 1n
+          ? "completed"
+          : outcomeCode === 2n
+            ? "disputed"
+            : undefined;
+      if (!outcome) {
+        throw new PerkOSError(
+          "READ_FAILED",
+          `Unknown reputation synchronization outcome ${outcomeCode}.`
+        );
+      }
+      return {
+        jobId,
+        asset,
+        outcome,
+        outcomeCode,
+        pending: expectBoolean(tuple.pending, "reputation-sync.pending"),
+        lastError: expectUint(tuple["last-error"], "reputation-sync.last-error"),
+      };
+    } catch (error) {
+      if (
+        error instanceof PerkOSError &&
+        error.code === "CONTRACT_ERROR" &&
+        (error.details?.clarityCode === 623n || error.details?.clarityCode === 723n)
+      ) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   async getReputation(agent: string): Promise<ReputationRecord> {
@@ -371,25 +457,56 @@ export class PerkOSClient {
     return this.execute(this.transactions.expireJob(settlement));
   }
 
+  async settleReviewTimeout(asset: PaymentAsset, jobIdInput: bigint | number | string) {
+    const settlement = await this.settlementInput(
+      "settle-review-timeout",
+      asset,
+      jobIdInput
+    );
+    return this.execute(this.transactions.settleReviewTimeout(settlement));
+  }
+
+  retryReputationSync(
+    asset: PaymentAsset,
+    jobIdInput: bigint | number | string
+  ): Promise<TransactionReceipt> {
+    return this.execute(this.transactions.retryReputationSync(asset, jobIdInput));
+  }
+
   rateProvider(input: RateProviderInput): Promise<TransactionReceipt> {
     return this.execute(this.transactions.rateProvider(input));
   }
 
   private async settlementInput(
-    operation: "complete-job" | "reject-job" | "expire-job",
+    operation:
+      | "complete-job"
+      | "reject-job"
+      | "expire-job"
+      | "settle-review-timeout",
     asset: PaymentAsset,
     jobIdInput: bigint | number | string
   ): Promise<SettleJobInput> {
     const jobId = toUint(jobIdInput, "jobId");
+    const readsPinnedToken =
+      asset === "sbtc" &&
+      parseContractId(
+        this.config.contracts.sbtcCommerce,
+        "contracts.sbtcCommerce",
+        this.config.network
+      ).name === "sbtc-commerce-v2";
     const [job, amount] = await Promise.all([
       this.getJob(asset, jobId),
       this.getEscrowBalance(asset, jobId),
     ]);
+    const sbtcToken =
+      readsPinnedToken && amount > 0n
+        ? await this.getJobPaymentToken(jobId)
+        : undefined;
     if (!job) {
       throw new PerkOSError("INPUT_INVALID", `Job ${jobId} does not exist.`);
     }
     const recipient =
-      operation === "complete-job"
+      operation === "complete-job" || operation === "settle-review-timeout"
         ? job.provider
         : job.client;
     if (!recipient) {
@@ -398,7 +515,13 @@ export class PerkOSClient {
         `Job ${jobId} has no provider to receive settlement.`
       );
     }
-    return { asset, jobId, amount, recipient };
+    return {
+      asset,
+      jobId,
+      amount,
+      recipient,
+      ...(sbtcToken ? { sbtcToken } : {}),
+    };
   }
 
   private async requireSignerAddress(): Promise<string> {

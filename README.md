@@ -138,6 +138,47 @@ Settlement helpers read the job and escrow balance before building exact contrac
 post-conditions. This protects both wallet-originated and headless transactions from transferring
 more than the job requires.
 
+## Versioned escrow candidate
+
+The SDK can target the versioned contract interfaces introduced for Nayori's pre-launch security
+review, but the published mainnet and testnet defaults remain on the currently verified contracts.
+Do not override them until the chosen network has source-verified candidate deployments.
+
+```ts
+import { PerkOSClient, type ContractId } from "@perkos/agent-sdk";
+
+const deployer = "ST..."; // Read this from the verified testnet deployment receipt.
+const perkos = new PerkOSClient({
+  network: "testnet",
+  contracts: {
+    stxCommerce: `${deployer}.agentic-commerce-v3` as ContractId,
+    sbtcCommerce: `${deployer}.sbtc-commerce-v2` as ContractId,
+    reputationRegistry: `${deployer}.reputation-registry-v3` as ContractId,
+  },
+  signer,
+});
+
+const job = await perkos.getJob("sbtc", 7n);
+console.log(job?.submittedAtBurn, job?.reviewDeadline, job?.status);
+
+// After the on-chain Bitcoin review deadline, any signer may trigger the
+// exact provider payout. The plan remains deny-mode with exact escrow outflow.
+await perkos.settleReviewTimeout("sbtc", 7n);
+
+const sync = await perkos.getReputationSync("sbtc", 7n);
+if (sync?.pending) await perkos.retryReputationSync("sbtc", 7n);
+```
+
+The candidate's fixed review window is readable through `getReviewWindow(asset)`. Evaluator
+completion/rejection is available through the exact deadline; timeout settlement is available
+only after it. Timeout payout is returned as the distinct `timeout-paid` (`u6`) status and must not
+be counted as a completed job or reputation success. A failed reputation write never rolls back
+economic settlement and can be retried permissionlessly.
+
+For `sbtc-commerce-v2`, high-level settlement helpers also read the token pinned when the job was
+funded. Both the trait argument and exact fungible-token post-condition use that historical token,
+so rotating the contract's future funding default cannot strand an existing escrow.
+
 ## Browser signer (Leather and other Stacks wallets)
 
 `StacksConnectSigner` adapts the official Stacks Connect request API. The application supplies
@@ -462,6 +503,8 @@ or facilitator-submitted signed transaction.
 - Set a budget and fund escrow.
 - Assign a provider and submit a deliverable.
 - Complete, reject, or expire a job.
+- Settle an overdue candidate review to the provider with exact post-conditions.
+- Read and retry durable candidate reputation synchronization.
 - Rate a provider and read reputation.
 
 ## Security model

@@ -112,3 +112,14 @@ export function optionalBuffer(
   }
   return inner.value;
 }
+
+export function optionalUint(
+  value: ClarityValue | undefined,
+  context: string
+): bigint | undefined {
+  if (!value || value.type === ClarityType.OptionalNone) return undefined;
+  if (value.type !== ClarityType.OptionalSome) {
+    throw new PerkOSError("READ_FAILED", `${context} must be a Clarity optional.`);
+  }
+  return expectUint((value as SomeCV<ClarityValue>).value, context);
+}

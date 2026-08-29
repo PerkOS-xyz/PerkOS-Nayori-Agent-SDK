@@ -57,4 +57,17 @@ describe("Stacks transaction serialization", () => {
 
     await expect(serialize(plan)).resolves.toMatch(/^[0-9a-f]+$/);
   });
+
+  it("serializes the versioned timeout payout with an exact deny post-condition", async () => {
+    const plan = builder.settleReviewTimeout({
+      asset: "sbtc",
+      jobId: 7n,
+      amount: 25_000n,
+      recipient: PROVIDER,
+    });
+
+    expect(plan.functionName).toBe("settle-review-timeout");
+    expect(plan.postConditionMode).toBe("deny");
+    await expect(serialize(plan)).resolves.toMatch(/^[0-9a-f]+$/);
+  });
 });

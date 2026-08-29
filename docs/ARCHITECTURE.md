@@ -141,10 +141,22 @@ profile.
 
 ## Settlement safety
 
-Completion, rejection, and expiry may transfer funds held by the escrow contract rather than by
-the transaction origin. High-level client methods read the current job and escrow balance before
-building the plan. The resulting post-condition identifies the escrow contract principal and the
-exact amount expected to leave it.
+Completion, rejection, expiry and versioned review-timeout settlement may transfer funds held by
+the escrow contract rather than by the transaction origin. High-level client methods read the
+current job and escrow balance before building the plan. The resulting post-condition identifies
+the escrow contract principal and the exact amount expected to leave it. For `sbtc-commerce-v2`,
+the client also reads the job-pinned token and uses it in both the contract argument and exact
+fungible-token post-condition; a later default-token rotation cannot redirect or strand an
+existing escrow.
+
+The versioned contracts record a Bitcoin burn-block review deadline at submission. Through the
+deadline, the evaluator remains the only completion/rejection authority. After it, any principal
+may submit `settle-review-timeout`; the SDK treats the result as `timeout-paid`, not completion.
+Reputation synchronization has its own durable read record and deny-mode retry plan so registry
+unavailability never expands payment authority or rolls back the payout.
+
+Versioned contract IDs are explicit configuration overrides. Default deployments do not change
+until a public-network candidate has source verification and release approval.
 
 ## Future adapters
 

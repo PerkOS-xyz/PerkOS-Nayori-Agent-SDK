@@ -147,7 +147,7 @@ Do not override them until the chosen network has source-verified candidate depl
 ```ts
 import { PerkOSClient, type ContractId } from "@perkos/agent-sdk";
 
-const deployer = "ST..."; // Read this from the verified testnet deployment receipt.
+const deployer = "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5";
 const perkos = new PerkOSClient({
   network: "testnet",
   contracts: {
@@ -181,8 +181,11 @@ that historical token, so rotating the contract's future funding default cannot 
 escrow.
 
 The previous v3/v2 testnet generation remains supported and immutable at 144 blocks. The v4/v3
-overrides above are the current 12-block source candidate and must not be used until those exact
-contract names are deployed and source-verified on the selected network.
+overrides above are deployed and source-verified only on Stacks testnet from contracts/Web merge
+`b15544d601bd4e49610be854f7ad33a0af90c0a7`. Controlled STX and official PoX-5 sBTC complete paths
+pass 27/27 and 30/30. The real timeout job is submitted and may be settled only from burn block
+`11104`. Keep the explicit overrides above: published package defaults remain unchanged until the
+external review and release gate close.
 
 ## Browser signer (Leather and other Stacks wallets)
 

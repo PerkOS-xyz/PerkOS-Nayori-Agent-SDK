@@ -6,6 +6,9 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ### Added
 
+- Record the source-verified v4/v3 Stacks testnet deployment under
+  `ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5`, STX 27/27 and official PoX-5 sBTC 30/30 complete
+  evidence, while retaining explicit overrides and unchanged published defaults.
 - Explicit support for the 12-burn-block `agentic-commerce-v4` and `sbtc-commerce-v3` review
   candidate while preserving compatibility with the immutable 144-block v3/v2 generation.
 - Candidate-aware job parsing for Bitcoin submission/review heights and the distinct

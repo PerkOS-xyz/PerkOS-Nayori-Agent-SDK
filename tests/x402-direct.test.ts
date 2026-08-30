@@ -213,7 +213,7 @@ describe("Nayori direct x402 asset registry", () => {
       decimals: 6,
     });
     expect(NAYORI_X402_DIRECT_ASSETS.testnet.usdcx.wireAsset).toBe(
-      "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx"
+      "ST2WK9SGBJ15RHZ33KK0KYVSXBEBHM1XDM8C96EC4.usdcx"
     );
   });
 
@@ -268,14 +268,14 @@ describe("Nayori direct x402 quote binding", () => {
       scheme: "exact",
       network: "stacks:2147483648",
       amount: "10000",
-      asset: "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx",
+      asset: "ST2WK9SGBJ15RHZ33KK0KYVSXBEBHM1XDM8C96EC4.usdcx",
       payTo: PAY_TO,
       extra: {
         assetTransferMethod: NAYORI_X402_DIRECT_ASSET_TRANSFER_METHOD,
         paymentFlow: NAYORI_X402_DIRECT_PAYMENT_FLOW,
         paymentAsset: "usdcx",
         nayoriAssetId:
-          "stacks:2147483648/sip010:ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx.usdcx-token",
+          "stacks:2147483648/sip010:ST2WK9SGBJ15RHZ33KK0KYVSXBEBHM1XDM8C96EC4.usdcx.usdcx-token",
         quoteVersion: "1",
       },
     });

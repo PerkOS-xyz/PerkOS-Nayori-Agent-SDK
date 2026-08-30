@@ -183,9 +183,14 @@ escrow.
 The previous v3/v2 testnet generation remains supported and immutable at 144 blocks. The v4/v3
 overrides above are deployed and source-verified only on Stacks testnet from contracts/Web merge
 `b15544d601bd4e49610be854f7ad33a0af90c0a7`. Controlled STX and official PoX-5 sBTC complete paths
-pass 27/27 and 30/30. The real timeout job is submitted and may be settled only from burn block
-`11104`. Keep the explicit overrides above: published package defaults remain unchanged until the
-external review and release gate close.
+pass 27/27 and 30/30. The real timeout path passes preparation 20/20, settlement 12/12 and
+separate public-state verification 10/10. Job `u2` settled at burn `11290` in
+[`0x06537111…15bb9`](https://explorer.hiro.so/txid/0x06537111ef6c75d3c5d750154f97a3b4a0c233a84639583f7af18b2386915bb9?chain=testnet),
+ending in `timeout-paid` (`u6`) with zero escrow, one exact 1,000-atomic-unit sBTC payout and no
+completion, reputation or rating credit. The frozen evidence is documented in the
+[contracts/Web repository](https://github.com/PerkOS-xyz/PerkOS-Nayori/blob/main/docs/TESTNET_SECURITY_EVIDENCE.md).
+Keep the explicit overrides above: published package defaults remain unchanged until the external
+review and release gate close.
 
 ## Browser signer (Leather and other Stacks wallets)
 

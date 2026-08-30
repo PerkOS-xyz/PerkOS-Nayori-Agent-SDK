@@ -151,8 +151,8 @@ const deployer = "ST..."; // Read this from the verified testnet deployment rece
 const perkos = new PerkOSClient({
   network: "testnet",
   contracts: {
-    stxCommerce: `${deployer}.agentic-commerce-v3` as ContractId,
-    sbtcCommerce: `${deployer}.sbtc-commerce-v2` as ContractId,
+    stxCommerce: `${deployer}.agentic-commerce-v4` as ContractId,
+    sbtcCommerce: `${deployer}.sbtc-commerce-v3` as ContractId,
     reputationRegistry: `${deployer}.reputation-registry-v3` as ContractId,
   },
   signer,
@@ -169,15 +169,20 @@ const sync = await perkos.getReputationSync("sbtc", 7n);
 if (sync?.pending) await perkos.retryReputationSync("sbtc", 7n);
 ```
 
-The candidate's fixed review window is readable through `getReviewWindow(asset)`. Evaluator
-completion/rejection is available through the exact deadline; timeout settlement is available
-only after it. Timeout payout is returned as the distinct `timeout-paid` (`u6`) status and must not
-be counted as a completed job or reputation success. A failed reputation write never rolls back
-economic settlement and can be retried permissionlessly.
+The candidate's fixed 12-burn-block review window is readable through `getReviewWindow(asset)`.
+Evaluator completion/rejection is available through the exact deadline; timeout settlement is
+available only after it. Timeout payout is returned as the distinct `timeout-paid` (`u6`) status
+and must not be counted as a completed job or reputation success. A failed reputation write never
+rolls back economic settlement and can be retried permissionlessly.
 
-For `sbtc-commerce-v2`, high-level settlement helpers also read the token pinned when the job was
-funded. Both the trait argument and exact fungible-token post-condition use that historical token,
-so rotating the contract's future funding default cannot strand an existing escrow.
+For `sbtc-commerce-v2` and `sbtc-commerce-v3`, high-level settlement helpers also read the token
+pinned when the job was funded. Both the trait argument and exact fungible-token post-condition use
+that historical token, so rotating the contract's future funding default cannot strand an existing
+escrow.
+
+The previous v3/v2 testnet generation remains supported and immutable at 144 blocks. The v4/v3
+overrides above are the current 12-block source candidate and must not be used until those exact
+contract names are deployed and source-verified on the selected network.
 
 ## Browser signer (Leather and other Stacks wallets)
 

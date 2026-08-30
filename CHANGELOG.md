@@ -6,6 +6,8 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ### Added
 
+- Explicit support for the 12-burn-block `agentic-commerce-v4` and `sbtc-commerce-v3` review
+  candidate while preserving compatibility with the immutable 144-block v3/v2 generation.
 - Candidate-aware job parsing for Bitcoin submission/review heights and the distinct
   `timeout-paid` (`u6`) terminal state.
 - Exact deny-mode STX/sBTC `settleReviewTimeout` plans and high-level client execution after the
@@ -16,6 +18,8 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ### Security
 
+- Keep published deployment defaults unchanged; v4/v3 contract selection remains an explicit,
+  same-network override that is safe only after source-verified deployment.
 - Timeout settlement reads the current escrow, provider, and job-pinned sBTC token before
   constructing a contract-principal post-condition for the exact amount and funded token.
 - Reputation retry has no asset transfer and remains deny-mode. The SDK does not interpret a

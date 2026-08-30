@@ -47,6 +47,11 @@ import type {
 } from "./types.js";
 import { assertPrincipal, parseContractId, resolveConfig, toUint } from "./validation.js";
 
+const PINNED_TOKEN_SBTC_CONTRACTS = new Set([
+  "sbtc-commerce-v2",
+  "sbtc-commerce-v3",
+]);
+
 function contractForAsset(
   contracts: { stxCommerce: ContractId; sbtcCommerce: ContractId },
   asset: PaymentAsset
@@ -487,13 +492,14 @@ export class PerkOSClient {
     jobIdInput: bigint | number | string
   ): Promise<SettleJobInput> {
     const jobId = toUint(jobIdInput, "jobId");
+    const sbtcContractName = parseContractId(
+      this.config.contracts.sbtcCommerce,
+      "contracts.sbtcCommerce",
+      this.config.network
+    ).name;
     const readsPinnedToken =
       asset === "sbtc" &&
-      parseContractId(
-        this.config.contracts.sbtcCommerce,
-        "contracts.sbtcCommerce",
-        this.config.network
-      ).name === "sbtc-commerce-v2";
+      PINNED_TOKEN_SBTC_CONTRACTS.has(sbtcContractName);
     const [job, amount] = await Promise.all([
       this.getJob(asset, jobId),
       this.getEscrowBalance(asset, jobId),

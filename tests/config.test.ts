@@ -27,16 +27,16 @@ describe("configuration", () => {
       network: "testnet",
       contracts: {
         stxCommerce:
-          "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.agentic-commerce-v3",
+          "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.agentic-commerce-v4",
         sbtcCommerce:
-          "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.sbtc-commerce-v2",
+          "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.sbtc-commerce-v3",
         reputationRegistry:
           "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.reputation-registry-v3",
       },
     });
 
-    expect(candidate.contracts.stxCommerce).toContain(".agentic-commerce-v3");
-    expect(candidate.contracts.sbtcCommerce).toContain(".sbtc-commerce-v2");
+    expect(candidate.contracts.stxCommerce).toContain(".agentic-commerce-v4");
+    expect(candidate.contracts.sbtcCommerce).toContain(".sbtc-commerce-v3");
     expect(DEFAULT_DEPLOYMENTS.testnet.stxCommerce).toContain(".agentic-commerce-v2");
   });
 

@@ -4,6 +4,17 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+## 0.5.1 - 2026-08-30
+
+### Fixed
+
+- Update only the Stacks testnet USDCx identity to the contract currently registered by Circle
+  xReserve remote domain `10003` and proven by an official successful bridge mint:
+  `ST2WK9SGBJ15RHZ33KK0KYVSXBEBHM1XDM8C96EC4.usdcx`. Mainnet remains unchanged.
+- Keep x402 and MPP challenge, intent, post-condition and verifier construction on the same exact
+  SIP-010 asset so clients cannot sign an obsolete testnet token while the facilitator expects the
+  current bridge output.
+
 ### Added
 
 - Record the source-verified v4/v3 Stacks testnet deployment under

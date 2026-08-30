@@ -14,6 +14,12 @@ Official references:
 - [Payment HTTP Authentication Scheme](https://github.com/tempoxyz/mpp-specs/blob/main/specs/core/draft-httpauth-payment-00.md)
 - [USDC charge method, including USDCx on Stacks](https://github.com/tempoxyz/mpp-specs/blob/main/specs/methods/usdc/draft-usdc-charge-00.md)
 - [OpenAPI payment discovery](https://github.com/tempoxyz/mpp-specs/blob/main/specs/extensions/draft-payment-discovery-01.md)
+- [Circle xReserve live domain registry](https://xreserve-api-testnet.circle.com/v1/info)
+
+For testnet, SDK 0.5.1 pins the token currently registered by Circle xReserve remote domain
+`10003`: `ST2WK9SGBJ15RHZ33KK0KYVSXBEBHM1XDM8C96EC4.usdcx`. The live registry and a successful
+official bridge mint are authoritative when older static documentation differs. The mainnet token
+identity is unchanged.
 
 ## Safe offline quickstart
 

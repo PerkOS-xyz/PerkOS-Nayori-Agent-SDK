@@ -180,7 +180,7 @@ describe("MPP PaymentAuth USDCx on Stacks", () => {
     expect(request).toMatchObject({
       amount: "25000",
       currency:
-        "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx::usdcx-token",
+        "ST2WK9SGBJ15RHZ33KK0KYVSXBEBHM1XDM8C96EC4.usdcx::usdcx-token",
       recipient: PAY_TO,
       externalId: quote.quoteId,
       methodDetails: {

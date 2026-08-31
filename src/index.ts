@@ -11,7 +11,7 @@ export {
   createStacksConnectPartnerSigner,
 } from "./partner.js";
 export { DEFAULT_DEPLOYMENTS, JOB_STATUS, CLARITY_ERROR_MESSAGES } from "./constants.js";
-export { resolveConfig, toUint } from "./validation.js";
+export { resolveConfig, toHash32, toUint } from "./validation.js";
 export { normalizeTxid } from "./txid.js";
 export {
   PERKOS_X402_ASSET_TRANSFER_METHOD,
@@ -111,6 +111,7 @@ export type {
 export type {
   AgentEndpoint,
   AgentRecord,
+  AppealDecisionInput,
   Amount,
   AmountLike,
   AssignProviderInput,
@@ -119,8 +120,12 @@ export type {
   ContractCallPlan,
   ContractId,
   CreateJobInput,
+  DecisionRecord,
+  DecisionSettlementInput,
   FundJobInput,
+  Hash32Input,
   JobAmountInput,
+  JobDecision,
   JobRecord,
   JobStatus,
   PaymentAsset,
@@ -132,10 +137,13 @@ export type {
   RateProviderInput,
   ReadOnlyCall,
   ReadOnlyTransport,
+  RecordDecisionInput,
   RegisterAgentInput,
   ReputationRecord,
   ReputationSyncRecord,
   ResolvedPerkOSConfig,
+  ResolveAppealInput,
+  ResolveAppealPlanInput,
   SettleJobInput,
   SignerResult,
   SpendingApproval,

@@ -1,0 +1,60 @@
+name: Promote exact main commit to QA
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Exact 40-character commit SHA already merged into main
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: qa-promotion
+  cancel-in-progress: false
+
+jobs:
+  verify-and-promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out main with complete history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Validate requested promotion
+        env:
+          RELEASE_SHA: ${{ inputs.sha }}
+        run: |
+          printf '%s' "$RELEASE_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          git fetch origin main qa
+          git cat-file -e "$RELEASE_SHA^{commit}"
+          git merge-base --is-ancestor "$RELEASE_SHA" origin/main
+          git merge-base --is-ancestor origin/qa "$RELEASE_SHA"
+
+      - name: Check out the exact release commit
+        env:
+          RELEASE_SHA: ${{ inputs.sha }}
+        run: git checkout --detach "$RELEASE_SHA"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Run release gates
+        run: |
+          npm ci
+          npm run verify
+          npm pack --dry-run
+          npm audit --audit-level=high
+
+      - name: Promote the verified SHA without force
+        env:
+          RELEASE_SHA: ${{ inputs.sha }}
+        run: git push origin "$RELEASE_SHA:refs/heads/qa"

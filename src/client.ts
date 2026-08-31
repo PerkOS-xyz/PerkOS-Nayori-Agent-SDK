@@ -2,6 +2,7 @@ import { Cl, fetchCallReadOnlyFunction } from "@stacks/transactions";
 import type { ClarityValue } from "@stacks/transactions";
 import { JOB_STATUS } from "./constants.js";
 import {
+  expectBuffer,
   expectBoolean,
   expectList,
   expectPrincipal,
@@ -20,23 +21,28 @@ import { TransactionTracker } from "./tracker.js";
 import { normalizeTxid } from "./txid.js";
 import type {
   AgentRecord,
+  AppealDecisionInput,
   AssignProviderInput,
   ConfirmationOptions,
   ConfirmedTransactionReceipt,
   ContractCallPlan,
   ContractId,
   CreateJobInput,
+  DecisionRecord,
   FundJobInput,
   JobAmountInput,
+  JobDecision,
   JobRecord,
   PaymentAsset,
   PerkOSConfig,
   RateProviderInput,
   ReadOnlyCall,
   ReadOnlyTransport,
+  RecordDecisionInput,
   RegisterAgentInput,
   ReputationRecord,
   ReputationSyncRecord,
+  ResolveAppealInput,
   SettleJobInput,
   SpendingApproval,
   SubmitWorkInput,
@@ -50,7 +56,14 @@ import { assertPrincipal, parseContractId, resolveConfig, toUint } from "./valid
 const PINNED_TOKEN_SBTC_CONTRACTS = new Set([
   "sbtc-commerce-v2",
   "sbtc-commerce-v3",
+  "sbtc-commerce-v4",
 ]);
+
+function decisionFromCode(value: bigint, context: string): JobDecision {
+  if (value === 1n) return "approve";
+  if (value === 2n) return "reject";
+  throw new PerkOSError("READ_FAILED", `${context} contains unknown decision ${value}.`);
+}
 
 function contractForAsset(
   contracts: { stxCommerce: ContractId; sbtcCommerce: ContractId },
@@ -246,6 +259,9 @@ export class PerkOSClient {
         throw new PerkOSError("READ_FAILED", `Unknown job status ${statusCode}.`);
       }
       const provider = optionalPrincipal(tuple.provider, "job.provider");
+      const appealAuthority = tuple["appeal-authority"]
+        ? expectPrincipal(tuple["appeal-authority"], "job.appeal-authority")
+        : undefined;
       const deliverable = optionalBuffer(tuple.deliverable, "job.deliverable");
       const submittedAtBurn = optionalUint(
         tuple["submitted-at-burn"],
@@ -261,6 +277,7 @@ export class PerkOSClient {
         client: expectPrincipal(tuple.client, "job.client"),
         ...(provider ? { provider } : {}),
         evaluator: expectPrincipal(tuple.evaluator, "job.evaluator"),
+        ...(appealAuthority ? { appealAuthority } : {}),
         description: expectString(tuple.description, "job.description"),
         budget: expectUint(tuple.budget, "job.budget"),
         expiredAt: expectUint(tuple["expired-at"], "job.expired-at"),
@@ -277,7 +294,9 @@ export class PerkOSClient {
         (error.details?.clarityCode === 202n ||
           error.details?.clarityCode === 302n ||
           error.details?.clarityCode === 602n ||
-          error.details?.clarityCode === 702n)
+          error.details?.clarityCode === 702n ||
+          error.details?.clarityCode === 802n ||
+          error.details?.clarityCode === 902n)
       ) {
         return null;
       }
@@ -328,6 +347,84 @@ export class PerkOSClient {
       "get-review-window"
     );
     return expectUint(value, "get-review-window");
+  }
+
+  async getAppealWindow(asset: PaymentAsset): Promise<bigint> {
+    const value = unwrapResponse(
+      await this.read(contractForAsset(this.config.contracts, asset), "get-appeal-window"),
+      "get-appeal-window"
+    );
+    return expectUint(value, "get-appeal-window");
+  }
+
+  async getDecision(
+    asset: PaymentAsset,
+    jobIdInput: bigint | number | string
+  ): Promise<DecisionRecord | null> {
+    const jobId = toUint(jobIdInput, "jobId");
+    try {
+      const value = unwrapResponse(
+        await this.read(contractForAsset(this.config.contracts, asset), "get-decision", [
+          Cl.uint(jobId),
+        ]),
+        "get-decision"
+      );
+      const tuple = expectTuple(value, "get-decision");
+      const finalDecisionCode = optionalUint(
+        tuple["final-decision"],
+        "decision.final-decision"
+      );
+      const appealedBy = optionalPrincipal(tuple["appealed-by"], "decision.appealed-by");
+      const appealEvidenceHash = optionalBuffer(
+        tuple["appeal-evidence-hash"],
+        "decision.appeal-evidence-hash"
+      );
+      const resolutionDeadline = optionalUint(
+        tuple["resolution-deadline"],
+        "decision.resolution-deadline"
+      );
+      const resolutionHash = optionalBuffer(
+        tuple["resolution-hash"],
+        "decision.resolution-hash"
+      );
+      const finalizedBy = optionalPrincipal(tuple["finalized-by"], "decision.finalized-by");
+      const finalizedAtBurn = optionalUint(
+        tuple["finalized-at-burn"],
+        "decision.finalized-at-burn"
+      );
+      return {
+        jobId,
+        originalDecision: decisionFromCode(
+          expectUint(tuple["original-decision"], "decision.original-decision"),
+          "decision.original-decision"
+        ),
+        ...(finalDecisionCode !== undefined
+          ? { finalDecision: decisionFromCode(finalDecisionCode, "decision.final-decision") }
+          : {}),
+        evidenceHash: expectBuffer(tuple["evidence-hash"], "decision.evidence-hash"),
+        explanationHash: expectBuffer(
+          tuple["explanation-hash"],
+          "decision.explanation-hash"
+        ),
+        decidedAtBurn: expectUint(tuple["decided-at-burn"], "decision.decided-at-burn"),
+        appealDeadline: expectUint(tuple["appeal-deadline"], "decision.appeal-deadline"),
+        ...(appealedBy ? { appealedBy } : {}),
+        ...(appealEvidenceHash ? { appealEvidenceHash } : {}),
+        ...(resolutionDeadline !== undefined ? { resolutionDeadline } : {}),
+        ...(resolutionHash ? { resolutionHash } : {}),
+        ...(finalizedBy ? { finalizedBy } : {}),
+        ...(finalizedAtBurn !== undefined ? { finalizedAtBurn } : {}),
+      };
+    } catch (error) {
+      if (
+        error instanceof PerkOSError &&
+        error.code === "CONTRACT_ERROR" &&
+        (error.details?.clarityCode === 829n || error.details?.clarityCode === 930n)
+      ) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   async getReputationSync(
@@ -471,6 +568,61 @@ export class PerkOSClient {
     return this.execute(this.transactions.settleReviewTimeout(settlement));
   }
 
+  recordDecision(input: RecordDecisionInput): Promise<TransactionReceipt> {
+    return this.execute(this.transactions.recordDecision(input));
+  }
+
+  appealDecision(input: AppealDecisionInput): Promise<TransactionReceipt> {
+    return this.execute(this.transactions.appealDecision(input));
+  }
+
+  async finalizeDecision(
+    asset: PaymentAsset,
+    jobIdInput: bigint | number | string
+  ): Promise<TransactionReceipt> {
+    const decision = await this.getDecision(asset, jobIdInput);
+    if (!decision) {
+      throw new PerkOSError("INPUT_INVALID", `Job ${jobIdInput} has no recorded decision.`);
+    }
+    const settlement = await this.decisionSettlementInput(
+      asset,
+      jobIdInput,
+      decision.originalDecision
+    );
+    return this.execute(this.transactions.finalizeDecision(settlement));
+  }
+
+  async resolveAppeal(input: ResolveAppealInput): Promise<TransactionReceipt> {
+    const settlement = await this.decisionSettlementInput(
+      input.asset,
+      input.jobId,
+      input.decision
+    );
+    return this.execute(
+      this.transactions.resolveAppeal({
+        ...settlement,
+        decision: input.decision,
+        resolutionHash: input.resolutionHash,
+      })
+    );
+  }
+
+  async settleAppealTimeout(
+    asset: PaymentAsset,
+    jobIdInput: bigint | number | string
+  ): Promise<TransactionReceipt> {
+    const decision = await this.getDecision(asset, jobIdInput);
+    if (!decision) {
+      throw new PerkOSError("INPUT_INVALID", `Job ${jobIdInput} has no recorded decision.`);
+    }
+    const settlement = await this.decisionSettlementInput(
+      asset,
+      jobIdInput,
+      decision.originalDecision
+    );
+    return this.execute(this.transactions.settleAppealTimeout(settlement));
+  }
+
   retryReputationSync(
     asset: PaymentAsset,
     jobIdInput: bigint | number | string
@@ -521,6 +673,39 @@ export class PerkOSClient {
         `Job ${jobId} has no provider to receive settlement.`
       );
     }
+    return {
+      asset,
+      jobId,
+      amount,
+      recipient,
+      ...(sbtcToken ? { sbtcToken } : {}),
+    };
+  }
+
+  private async decisionSettlementInput(
+    asset: PaymentAsset,
+    jobIdInput: bigint | number | string,
+    decision: JobDecision
+  ): Promise<SettleJobInput> {
+    const jobId = toUint(jobIdInput, "jobId");
+    const [job, amount] = await Promise.all([
+      this.getJob(asset, jobId),
+      this.getEscrowBalance(asset, jobId),
+    ]);
+    if (!job) {
+      throw new PerkOSError("INPUT_INVALID", `Job ${jobId} does not exist.`);
+    }
+    const recipient = decision === "approve" ? job.provider : job.client;
+    if (!recipient) {
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        `Job ${jobId} has no provider to receive an approved settlement.`
+      );
+    }
+    const sbtcToken =
+      asset === "sbtc" && amount > 0n
+        ? await this.getJobPaymentToken(jobId)
+        : undefined;
     return {
       asset,
       jobId,

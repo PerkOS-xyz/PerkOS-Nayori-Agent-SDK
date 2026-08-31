@@ -158,6 +158,85 @@ describe("transaction builders", () => {
     });
   });
 
+  it("builds autonomous decision, appeal, and exact settlement plans", () => {
+    const autonomous = new PerkOSTransactionBuilder(
+      resolveConfig({
+        network: "mainnet",
+        contracts: {
+          stxCommerce:
+            "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.agentic-commerce-v5",
+          sbtcCommerce:
+            "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.sbtc-commerce-v4",
+        },
+      })
+    );
+    const record = autonomous.recordDecision({
+      asset: "sbtc",
+      jobId: 7n,
+      decision: "approve",
+      evidenceHash: "11".repeat(32),
+      explanationHash: `0x${"22".repeat(32)}`,
+    });
+    const appeal = autonomous.appealDecision({
+      asset: "stx",
+      jobId: 7n,
+      evidenceHash: new Uint8Array(32).fill(3),
+    });
+    const finalize = autonomous.finalizeDecision({
+      asset: "sbtc",
+      jobId: 7n,
+      amount: 25_000n,
+      recipient: PROVIDER,
+      sbtcToken: PINNED_SBTC,
+    });
+    const resolve = autonomous.resolveAppeal({
+      asset: "stx",
+      jobId: 8n,
+      amount: 1_500_000n,
+      recipient: CLIENT,
+      decision: "reject",
+      resolutionHash: "44".repeat(32),
+    });
+
+    expect(record.functionName).toBe("record-decision");
+    expect(record.functionArgs).toHaveLength(4);
+    expect(record.functionArgs[2]?.type).toBe(ClarityType.Buffer);
+    expect(record.postConditions).toEqual([]);
+    expect(appeal.functionName).toBe("appeal-decision");
+    expect(appeal.functionArgs).toHaveLength(2);
+    expect(finalize.functionArgs).toHaveLength(2);
+    expect(finalize.postConditions[0]).toMatchObject({
+      address: autonomous.config.contracts.sbtcCommerce,
+      amount: "25000",
+      asset: `${PINNED_SBTC}::sbtc-token`,
+    });
+    expect(resolve.functionName).toBe("resolve-appeal");
+    expect(resolve.functionArgs).toHaveLength(3);
+    expect(resolve.postConditions[0]).toMatchObject({
+      address: autonomous.config.contracts.stxCommerce,
+      amount: "1500000",
+    });
+  });
+
+  it("rejects zero or malformed autonomous evidence digests", () => {
+    expect(() =>
+      candidateBuilder.recordDecision({
+        asset: "stx",
+        jobId: 1n,
+        decision: "reject",
+        evidenceHash: "00".repeat(32),
+        explanationHash: "11".repeat(32),
+      })
+    ).toThrow("non-zero 32-byte digest");
+    expect(() =>
+      candidateBuilder.appealDecision({
+        asset: "stx",
+        jobId: 1n,
+        evidenceHash: "abcd",
+      })
+    ).toThrow("exactly 32 bytes");
+  });
+
   it("serializes the complete STX and sBTC lifecycle", () => {
     const create = builder.createJob({
       asset: "sbtc",

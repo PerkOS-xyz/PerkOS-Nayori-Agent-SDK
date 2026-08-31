@@ -11,6 +11,7 @@ import { PerkOSClient, PerkOSError } from "../src/index.js";
 const CLIENT = "SP1VY24ADP27HERH4XMQTK44XB9QX4ZASPMPJKPVF";
 const PROVIDER = "SP3DQCVZ26XCDGZFYB4TXJC6TMMZAVXZTER1DP8HV";
 const EVALUATOR = "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE";
+const APPEAL_AUTHORITY = "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH";
 const PINNED_SBTC =
   "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.historical-sbtc";
 const BROADCAST_TXID = `0x${"ab".repeat(32)}`;
@@ -22,6 +23,7 @@ function jobResponse(status = 2n) {
       client: Cl.principal(CLIENT),
       provider: Cl.some(Cl.principal(PROVIDER)),
       evaluator: Cl.principal(EVALUATOR),
+      "appeal-authority": Cl.principal(APPEAL_AUTHORITY),
       description: Cl.stringAscii("Research job"),
       budget: Cl.uint(25_000n),
       "expired-at": Cl.uint(5_000_000n),
@@ -29,6 +31,25 @@ function jobResponse(status = 2n) {
       deliverable: Cl.some(Cl.bufferFromAscii("ipfs:bafy")),
       "submitted-at-burn": Cl.some(Cl.uint(900_000n)),
       "review-deadline": Cl.some(Cl.uint(900_144n)),
+    })
+  );
+}
+
+function decisionResponse() {
+  return Cl.ok(
+    Cl.tuple({
+      "original-decision": Cl.uint(1n),
+      "final-decision": Cl.none(),
+      "evidence-hash": Cl.buffer(new Uint8Array(32).fill(0x11)),
+      "explanation-hash": Cl.buffer(new Uint8Array(32).fill(0x22)),
+      "decided-at-burn": Cl.uint(900_010n),
+      "appeal-deadline": Cl.uint(900_154n),
+      "appealed-by": Cl.none(),
+      "appeal-evidence-hash": Cl.none(),
+      "resolution-deadline": Cl.none(),
+      "resolution-hash": Cl.none(),
+      "finalized-by": Cl.none(),
+      "finalized-at-burn": Cl.none(),
     })
   );
 }
@@ -95,6 +116,7 @@ describe("PerkOSClient", () => {
     expect(await client.getJob("sbtc", 7n)).toMatchObject({
       id: 7n,
       provider: PROVIDER,
+      appealAuthority: APPEAL_AUTHORITY,
       status: "submitted",
       budget: 25_000n,
       submittedAtBurn: 900_000n,
@@ -113,6 +135,72 @@ describe("PerkOSClient", () => {
       outcomeCode: 1n,
       pending: true,
       lastError: 501n,
+    });
+  });
+
+  it("reads autonomous decisions and derives exact sBTC finalization safely", async () => {
+    const signedPlans: ContractCallPlan[] = [];
+    const transport: ReadOnlyTransport = async (call) => {
+      switch (call.functionName) {
+        case "get-job":
+          return jobResponse(7n);
+        case "get-decision":
+          return decisionResponse();
+        case "get-appeal-window":
+          return Cl.ok(Cl.uint(144n));
+        case "get-escrow-balance":
+          return Cl.ok(Cl.uint(25_000n));
+        case "get-job-payment-token":
+          return Cl.ok(
+            Cl.contractPrincipal(
+              "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH",
+              "historical-sbtc"
+            )
+          );
+        default:
+          throw new Error(`Unexpected function ${call.functionName}`);
+      }
+    };
+    const client = new PerkOSClient({
+      network: "mainnet",
+      readOnlyTransport: transport,
+      signer: {
+        getAddress: async () => CLIENT,
+        signAndBroadcast: async (plan) => {
+          signedPlans.push(plan);
+          return { txid: SETTLED_TXID };
+        },
+      },
+      contracts: {
+        stxCommerce:
+          "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.agentic-commerce-v5",
+        sbtcCommerce:
+          "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.sbtc-commerce-v4",
+      },
+    });
+
+    await expect(client.getAppealWindow("sbtc")).resolves.toBe(144n);
+    await expect(client.getDecision("sbtc", 7n)).resolves.toMatchObject({
+      originalDecision: "approve",
+      appealDeadline: 900_154n,
+      evidenceHash: "11".repeat(32),
+    });
+    await client.finalizeDecision("sbtc", 7n);
+
+    expect(signedPlans[0]).toMatchObject({
+      functionName: "finalize-decision",
+      postConditionMode: "deny",
+      intent: {
+        operation: "finalize-decision",
+        recipient: PROVIDER,
+        amount: 25_000n,
+      },
+    });
+    expect(signedPlans[0]?.functionArgs).toHaveLength(2);
+    expect(signedPlans[0]?.postConditions[0]).toMatchObject({
+      address: client.config.contracts.sbtcCommerce,
+      amount: "25000",
+      asset: `${PINNED_SBTC}::sbtc-token`,
     });
   });
 

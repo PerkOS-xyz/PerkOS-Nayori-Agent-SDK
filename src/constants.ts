@@ -6,18 +6,18 @@ const TESTNET_DEPLOYER = "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5";
 export const DEFAULT_DEPLOYMENTS: Readonly<Record<PerkOSNetwork, PerkOSContracts>> = {
   mainnet: {
     agentRegistry: `${MAINNET_DEPLOYER}.agent-registry`,
-    stxCommerce: `${MAINNET_DEPLOYER}.agentic-commerce-v2`,
-    sbtcCommerce: `${MAINNET_DEPLOYER}.sbtc-commerce`,
-    reputationRegistry: `${MAINNET_DEPLOYER}.reputation-registry-v2`,
+    stxCommerce: `${MAINNET_DEPLOYER}.agentic-commerce-v4`,
+    sbtcCommerce: `${MAINNET_DEPLOYER}.sbtc-commerce-v3`,
+    reputationRegistry: `${MAINNET_DEPLOYER}.reputation-registry-v3`,
     sbtcToken: "SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token",
     sbtcAssetName: "sbtc-token",
   },
   testnet: {
     agentRegistry: `${TESTNET_DEPLOYER}.agent-registry`,
-    stxCommerce: `${TESTNET_DEPLOYER}.agentic-commerce-v2`,
-    sbtcCommerce: `${TESTNET_DEPLOYER}.sbtc-commerce`,
-    reputationRegistry: `${TESTNET_DEPLOYER}.reputation-registry-v2`,
-    sbtcToken: "ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT.sbtc-token",
+    stxCommerce: `${TESTNET_DEPLOYER}.agentic-commerce-v4`,
+    sbtcCommerce: `${TESTNET_DEPLOYER}.sbtc-commerce-v3`,
+    reputationRegistry: `${TESTNET_DEPLOYER}.reputation-registry-v3`,
+    sbtcToken: "SN3VMHXEN64ZZF71JQ5VESXDWTR301XTTXGF4J8F1.sbtc-token",
     sbtcAssetName: "sbtc-token",
   },
 };

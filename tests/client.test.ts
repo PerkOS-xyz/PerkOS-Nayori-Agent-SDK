@@ -207,10 +207,19 @@ describe("PerkOSClient", () => {
   });
 
   it("reads current escrow before signing settlement", async () => {
-    const transport: ReadOnlyTransport = async (call) =>
-      call.functionName === "get-job"
-        ? jobResponse()
-        : Cl.ok(Cl.uint(25_000n));
+    const transport: ReadOnlyTransport = async (call) => {
+      if (call.functionName === "get-job") return jobResponse();
+      if (call.functionName === "get-escrow-balance") return Cl.ok(Cl.uint(25_000n));
+      if (call.functionName === "get-job-payment-token") {
+        return Cl.ok(
+          Cl.contractPrincipal(
+            "SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4",
+            "sbtc-token"
+          )
+        );
+      }
+      throw new Error(`Unexpected function ${call.functionName}`);
+    };
     let signedPlan: ContractCallPlan | undefined;
     const signer: PerkOSSigner = {
       getAddress: async () => EVALUATOR,

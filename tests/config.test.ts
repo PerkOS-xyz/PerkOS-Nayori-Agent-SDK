@@ -6,8 +6,12 @@ describe("configuration", () => {
     const config = resolveConfig({ network: "mainnet" });
 
     expect(config.contracts).toEqual(DEFAULT_DEPLOYMENTS.mainnet);
-    expect(config.contracts.stxCommerce).toContain(".agentic-commerce-v2");
-    expect(config.contracts.sbtcCommerce).toContain(".sbtc-commerce");
+    expect(config.contracts.stxCommerce).toContain(".agentic-commerce-v4");
+    expect(config.contracts.sbtcCommerce).toContain(".sbtc-commerce-v3");
+    expect(config.contracts.reputationRegistry).toContain(".reputation-registry-v3");
+    expect(config.contracts.sbtcToken).toBe(
+      "SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token"
+    );
   });
 
   it("rejects a contract override from the wrong network", () => {
@@ -22,22 +26,26 @@ describe("configuration", () => {
     ).toThrowError(PerkOSError);
   });
 
-  it("accepts explicit same-network versioned contract overrides without changing defaults", () => {
-    const candidate = resolveConfig({
+  it("accepts same-network historical overrides without mutating active defaults", () => {
+    const historical = resolveConfig({
       network: "testnet",
       contracts: {
         stxCommerce:
-          "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.agentic-commerce-v4",
+          "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.agentic-commerce-v3",
         sbtcCommerce:
-          "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.sbtc-commerce-v3",
+          "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.sbtc-commerce-v2",
         reputationRegistry:
           "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.reputation-registry-v3",
       },
     });
 
-    expect(candidate.contracts.stxCommerce).toContain(".agentic-commerce-v4");
-    expect(candidate.contracts.sbtcCommerce).toContain(".sbtc-commerce-v3");
-    expect(DEFAULT_DEPLOYMENTS.testnet.stxCommerce).toContain(".agentic-commerce-v2");
+    expect(historical.contracts.stxCommerce).toContain(".agentic-commerce-v3");
+    expect(historical.contracts.sbtcCommerce).toContain(".sbtc-commerce-v2");
+    expect(DEFAULT_DEPLOYMENTS.testnet.stxCommerce).toContain(".agentic-commerce-v4");
+    expect(DEFAULT_DEPLOYMENTS.testnet.sbtcCommerce).toContain(".sbtc-commerce-v3");
+    expect(DEFAULT_DEPLOYMENTS.testnet.sbtcToken).toBe(
+      "SN3VMHXEN64ZZF71JQ5VESXDWTR301XTTXGF4J8F1.sbtc-token"
+    );
   });
 
   it("normalizes a custom API URL", () => {

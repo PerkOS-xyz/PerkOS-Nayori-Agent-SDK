@@ -215,6 +215,9 @@ describe("Nayori direct x402 asset registry", () => {
     expect(NAYORI_X402_DIRECT_ASSETS.testnet.usdcx.wireAsset).toBe(
       "ST2WK9SGBJ15RHZ33KK0KYVSXBEBHM1XDM8C96EC4.usdcx"
     );
+    expect(NAYORI_X402_DIRECT_ASSETS.testnet.sbtc.wireAsset).toBe(
+      "SN3VMHXEN64ZZF71JQ5VESXDWTR301XTTXGF4J8F1.sbtc-token"
+    );
   });
 
   it("rejects unknown assets instead of falling back to STX", () => {
@@ -244,7 +247,7 @@ describe("Nayori direct x402 quote binding", () => {
     expect(quote.bodySha256).toBe(
       "97b09ced6af0c2a313986d6f6eb9a096e726e10c6aeb3f34f049fbeddbb1d712"
     );
-    expect(fingerprint).toBe("ny1_Do4PrCmeo_hVKPXNkfZNJphbrN8");
+    expect(fingerprint).toBe("ny1_c6yugazDcIZD4EOIeDLUGRjPjeo");
     expect(new TextEncoder().encode(fingerprint)).toHaveLength(31);
   });
 

@@ -149,15 +149,15 @@ and `sbtc-commerce-v3`, the client also reads the job-pinned token and uses it i
 fungible-token post-condition; a later default-token rotation cannot redirect or strand an
 existing escrow.
 
-The current v4/v3 candidate records a fixed 12 Bitcoin burn-block review deadline at submission.
+The active v4/v3 generation records a fixed 12 Bitcoin burn-block review deadline at submission.
 The immutable earlier v3/v2 testnet generation remains supported at 144 blocks. Through the
 deadline, the evaluator remains the only completion/rejection authority. After it, any principal
 may submit `settle-review-timeout`; the SDK treats the result as `timeout-paid`, not completion.
 Reputation synchronization has its own durable read record and deny-mode retry plan so registry
 unavailability never expands payment authority or rolls back the payout.
 
-Versioned contract IDs are explicit configuration overrides. Default deployments do not change
-until a public-network candidate has source verification and release approval.
+Versioned v4/v3/v3 contract IDs are the defaults on both networks. Historical generations remain
+available through explicit same-network overrides.
 
 ## Future adapters
 

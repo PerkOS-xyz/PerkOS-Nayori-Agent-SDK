@@ -590,6 +590,15 @@ See [Architecture](docs/ARCHITECTURE.md), [x402 payments](docs/X402_PAYMENTS.md)
 [Security](SECURITY.md) for the trust boundaries and
 responsible disclosure process.
 
+## QA promotion
+
+`main` is the canonical integration branch. The `Promote exact main commit to QA` workflow accepts
+only a full commit SHA already contained in `main`, requires a fast-forward from the current `qa`
+branch, reruns verification, package inspection and dependency audit, and then pushes that exact
+SHA without force. The protected branch must grant bypass only to the official GitHub Actions app
+before the first promotion; administrator enforcement must remain enabled. QA consumes an exact
+commit or tarball and never publishes npm as a side effect.
+
 ## Development
 
 ```bash

@@ -16,7 +16,7 @@ Official references:
 - [OpenAPI payment discovery](https://github.com/tempoxyz/mpp-specs/blob/main/specs/extensions/draft-payment-discovery-01.md)
 - [Circle xReserve live domain registry](https://xreserve-api-testnet.circle.com/v1/info)
 
-For testnet, SDK 0.5.1 pins the token currently registered by Circle xReserve remote domain
+For testnet, SDK 0.5.1 and later pin the token currently registered by Circle xReserve remote domain
 `10003`: `ST2WK9SGBJ15RHZ33KK0KYVSXBEBHM1XDM8C96EC4.usdcx`. The live registry and a successful
 official bridge mint are authoritative when older static documentation differs. The mainnet token
 identity is unchanged.

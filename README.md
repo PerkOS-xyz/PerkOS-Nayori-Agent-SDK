@@ -9,11 +9,11 @@ This repository is the continuation of `PerkOS-xyz/PerkOS-Agent-SDK`, renamed to
 public SDK with the Nayori product identity. The npm package remains `@perkos/agent-sdk` and the
 complete Git history, releases, issues, and pull requests are preserved.
 
-> Status: 0.5.1 developer release. Read clients, transaction builders, browser and headless signer
+> Status: 0.6.0 release candidate. Read clients, transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
-> implemented. The x402 v2 client and Stacks facilitator foundations are implemented; this release
-> adds wallet-linked OAuth and MCP support for the planned invite-only testnet pilot. Hosted rollout,
-> external review and adoption evidence remain before Milestone 2 completion. The direct x402
+> implemented. The x402 v2 client and Stacks facilitator foundations are implemented, with
+> wallet-linked OAuth and MCP support for the invite-only testnet pilot. The hosted testnet rollout
+> is live; external review and independently attributable adoption evidence remain open. The direct x402
 > profile includes request-bound pure verification
 > and payer-side intent, policy, Leather, and remote-signer foundations for STX, sBTC, and USDCx.
 > The SDK also implements the MPP PaymentAuth `usdc`/`charge` Stacks profile for direct USDCx,
@@ -52,8 +52,8 @@ the official v2 `PAYMENT-REQUIRED` header for an existing PerkOS escrow job:
 npm run quickstart:x402
 ```
 
-The facilitator example uses public Hiro v3 transaction and event data to inspect the historical
-M1 mainnet funding transaction. It proves the verifier fails closed when that otherwise matching
+The facilitator example uses public Hiro v3 transaction and event data to inspect a historical
+mainnet funding transaction. It proves the verifier fails closed when that otherwise matching
 proof is outside its payment window; it does not write replay state or submit a transaction:
 
 ```bash
@@ -138,23 +138,16 @@ Settlement helpers read the job and escrow balance before building exact contrac
 post-conditions. This protects both wallet-originated and headless transactions from transferring
 more than the job requires.
 
-## Versioned escrow candidate
+## Active versioned escrow
 
-The SDK can target the versioned contract interfaces introduced for Nayori's pre-launch security
-review, but the published mainnet and testnet defaults remain on the currently verified contracts.
-Do not override them until the chosen network has source-verified candidate deployments.
+Version `0.6.0` selects Nayori's source-verified v4/v3/v3 generation by default on mainnet and
+testnet. A normal client therefore needs no contract override:
 
 ```ts
-import { PerkOSClient, type ContractId } from "@perkos/agent-sdk";
+import { PerkOSClient } from "@perkos/agent-sdk";
 
-const deployer = "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5";
 const perkos = new PerkOSClient({
-  network: "testnet",
-  contracts: {
-    stxCommerce: `${deployer}.agentic-commerce-v4` as ContractId,
-    sbtcCommerce: `${deployer}.sbtc-commerce-v3` as ContractId,
-    reputationRegistry: `${deployer}.reputation-registry-v3` as ContractId,
-  },
+  network: "mainnet",
   signer,
 });
 
@@ -169,7 +162,7 @@ const sync = await perkos.getReputationSync("sbtc", 7n);
 if (sync?.pending) await perkos.retryReputationSync("sbtc", 7n);
 ```
 
-The candidate's fixed 12-burn-block review window is readable through `getReviewWindow(asset)`.
+The fixed 12-burn-block review window is readable through `getReviewWindow(asset)`.
 Evaluator completion/rejection is available through the exact deadline; timeout settlement is
 available only after it. Timeout payout is returned as the distinct `timeout-paid` (`u6`) status
 and must not be counted as a completed job or reputation success. A failed reputation write never
@@ -180,17 +173,22 @@ pinned when the job was funded. Both the trait argument and exact fungible-token
 that historical token, so rotating the contract's future funding default cannot strand an existing
 escrow.
 
-The previous v3/v2 testnet generation remains supported and immutable at 144 blocks. The v4/v3
-overrides above are deployed and source-verified only on Stacks testnet from contracts/Web merge
-`b15544d601bd4e49610be854f7ad33a0af90c0a7`. Controlled STX and official PoX-5 sBTC complete paths
-pass 27/27 and 30/30. The real timeout path passes preparation 20/20, settlement 12/12 and
+The previous v3/v2 testnet generation remains supported through explicit overrides and immutable
+at 144 blocks. The active v4/v3/v3 generation first passed on Stacks testnet. Controlled STX and
+official PoX-5 sBTC complete paths pass 27/27 and 30/30. The real timeout path passes preparation
+20/20, settlement 12/12 and
 separate public-state verification 10/10. Job `u2` settled at burn `11290` in
 [`0x06537111…15bb9`](https://explorer.hiro.so/txid/0x06537111ef6c75d3c5d750154f97a3b4a0c233a84639583f7af18b2386915bb9?chain=testnet),
 ending in `timeout-paid` (`u6`) with zero escrow, one exact 1,000-atomic-unit sBTC payout and no
 completion, reputation or rating credit. The frozen evidence is documented in the
 [contracts/Web repository](https://github.com/PerkOS-xyz/PerkOS-Nayori/blob/main/docs/TESTNET_SECURITY_EVIDENCE.md).
-Keep the explicit overrides above: published package defaults remain unchanged until the external
-review and release gate close.
+
+The same exact sources are live on mainnet under
+`SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH`. Deploy/configuration confirmed in blocks
+8885885–8885898. A guarded internal mainnet sBTC job then passed 26/26 checks for exactly 100
+atomic units, ending in `completed` (`u3`) with escrow zero, exact payout, synchronized reputation
+and persisted rating. Those actors are team-operated release evidence, not external adoption,
+non-team wallet activity or revenue. The independent external security review remains open.
 
 ## Browser signer (Leather and other Stacks wallets)
 
@@ -520,8 +518,8 @@ or facilitator-submitted signed transaction.
 - Set a budget and fund escrow.
 - Assign a provider and submit a deliverable.
 - Complete, reject, or expire a job.
-- Settle an overdue candidate review to the provider with exact post-conditions.
-- Read and retry durable candidate reputation synchronization.
+- Settle an overdue review to the provider with exact post-conditions.
+- Read and retry durable reputation synchronization.
 - Rate a provider and read reputation.
 
 ## Security model
@@ -545,8 +543,8 @@ or facilitator-submitted signed transaction.
 - OAuth client secrets and access tokens are application secrets. The SDK returns them to the
   caller but does not persist, log or refresh them automatically.
 
-This package has not yet completed the external security review required for PerkOS Milestone 2.
-Do not treat the developer release as audited software.
+The independent external security review remains open. Do not treat this release candidate as
+audited software.
 
 See [Architecture](docs/ARCHITECTURE.md), [x402 payments](docs/X402_PAYMENTS.md),
 [MPP payments](docs/MPP_PAYMENTS.md), [Partner pilot](docs/PARTNER_PILOT.md) and

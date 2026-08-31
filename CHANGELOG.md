@@ -4,6 +4,35 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+## 0.6.0 - 2026-08-31
+
+### Changed
+
+- Promote the source-verified active defaults on both networks to `agentic-commerce-v4`,
+  `sbtc-commerce-v3` and `reputation-registry-v3`.
+- Pin the current official PoX-5 testnet sBTC principal
+  `SN3VMHXEN64ZZF71JQ5VESXDWTR301XTTXGF4J8F1.sbtc-token` in both escrow configuration and the
+  direct x402 asset registry; mainnet remains canonical `SM3VD...sbtc-token`.
+- Update onboarding and architecture documentation so normal v4/v3/v3 use no longer requires
+  explicit overrides. Historical same-network deployments remain configurable.
+
+### Evidence
+
+- Record the mainnet deploy/configuration confirmation in blocks 8885885–8885898 from exact
+  contracts/Web merge `670d23abe78051cfb3963228650fed5089d6827c`.
+- Record the guarded internal mainnet sBTC lifecycle from exact merge
+  `8782e547343deccf7477bc9c293987a3757d6d30`: PASS 26/26 for job `u1`, terminal `u3`, escrow
+  zero, exact 100-atomic-unit payout, successful reputation synchronization and persisted rating.
+- Keep team-operated release evidence explicitly separate from external adoption, non-team wallet
+  usage and revenue.
+
+### Security
+
+- Continue reading the live escrow and per-job pinned sBTC token before every versioned settlement;
+  exact deny-mode post-conditions remain mandatory.
+- Mainnet hosted x402/MPP settlement and npm publication remain separate release gates. The
+  independent external security review remains open.
+
 ## 0.5.1 - 2026-08-30
 
 ### Fixed

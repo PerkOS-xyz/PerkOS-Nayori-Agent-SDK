@@ -2,16 +2,21 @@ import { Cl, Pc } from "@stacks/transactions";
 import type { ClarityValue, PostCondition } from "@stacks/transactions";
 import { PerkOSError } from "./errors.js";
 import type {
+  AppealDecisionInput,
   AssignProviderInput,
   ContractCallPlan,
   ContractId,
   CreateJobInput,
+  DecisionSettlementInput,
   FundJobInput,
   JobAmountInput,
+  JobDecision,
   PaymentAsset,
   RateProviderInput,
+  RecordDecisionInput,
   RegisterAgentInput,
   ResolvedPerkOSConfig,
+  ResolveAppealPlanInput,
   SettleJobInput,
   SubmitWorkInput,
   UpdateAgentInput,
@@ -20,6 +25,7 @@ import {
   assertAscii,
   assertPrincipal,
   parseContractId,
+  toHash32,
   toUint,
 } from "./validation.js";
 
@@ -95,6 +101,10 @@ function deliverableBuffer(value: string | Uint8Array): Uint8Array {
     assertAscii(value, "deliverable", 64);
   }
   return bytes;
+}
+
+function decisionCode(decision: JobDecision): bigint {
+  return decision === "approve" ? 1n : 2n;
 }
 
 export class PerkOSTransactionBuilder {
@@ -273,6 +283,56 @@ export class PerkOSTransactionBuilder {
     return this.settlement("settle-review-timeout", input);
   }
 
+  recordDecision(input: RecordDecisionInput): ContractCallPlan {
+    const jobId = toUint(input.jobId, "jobId");
+    return plan(
+      this.config,
+      commerceContract(this.config, input.asset),
+      "record-decision",
+      [
+        Cl.uint(jobId),
+        Cl.uint(decisionCode(input.decision)),
+        Cl.buffer(toHash32(input.evidenceHash, "evidenceHash")),
+        Cl.buffer(toHash32(input.explanationHash, "explanationHash")),
+      ],
+      { operation: "record-decision", asset: input.asset, jobId }
+    );
+  }
+
+  appealDecision(input: AppealDecisionInput): ContractCallPlan {
+    const jobId = toUint(input.jobId, "jobId");
+    return plan(
+      this.config,
+      commerceContract(this.config, input.asset),
+      "appeal-decision",
+      [
+        Cl.uint(jobId),
+        Cl.buffer(toHash32(input.evidenceHash, "evidenceHash")),
+      ],
+      { operation: "appeal-decision", asset: input.asset, jobId }
+    );
+  }
+
+  finalizeDecision(input: DecisionSettlementInput): ContractCallPlan {
+    return this.decisionSettlement("finalize-decision", input, [
+      Cl.uint(toUint(input.jobId, "jobId")),
+    ]);
+  }
+
+  resolveAppeal(input: ResolveAppealPlanInput): ContractCallPlan {
+    return this.decisionSettlement("resolve-appeal", input, [
+      Cl.uint(toUint(input.jobId, "jobId")),
+      Cl.uint(decisionCode(input.decision)),
+      Cl.buffer(toHash32(input.resolutionHash, "resolutionHash")),
+    ]);
+  }
+
+  settleAppealTimeout(input: DecisionSettlementInput): ContractCallPlan {
+    return this.decisionSettlement("settle-appeal-timeout", input, [
+      Cl.uint(toUint(input.jobId, "jobId")),
+    ]);
+  }
+
   retryReputationSync(
     asset: PaymentAsset,
     jobIdInput: bigint | number | string
@@ -300,6 +360,40 @@ export class PerkOSTransactionBuilder {
       "rate-provider",
       [Cl.uint(jobId), Cl.uint(score), Cl.stringAscii(input.comment)],
       { operation: "rate-provider", asset: input.asset, jobId }
+    );
+  }
+
+  private decisionSettlement(
+    operation: "finalize-decision" | "resolve-appeal" | "settle-appeal-timeout",
+    input: DecisionSettlementInput,
+    functionArgs: readonly ClarityValue[]
+  ): ContractCallPlan {
+    const jobId = toUint(input.jobId, "jobId");
+    const amount = toUint(input.amount, "amount", true);
+    assertPrincipal(input.recipient, "recipient", this.config.network);
+    const contract = commerceContract(this.config, input.asset);
+    const sbtcToken =
+      input.asset === "sbtc"
+        ? input.sbtcToken ?? this.config.contracts.sbtcToken
+        : undefined;
+    if (sbtcToken) parseContractId(sbtcToken, "sbtcToken", this.config.network);
+    const postConditions =
+      amount > 0n
+        ? [exactTransfer(this.config, input.asset, contract, amount, sbtcToken)]
+        : [];
+    return plan(
+      this.config,
+      contract,
+      operation,
+      escrowArgs(this.config, input.asset, functionArgs, sbtcToken),
+      {
+        operation,
+        asset: input.asset,
+        amount,
+        jobId,
+        recipient: input.recipient,
+      },
+      postConditions
     );
   }
 

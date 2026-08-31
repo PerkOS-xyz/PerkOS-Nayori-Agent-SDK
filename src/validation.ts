@@ -3,6 +3,7 @@ import { PerkOSError } from "./errors.js";
 import type {
   AmountLike,
   ContractId,
+  Hash32Input,
   PerkOSContracts,
   PerkOSNetwork,
   ResolvedPerkOSConfig,
@@ -36,6 +37,33 @@ export function toUint(value: AmountLike, field: string, allowZero = false): big
     );
   }
   return parsed;
+}
+
+export function toHash32(value: Hash32Input, field: string): Uint8Array {
+  let bytes: Uint8Array;
+  if (typeof value === "string") {
+    const normalized = value.startsWith("0x") ? value.slice(2) : value;
+    if (!/^[0-9a-fA-F]{64}$/.test(normalized)) {
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        `${field} must be exactly 32 bytes encoded as hexadecimal.`,
+        { field }
+      );
+    }
+    bytes = Uint8Array.from(
+      normalized.match(/.{2}/g)!.map((byte) => Number.parseInt(byte, 16))
+    );
+  } else {
+    bytes = Uint8Array.from(value);
+  }
+  if (bytes.length !== 32 || bytes.every((byte) => byte === 0)) {
+    throw new PerkOSError(
+      "INPUT_INVALID",
+      `${field} must be a non-zero 32-byte digest.`,
+      { field, bytes: bytes.length }
+    );
+  }
+  return bytes;
 }
 
 export function assertAscii(value: string, field: string, maxBytes: number, allowEmpty = false): void {

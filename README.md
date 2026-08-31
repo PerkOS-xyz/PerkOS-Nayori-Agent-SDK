@@ -168,7 +168,46 @@ available only after it. Timeout payout is returned as the distinct `timeout-pai
 and must not be counted as a completed job or reputation success. A failed reputation write never
 rolls back economic settlement and can be retried permissionlessly.
 
-For `sbtc-commerce-v2` and `sbtc-commerce-v3`, high-level settlement helpers also read the token
+## Autonomous evaluator candidate
+
+The SDK supports the source-reviewed `agentic-commerce-v5` and `sbtc-commerce-v4` candidate
+through explicit contract overrides. This does not change the active deployment defaults:
+
+```ts
+const autonomous = new PerkOSClient({
+  network: "testnet",
+  signer,
+  contracts: {
+    stxCommerce: "ST...agentic-commerce-v5",
+    sbtcCommerce: "ST...sbtc-commerce-v4",
+  },
+});
+
+await autonomous.recordDecision({
+  asset: "sbtc",
+  jobId: 7n,
+  decision: "approve",
+  evidenceHash: evidenceSha256,
+  explanationHash: explanationSha256,
+});
+
+const decision = await autonomous.getDecision("sbtc", 7n);
+console.log(decision?.originalDecision, decision?.appealDeadline);
+
+await autonomous.appealDecision({
+  asset: "sbtc",
+  jobId: 7n,
+  evidenceHash: appealSha256,
+});
+```
+
+Unappealed decisions are finalized with `finalizeDecision`. A separate pinned authority uses
+`resolveAppeal`; if it misses the second deadline, `settleAppealTimeout` preserves the original
+decision permissionlessly. High-level settlement methods derive recipients from on-chain state and
+use the live escrow plus the job-pinned sBTC token to construct exact deny-mode post-conditions.
+Every digest must be a non-zero 32-byte hexadecimal string or `Uint8Array`.
+
+For `sbtc-commerce-v2`, `sbtc-commerce-v3` and `sbtc-commerce-v4`, high-level settlement helpers also read the token
 pinned when the job was funded. Both the trait argument and exact fungible-token post-condition use
 that historical token, so rotating the contract's future funding default cannot strand an existing
 escrow.

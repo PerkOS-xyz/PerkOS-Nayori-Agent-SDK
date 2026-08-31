@@ -87,6 +87,13 @@ export function expectBoolean(value: ClarityValue | undefined, context: string):
   return value.type === ClarityType.BoolTrue;
 }
 
+export function expectBuffer(value: ClarityValue | undefined, context: string): string {
+  if (!value || value.type !== ClarityType.Buffer) {
+    throw new PerkOSError("READ_FAILED", `${context} must be a Clarity buffer.`);
+  }
+  return value.value;
+}
+
 export function optionalPrincipal(
   value: ClarityValue | undefined,
   context: string

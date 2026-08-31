@@ -58,7 +58,12 @@ export type JobStatus =
   | "completed"
   | "rejected"
   | "expired"
-  | "timeout-paid";
+  | "timeout-paid"
+  | "decision-pending"
+  | "disputed";
+
+export type JobDecision = "approve" | "reject";
+export type Hash32Input = string | Uint8Array;
 
 export interface JobRecord {
   readonly id: bigint;
@@ -66,6 +71,7 @@ export interface JobRecord {
   readonly client: string;
   readonly provider?: string;
   readonly evaluator: string;
+  readonly appealAuthority?: string;
   readonly description: string;
   readonly budget: bigint;
   readonly expiredAt: bigint;
@@ -74,6 +80,22 @@ export interface JobRecord {
   readonly deliverable?: string;
   readonly submittedAtBurn?: bigint;
   readonly reviewDeadline?: bigint;
+}
+
+export interface DecisionRecord {
+  readonly jobId: bigint;
+  readonly originalDecision: JobDecision;
+  readonly finalDecision?: JobDecision;
+  readonly evidenceHash: string;
+  readonly explanationHash: string;
+  readonly decidedAtBurn: bigint;
+  readonly appealDeadline: bigint;
+  readonly appealedBy?: string;
+  readonly appealEvidenceHash?: string;
+  readonly resolutionDeadline?: bigint;
+  readonly resolutionHash?: string;
+  readonly finalizedBy?: string;
+  readonly finalizedAtBurn?: bigint;
 }
 
 export interface ReputationSyncRecord {
@@ -107,6 +129,11 @@ export type PerkOSOperation =
   | "reject-job"
   | "expire-job"
   | "settle-review-timeout"
+  | "record-decision"
+  | "appeal-decision"
+  | "finalize-decision"
+  | "resolve-appeal"
+  | "settle-appeal-timeout"
   | "retry-reputation-sync"
   | "rate-provider";
 
@@ -282,4 +309,32 @@ export interface RateProviderInput {
   readonly jobId: AmountLike;
   readonly score: AmountLike;
   readonly comment: string;
+}
+
+export interface RecordDecisionInput {
+  readonly asset: PaymentAsset;
+  readonly jobId: AmountLike;
+  readonly decision: JobDecision;
+  readonly evidenceHash: Hash32Input;
+  readonly explanationHash: Hash32Input;
+}
+
+export interface AppealDecisionInput {
+  readonly asset: PaymentAsset;
+  readonly jobId: AmountLike;
+  readonly evidenceHash: Hash32Input;
+}
+
+export type DecisionSettlementInput = SettleJobInput;
+
+export interface ResolveAppealInput {
+  readonly asset: PaymentAsset;
+  readonly jobId: AmountLike;
+  readonly decision: JobDecision;
+  readonly resolutionHash: Hash32Input;
+}
+
+export interface ResolveAppealPlanInput extends DecisionSettlementInput {
+  readonly decision: JobDecision;
+  readonly resolutionHash: Hash32Input;
 }

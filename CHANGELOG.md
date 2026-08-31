@@ -4,6 +4,23 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+### Added
+
+- Typed `recordDecision`, `appealDecision`, `finalizeDecision`, `resolveAppeal` and
+  `settleAppealTimeout` builders and high-level client methods for the v5/v4 autonomous evaluator
+  generation.
+- Read-only parsing for pending/disputed jobs, appeal authority, appeal window and the complete
+  decision provenance record.
+
+### Security
+
+- Reject malformed and all-zero decision, explanation, appeal and resolution digests before any
+  signer is invoked.
+- Derive final payout/refund recipients from on-chain job and decision state, read live escrow and
+  the job-pinned sBTC token, and enforce exact deny-mode outflow post-conditions.
+- Leave the active v4/v3 deployment defaults unchanged until the v5/v4 candidates pass QA and an
+  explicit production promotion.
+
 ## 0.6.0 - 2026-08-31
 
 ### Changed

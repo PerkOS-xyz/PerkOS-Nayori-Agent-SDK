@@ -4,6 +4,8 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+## 0.7.0 - 2026-09-01
+
 ### Added
 
 - Typed `recordDecision`, `appealDecision`, `finalizeDecision`, `resolveAppeal` and
@@ -20,6 +22,13 @@ All notable changes to `@perkos/agent-sdk` are documented here.
   the job-pinned sBTC token, and enforce exact deny-mode outflow post-conditions.
 - Leave the active v4/v3 deployment defaults unchanged until the v5/v4 candidates pass QA and an
   explicit production promotion.
+
+### Fixed
+
+- Replace the facilitator quickstart's retired-contract funding proof with immutable mainnet
+  `sbtc-commerce-v3` evidence that matches the active SDK defaults, including the exact payer, job,
+  amount, block and sBTC asset. The example remains signer-free and intentionally demonstrates the
+  fail-closed `payment_expired` result without broadcasting or writing replay state.
 
 ## 0.6.0 - 2026-08-31
 

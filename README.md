@@ -9,7 +9,8 @@ This repository is the continuation of `PerkOS-xyz/PerkOS-Agent-SDK`, renamed to
 public SDK with the Nayori product identity. The npm package remains `@perkos/agent-sdk` and the
 complete Git history, releases, issues, and pull requests are preserved.
 
-> Status: 0.6.0 public release. Read clients, transaction builders, browser and headless signer
+> Status: 0.7.0 release candidate; 0.6.0 remains the current public npm release. Read clients,
+> transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
 > implemented. The x402 v2 client and Stacks facilitator foundations are implemented, with
 > wallet-linked OAuth and MCP support for the invite-only testnet pilot. The hosted testnet rollout
@@ -140,7 +141,7 @@ more than the job requires.
 
 ## Active versioned escrow
 
-Version `0.6.0` selects Nayori's source-verified v4/v3/v3 generation by default on mainnet and
+Version `0.7.0` selects Nayori's source-verified v4/v3/v3 generation by default on mainnet and
 testnet. A normal client therefore needs no contract override:
 
 ```ts

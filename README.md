@@ -9,7 +9,7 @@ This repository is the continuation of `PerkOS-xyz/PerkOS-Agent-SDK`, renamed to
 public SDK with the Nayori product identity. The npm package remains `@perkos/agent-sdk` and the
 complete Git history, releases, issues, and pull requests are preserved.
 
-> Status: 0.7.0 release candidate; 0.6.0 remains the current public npm release. Read clients,
+> Status: 0.7.0 is the current public npm release. Read clients,
 > transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
 > implemented. The x402 v2 client and Stacks facilitator foundations are implemented, with
@@ -583,8 +583,8 @@ or facilitator-submitted signed transaction.
 - OAuth client secrets and access tokens are application secrets. The SDK returns them to the
   caller but does not persist, log or refresh them automatically.
 
-The independent external security review remains open. Do not treat this release candidate as
-audited software.
+The independent external security review remains open. Do not treat this release as audited
+software.
 
 See [Architecture](docs/ARCHITECTURE.md), [x402 payments](docs/X402_PAYMENTS.md),
 [MPP payments](docs/MPP_PAYMENTS.md), [Partner pilot](docs/PARTNER_PILOT.md) and

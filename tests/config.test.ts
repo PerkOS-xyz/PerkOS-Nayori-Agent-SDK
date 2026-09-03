@@ -6,8 +6,8 @@ describe("configuration", () => {
     const config = resolveConfig({ network: "mainnet" });
 
     expect(config.contracts).toEqual(DEFAULT_DEPLOYMENTS.mainnet);
-    expect(config.contracts.stxCommerce).toContain(".agentic-commerce-v4");
-    expect(config.contracts.sbtcCommerce).toContain(".sbtc-commerce-v3");
+    expect(config.contracts.stxCommerce).toContain(".agentic-commerce-v5");
+    expect(config.contracts.sbtcCommerce).toContain(".sbtc-commerce-v4");
     expect(config.contracts.reputationRegistry).toContain(".reputation-registry-v3");
     expect(config.contracts.sbtcToken).toBe(
       "SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token"
@@ -41,8 +41,8 @@ describe("configuration", () => {
 
     expect(historical.contracts.stxCommerce).toContain(".agentic-commerce-v3");
     expect(historical.contracts.sbtcCommerce).toContain(".sbtc-commerce-v2");
-    expect(DEFAULT_DEPLOYMENTS.testnet.stxCommerce).toContain(".agentic-commerce-v4");
-    expect(DEFAULT_DEPLOYMENTS.testnet.sbtcCommerce).toContain(".sbtc-commerce-v3");
+    expect(DEFAULT_DEPLOYMENTS.testnet.stxCommerce).toContain(".agentic-commerce-v5");
+    expect(DEFAULT_DEPLOYMENTS.testnet.sbtcCommerce).toContain(".sbtc-commerce-v4");
     expect(DEFAULT_DEPLOYMENTS.testnet.sbtcToken).toBe(
       "SN3VMHXEN64ZZF71JQ5VESXDWTR301XTTXGF4J8F1.sbtc-token"
     );

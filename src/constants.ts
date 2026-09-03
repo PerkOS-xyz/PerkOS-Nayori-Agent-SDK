@@ -6,16 +6,16 @@ const TESTNET_DEPLOYER = "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5";
 export const DEFAULT_DEPLOYMENTS: Readonly<Record<PerkOSNetwork, PerkOSContracts>> = {
   mainnet: {
     agentRegistry: `${MAINNET_DEPLOYER}.agent-registry`,
-    stxCommerce: `${MAINNET_DEPLOYER}.agentic-commerce-v4`,
-    sbtcCommerce: `${MAINNET_DEPLOYER}.sbtc-commerce-v3`,
+    stxCommerce: `${MAINNET_DEPLOYER}.agentic-commerce-v5`,
+    sbtcCommerce: `${MAINNET_DEPLOYER}.sbtc-commerce-v4`,
     reputationRegistry: `${MAINNET_DEPLOYER}.reputation-registry-v3`,
     sbtcToken: "SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token",
     sbtcAssetName: "sbtc-token",
   },
   testnet: {
     agentRegistry: `${TESTNET_DEPLOYER}.agent-registry`,
-    stxCommerce: `${TESTNET_DEPLOYER}.agentic-commerce-v4`,
-    sbtcCommerce: `${TESTNET_DEPLOYER}.sbtc-commerce-v3`,
+    stxCommerce: `${TESTNET_DEPLOYER}.agentic-commerce-v5`,
+    sbtcCommerce: `${TESTNET_DEPLOYER}.sbtc-commerce-v4`,
     reputationRegistry: `${TESTNET_DEPLOYER}.reputation-registry-v3`,
     sbtcToken: "SN3VMHXEN64ZZF71JQ5VESXDWTR301XTTXGF4J8F1.sbtc-token",
     sbtcAssetName: "sbtc-token",

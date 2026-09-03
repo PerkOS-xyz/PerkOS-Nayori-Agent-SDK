@@ -9,7 +9,8 @@ This repository is the continuation of `PerkOS-xyz/PerkOS-Agent-SDK`, renamed to
 public SDK with the Nayori product identity. The npm package remains `@perkos/agent-sdk` and the
 complete Git history, releases, issues, and pull requests are preserved.
 
-> Status: 0.7.0 is the current public npm release. Read clients,
+> Status: 0.7.1 is the release candidate that promotes Nayori's verified v5/v4 contracts as the
+> default integration. Read clients,
 > transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
 > implemented. The x402 v2 client and Stacks facilitator foundations are implemented, with
@@ -141,7 +142,7 @@ more than the job requires.
 
 ## Active versioned escrow
 
-Version `0.7.0` selects Nayori's source-verified v4/v3/v3 generation by default on mainnet and
+Version `0.7.1` selects Nayori's source-verified v5/v4/v3 generation by default on mainnet and
 testnet. A normal client therefore needs no contract override:
 
 ```ts
@@ -155,33 +156,35 @@ const perkos = new PerkOSClient({
 const job = await perkos.getJob("sbtc", 7n);
 console.log(job?.submittedAtBurn, job?.reviewDeadline, job?.status);
 
-// After the on-chain Bitcoin review deadline, any signer may trigger the
-// exact provider payout. The plan remains deny-mode with exact escrow outflow.
-await perkos.settleReviewTimeout("sbtc", 7n);
+// The evaluator records an explainable decision without moving escrow.
+await perkos.recordDecision({
+  asset: "sbtc",
+  jobId: 7n,
+  decision: "approve",
+  evidenceHash: evidenceSha256,
+  explanationHash: explanationSha256,
+});
 
 const sync = await perkos.getReputationSync("sbtc", 7n);
 if (sync?.pending) await perkos.retryReputationSync("sbtc", 7n);
 ```
 
-The fixed 12-burn-block review window is readable through `getReviewWindow(asset)`.
-Evaluator completion/rejection is available through the exact deadline; timeout settlement is
-available only after it. Timeout payout is returned as the distinct `timeout-paid` (`u6`) status
-and must not be counted as a completed job or reputation success. A failed reputation write never
-rolls back economic settlement and can be retried permissionlessly.
+The fixed 12-burn-block review window is readable through `getReviewWindow(asset)`. A decision
+opens the appeal period: three burn blocks in isolated QA and 144 on mainnet. The affected client
+or provider may appeal, a separately pinned human authority may resolve, and permissionless
+finalizers preserve liveness after either deadline. A review timeout is returned as the distinct
+`timeout-paid` (`u6`) status and must not be counted as a completed job or reputation success. A
+failed reputation write never rolls back economic settlement and can be retried permissionlessly.
 
-## Autonomous evaluator candidate
+## Autonomous evaluation and appeals
 
-The SDK supports the source-reviewed `agentic-commerce-v5` and `sbtc-commerce-v4` candidate
-through explicit contract overrides. This does not change the active deployment defaults:
+The SDK uses the active source-reviewed `agentic-commerce-v5` and `sbtc-commerce-v4` deployment by
+default:
 
 ```ts
 const autonomous = new PerkOSClient({
-  network: "testnet",
+  network: "mainnet",
   signer,
-  contracts: {
-    stxCommerce: "ST...agentic-commerce-v5",
-    sbtcCommerce: "ST...sbtc-commerce-v4",
-  },
 });
 
 await autonomous.recordDecision({
@@ -213,8 +216,8 @@ pinned when the job was funded. Both the trait argument and exact fungible-token
 that historical token, so rotating the contract's future funding default cannot strand an existing
 escrow.
 
-The previous v3/v2 testnet generation remains supported through explicit overrides and immutable
-at 144 blocks. The active v4/v3/v3 generation first passed on Stacks testnet. Controlled STX and
+The previous v4/v3 and v3/v2 generations remain supported through explicit same-network overrides.
+The historical v4/v3/v3 generation first passed on Stacks testnet. Controlled STX and
 official PoX-5 sBTC complete paths pass 27/27 and 30/30. The real timeout path passes preparation
 20/20, settlement 12/12 and
 separate public-state verification 10/10. Job `u2` settled at burn `11290` in
@@ -223,11 +226,12 @@ ending in `timeout-paid` (`u6`) with zero escrow, one exact 1,000-atomic-unit sB
 completion, reputation or rating credit. The frozen evidence is documented in the
 [contracts/Web repository](https://github.com/PerkOS-xyz/PerkOS-Nayori/blob/main/docs/TESTNET_SECURITY_EVIDENCE.md).
 
-The same exact sources are live on mainnet under
-`SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH`. Deploy/configuration confirmed in blocks
-8885885–8885898. A guarded internal mainnet sBTC job then passed 26/26 checks for exactly 100
-atomic units, ending in `completed` (`u3`) with escrow zero, exact payout, synchronized reputation
-and persisted rating. Those actors are team-operated release evidence, not external adoption,
+The active v5/v4 sources are live on mainnet under
+`SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH`. Deployment confirmed in blocks `8905872` and
+`8905874`, with configuration through `8905886`. Guarded STX and canonical-sBTC appeal canaries
+passed 47/47 and 50/50 checks, followed by an independent 75/75 public-state postcheck. Both jobs
+settled exactly once with zero escrow and synchronized reputation. Those actors are team-operated
+release evidence, not external adoption,
 non-team wallet activity or revenue. The independent external security review remains open.
 
 ## Browser signer (Leather and other Stacks wallets)

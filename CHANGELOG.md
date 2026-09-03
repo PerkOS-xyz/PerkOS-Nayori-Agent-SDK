@@ -4,6 +4,30 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+## 0.7.1 - 2026-09-02
+
+### Changed
+
+- Promote the source-verified `agentic-commerce-v5`, `sbtc-commerce-v4` and
+  `reputation-registry-v3` generation to the default mainnet and testnet deployment map.
+- Make autonomous decisions, role-specific appeals, human resolution and permissionless
+  finalization available without contract overrides.
+
+### Evidence
+
+- Record the exact-source mainnet deployments in blocks `8905872` and `8905874` and configuration
+  through block `8905886` with the fixed 12-block review and 144-block appeal policy.
+- Record controlled mainnet STX and canonical-sBTC appeal canaries passing 47/47 and 50/50 checks,
+  followed by an independent signer-free 75/75 public-state postcheck. These internal actors do
+  not count as external adoption, non-team wallets or revenue.
+
+### Security
+
+- Preserve v4/v3 and earlier generations only as explicit same-network historical overrides.
+- Keep the separately pinned appeal authority outside the SDK signer boundary; the SDK derives
+  settlement recipients from authoritative on-chain state and retains exact deny-mode outflow
+  post-conditions.
+
 ## 0.7.0 - 2026-09-01
 
 ### Added

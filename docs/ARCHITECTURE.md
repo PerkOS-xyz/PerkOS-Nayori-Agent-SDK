@@ -144,19 +144,19 @@ profile.
 Completion, rejection, expiry and versioned review-timeout settlement may transfer funds held by
 the escrow contract rather than by the transaction origin. High-level client methods read the
 current job and escrow balance before building the plan. The resulting post-condition identifies
-the escrow contract principal and the exact amount expected to leave it. For `sbtc-commerce-v2`
-and `sbtc-commerce-v3`, the client also reads the job-pinned token and uses it in both the contract argument and exact
-fungible-token post-condition; a later default-token rotation cannot redirect or strand an
-existing escrow.
+the escrow contract principal and the exact amount expected to leave it. For `sbtc-commerce-v2`,
+`sbtc-commerce-v3` and `sbtc-commerce-v4`, the client also reads the job-pinned token and uses it
+in both the contract argument and exact fungible-token post-condition; a later default-token
+rotation cannot redirect or strand an existing escrow.
 
-The active v4/v3 generation records a fixed 12 Bitcoin burn-block review deadline at submission.
-The immutable earlier v3/v2 testnet generation remains supported at 144 blocks. Through the
-deadline, the evaluator remains the only completion/rejection authority. After it, any principal
-may submit `settle-review-timeout`; the SDK treats the result as `timeout-paid`, not completion.
-Reputation synchronization has its own durable read record and deny-mode retry plan so registry
-unavailability never expands payment authority or rolls back the payout.
+The active v5/v4 generation records a fixed 12 Bitcoin burn-block review deadline at submission.
+The evaluator records a hashed decision without moving escrow, after which the affected client or
+provider receives the configured appeal window. A separately pinned human authority resolves an
+appeal; permissionless finalizers preserve liveness after either deadline without choosing a new
+recipient. Reputation synchronization has its own durable read record and deny-mode retry plan so
+registry unavailability never expands payment authority or rolls back settlement.
 
-Versioned v4/v3/v3 contract IDs are the defaults on both networks. Historical generations remain
+Versioned v5/v4/v3 contract IDs are the defaults on both networks. Historical generations remain
 available through explicit same-network overrides.
 
 ## Future adapters

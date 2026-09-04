@@ -9,21 +9,31 @@ This repository is the continuation of `PerkOS-xyz/PerkOS-Agent-SDK`, renamed to
 public SDK with the Nayori product identity. The npm package remains `@perkos/agent-sdk` and the
 complete Git history, releases, issues, and pull requests are preserved.
 
-> Status: 0.7.1 is the release candidate that promotes Nayori's verified v5/v4 contracts as the
+> Status: npm 0.7.1 uses Nayori's verified v5/v4 contracts as the
 > default integration. Read clients,
 > transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
 > implemented. The x402 v2 client and Stacks facilitator foundations are implemented, with
-> wallet-linked OAuth and MCP support for the invite-only testnet pilot. The hosted testnet rollout
-> is live; external review and independently attributable adoption evidence remain open. The direct x402
+> wallet-linked OAuth and MCP support for invite-only partners. QA uses Stacks testnet;
+> production uses mainnet. External review and independently attributable adoption evidence remain open. The direct x402
 > profile includes request-bound pure verification
 > and payer-side intent, policy, Leather, and remote-signer foundations for STX, sBTC, and USDCx.
 > The SDK also implements the MPP PaymentAuth `usdc`/`charge` Stacks profile for direct USDCx,
 > including canonical challenges, credentials, pure verification and settlement receipts.
 > Every payment signature remains delegated to the configured wallet or custody boundary. Mainnet
-> facilitator settlement remains disabled.
+> facilitator settlement is confirmation-gated and payer-approved; sponsorship remains disabled.
 
 ## Requirements
+
+### Unreleased earned-service-fee integration
+
+This branch adds opt-in STX v6/sBTC v5 support for a 2% **included**, evaluation-earned fee:
+net provider payout on approval or net client refund on evaluated rejection. The full budget
+stays in escrow until final settlement. The new methods are not in npm 0.7.1 and the candidate
+contracts are not deployed defaults. Existing jobs remain unchanged. See the
+[integration and accounting guide](docs/SERVICE_FEES.md) before enabling any signer.
+
+### Runtime
 
 - Node.js 20 or newer
 - npm 10 or newer

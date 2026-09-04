@@ -72,6 +72,7 @@ export interface JobRecord {
   readonly provider?: string;
   readonly evaluator: string;
   readonly appealAuthority?: string;
+  readonly treasury?: string;
   readonly description: string;
   readonly budget: bigint;
   readonly expiredAt: bigint;
@@ -135,7 +136,10 @@ export type PerkOSOperation =
   | "resolve-appeal"
   | "settle-appeal-timeout"
   | "retry-reputation-sync"
-  | "rate-provider";
+  | "rate-provider"
+  | "initialize-protocol"
+  | "waive-service-fee"
+  | "refund-service-fee";
 
 export interface TransactionIntent {
   readonly operation: PerkOSOperation;
@@ -144,6 +148,8 @@ export interface TransactionIntent {
   readonly jobId?: bigint;
   readonly sender?: string;
   readonly recipient?: string;
+  /** Disclosure only; escrow post-conditions constrain the aggregate gross outflow. */
+  readonly serviceFee?: ServiceFeeSplit;
 }
 
 export interface ContractCallPlan {
@@ -282,6 +288,7 @@ export interface JobAmountInput {
 
 export interface FundJobInput extends JobAmountInput {
   readonly sender?: string;
+  readonly serviceFeeAcceptance?: ServiceFeeAcceptance;
 }
 
 export interface AssignProviderInput {
@@ -294,6 +301,7 @@ export interface SubmitWorkInput {
   readonly asset: PaymentAsset;
   readonly jobId: AmountLike;
   readonly deliverable: string | Uint8Array;
+  readonly serviceFeeAcceptance?: ServiceFeeAcceptance;
 }
 
 export interface SettleJobInput {
@@ -325,7 +333,75 @@ export interface AppealDecisionInput {
   readonly evidenceHash: Hash32Input;
 }
 
-export type DecisionSettlementInput = SettleJobInput;
+export interface DecisionSettlementInput extends SettleJobInput {
+  readonly serviceFee?: ServiceFeeSplit;
+}
+
+export interface ServiceFeeAcceptance {
+  readonly gross: bigint;
+  readonly basisPoints: 200;
+  readonly treasury: string;
+  readonly rejectionRefund: "net-after-evaluation";
+}
+
+export interface ServiceFeeSplit {
+  readonly basisPoints: 200;
+  readonly treasury: string;
+  readonly gross: bigint;
+  readonly fee: bigint;
+  readonly net: bigint;
+  readonly waived: boolean;
+}
+
+export interface ServiceFeePolicy {
+  readonly configured: boolean;
+  readonly basisPoints: 200;
+  readonly treasury: string;
+  readonly reviewWindow: bigint;
+  readonly appealWindow: bigint;
+  readonly appealAuthority: string;
+}
+
+export interface ServiceFeeSettlement {
+  readonly gross: bigint;
+  readonly recipient: string;
+  readonly net: bigint;
+  readonly chargedFee: bigint;
+  readonly refundedFee: bigint;
+}
+
+export interface JobServiceFeeRecord {
+  readonly jobId: bigint;
+  readonly basisPoints: 200;
+  readonly treasury: string;
+  /** Potential budget quote, not collected revenue or a completed refund. */
+  readonly feeAmount: bigint;
+  readonly serviceRecorded: boolean;
+  readonly waiver?: string;
+  readonly settlement?: ServiceFeeSettlement;
+}
+
+export interface InitializeServiceFeeProtocolInput {
+  readonly asset: PaymentAsset;
+  readonly owner: string;
+  readonly treasury: string;
+  readonly appealAuthority: string;
+  readonly appealWindow: AmountLike;
+}
+
+export interface WaiveServiceFeeInput {
+  readonly asset: PaymentAsset;
+  readonly jobId: AmountLike;
+  readonly evidenceHash: Hash32Input;
+}
+
+export interface WaiveServiceFeePlanInput extends WaiveServiceFeeInput {
+  readonly authority: string;
+}
+
+export interface RefundServiceFeePlanInput extends SettleJobInput {
+  readonly treasury: string;
+}
 
 export interface ResolveAppealInput {
   readonly asset: PaymentAsset;

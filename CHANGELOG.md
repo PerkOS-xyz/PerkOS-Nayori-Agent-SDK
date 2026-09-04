@@ -4,6 +4,11 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+- Add explicit opt-in STX v6/sBTC v5 earned-service-fee reads, initialization, waiver and treasury-funded refund methods. Published 0.7.1 and deployed defaults remain unchanged.
+- Require client/provider acceptance of gross budget, 200 bps, treasury and net rejection refund before candidate funding/submission; fail closed on inconsistent live state.
+- Preserve aggregate gross deny-mode settlement constraints and job-pinned sBTC tokens; account for treasury refunds in spending limits.
+- Add a signer-free fee inspection example, candidate integration guide, accounting/consent/role regression tests. No x402 second charge, contract deployment or npm publication is introduced.
+
 ## 0.7.1 - 2026-09-02
 
 ### Changed

@@ -41,20 +41,34 @@ export class SpendingPolicy {
       ]
     );
     this.allowedAssets = new Set(input.allowedAssets ?? ["sbtc", "stx"]);
-    this.maxPerTransaction = limitsFrom(input.maxPerTransaction, "maxPerTransaction");
+    this.maxPerTransaction = limitsFrom(
+      input.maxPerTransaction,
+      "maxPerTransaction"
+    );
     this.maxPerSession = limitsFrom(input.maxPerSession, "maxPerSession");
   }
 
   authorize(plan: ContractCallPlan): SpendingApproval {
     if (!this.allowedNetworks.has(plan.network)) {
-      throw new PerkOSError("POLICY_DENIED", `Network ${plan.network} is not allowed.`);
+      throw new PerkOSError(
+        "POLICY_DENIED",
+        `Network ${plan.network} is not allowed.`
+      );
     }
     if (!this.allowedContracts.has(plan.contract)) {
-      throw new PerkOSError("POLICY_DENIED", `Contract ${plan.contract} is not allowed.`);
+      throw new PerkOSError(
+        "POLICY_DENIED",
+        `Contract ${plan.contract} is not allowed.`
+      );
     }
 
     const { asset, amount } = plan.intent;
-    if (!asset || amount === undefined || amount === 0n || plan.intent.operation !== "fund-job") {
+    if (
+      !asset ||
+      amount === undefined ||
+      amount === 0n ||
+      !["fund-job", "refund-service-fee"].includes(plan.intent.operation)
+    ) {
       return { operation: plan.intent.operation, ...(asset ? { asset } : {}) };
     }
     if (!this.allowedAssets.has(asset)) {
@@ -93,7 +107,11 @@ export class SpendingPolicy {
 
   record(plan: ContractCallPlan): void {
     const { asset, amount, operation } = plan.intent;
-    if (operation === "fund-job" && asset && amount !== undefined) {
+    if (
+      (operation === "fund-job" || operation === "refund-service-fee") &&
+      asset &&
+      amount !== undefined
+    ) {
       this.spent[asset] += amount;
     }
   }

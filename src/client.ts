@@ -19,6 +19,12 @@ import { PerkOSTransactionBuilder } from "./builders.js";
 import { SpendingPolicy } from "./policy.js";
 import { TransactionTracker } from "./tracker.js";
 import { normalizeTxid } from "./txid.js";
+import {
+  parseJobServiceFee,
+  parseServiceFeePolicy,
+  quoteServiceFee,
+  supportsServiceFees,
+} from "./service-fees.js";
 import type {
   AgentRecord,
   AppealDecisionInput,
@@ -29,6 +35,11 @@ import type {
   ContractId,
   CreateJobInput,
   DecisionRecord,
+  DecisionSettlementInput,
+  JobServiceFeeRecord,
+  ServiceFeePolicy,
+  InitializeServiceFeeProtocolInput,
+  WaiveServiceFeeInput,
   FundJobInput,
   JobAmountInput,
   JobDecision,
@@ -51,18 +62,27 @@ import type {
   TransactionTrackerLike,
   UpdateAgentInput,
 } from "./types.js";
-import { assertPrincipal, parseContractId, resolveConfig, toUint } from "./validation.js";
+import {
+  assertPrincipal,
+  parseContractId,
+  resolveConfig,
+  toUint,
+} from "./validation.js";
 
 const PINNED_TOKEN_SBTC_CONTRACTS = new Set([
   "sbtc-commerce-v2",
   "sbtc-commerce-v3",
   "sbtc-commerce-v4",
+  "sbtc-commerce-v5",
 ]);
 
 function decisionFromCode(value: bigint, context: string): JobDecision {
   if (value === 1n) return "approve";
   if (value === 2n) return "reject";
-  throw new PerkOSError("READ_FAILED", `${context} contains unknown decision ${value}.`);
+  throw new PerkOSError(
+    "READ_FAILED",
+    `${context} contains unknown decision ${value}.`
+  );
 }
 
 function contractForAsset(
@@ -72,8 +92,14 @@ function contractForAsset(
   return asset === "sbtc" ? contracts.sbtcCommerce : contracts.stxCommerce;
 }
 
-async function defaultReadOnlyTransport(call: ReadOnlyCall): Promise<ClarityValue> {
-  const { address, name } = parseContractId(call.contract, "contract", call.network);
+async function defaultReadOnlyTransport(
+  call: ReadOnlyCall
+): Promise<ClarityValue> {
+  const { address, name } = parseContractId(
+    call.contract,
+    "contract",
+    call.network
+  );
   return fetchCallReadOnlyFunction({
     contractAddress: address,
     contractName: name,
@@ -98,7 +124,8 @@ export class PerkOSClient {
     this.transactions = new PerkOSTransactionBuilder(this.config);
     this.policy = new SpendingPolicy(this.config, input.spendingPolicy);
     this.signer = input.signer;
-    this.readOnlyTransport = input.readOnlyTransport ?? defaultReadOnlyTransport;
+    this.readOnlyTransport =
+      input.readOnlyTransport ?? defaultReadOnlyTransport;
     this.tracker =
       input.transactionTracker ??
       new TransactionTracker({
@@ -146,18 +173,26 @@ export class PerkOSClient {
         contract: plan.contract,
         operation: plan.intent.operation,
         ...(plan.intent.asset ? { asset: plan.intent.asset } : {}),
-        ...(plan.intent.amount !== undefined ? { amount: plan.intent.amount } : {}),
-        ...(plan.intent.jobId !== undefined ? { jobId: plan.intent.jobId } : {}),
+        ...(plan.intent.amount !== undefined
+          ? { amount: plan.intent.amount }
+          : {}),
+        ...(plan.intent.jobId !== undefined
+          ? { jobId: plan.intent.jobId }
+          : {}),
         explorerUrl: `https://explorer.hiro.so/txid/${txid}?chain=${plan.network}`,
         ...(result.raw !== undefined ? { raw: result.raw } : {}),
       };
     } catch (cause) {
       if (cause instanceof PerkOSError) throw cause;
-      throw new PerkOSError("SIGNING_FAILED", "The signer could not broadcast the transaction.", {
-        cause,
-        contract: plan.contract,
-        functionName: plan.functionName,
-      });
+      throw new PerkOSError(
+        "SIGNING_FAILED",
+        "The signer could not broadcast the transaction.",
+        {
+          cause,
+          contract: plan.contract,
+          functionName: plan.functionName,
+        }
+      );
     }
   }
 
@@ -196,21 +231,36 @@ export class PerkOSClient {
     return expectUint(value, "get-agent-count");
   }
 
-  async getAgent(agentIdInput: bigint | number | string): Promise<AgentRecord | null> {
+  async getAgent(
+    agentIdInput: bigint | number | string
+  ): Promise<AgentRecord | null> {
     const agentId = toUint(agentIdInput, "agentId");
     try {
       const value = unwrapResponse(
-        await this.read(this.config.contracts.agentRegistry, "get-agent", [Cl.uint(agentId)]),
+        await this.read(this.config.contracts.agentRegistry, "get-agent", [
+          Cl.uint(agentId),
+        ]),
         "get-agent"
       );
       const tuple = expectTuple(value, "get-agent");
-      const endpoints = expectList(tuple.endpoints!, "agent.endpoints").map((endpoint, index) => {
-        const endpointTuple = expectTuple(endpoint, `agent.endpoints[${index}]`);
-        return {
-          name: expectString(endpointTuple.name, `agent.endpoints[${index}].name`),
-          url: expectString(endpointTuple.url, `agent.endpoints[${index}].url`),
-        };
-      });
+      const endpoints = expectList(tuple.endpoints!, "agent.endpoints").map(
+        (endpoint, index) => {
+          const endpointTuple = expectTuple(
+            endpoint,
+            `agent.endpoints[${index}]`
+          );
+          return {
+            name: expectString(
+              endpointTuple.name,
+              `agent.endpoints[${index}].name`
+            ),
+            url: expectString(
+              endpointTuple.url,
+              `agent.endpoints[${index}].url`
+            ),
+          };
+        }
+      );
       return {
         id: agentId,
         name: expectString(tuple.name, "agent.name"),
@@ -234,7 +284,10 @@ export class PerkOSClient {
 
   async getJobCount(asset: PaymentAsset): Promise<bigint> {
     const value = unwrapResponse(
-      await this.read(contractForAsset(this.config.contracts, asset), "get-job-count"),
+      await this.read(
+        contractForAsset(this.config.contracts, asset),
+        "get-job-count"
+      ),
       "get-job-count"
     );
     return expectUint(value, "get-job-count");
@@ -247,16 +300,21 @@ export class PerkOSClient {
     const jobId = toUint(jobIdInput, "jobId");
     try {
       const value = unwrapResponse(
-        await this.read(contractForAsset(this.config.contracts, asset), "get-job", [
-          Cl.uint(jobId),
-        ]),
+        await this.read(
+          contractForAsset(this.config.contracts, asset),
+          "get-job",
+          [Cl.uint(jobId)]
+        ),
         "get-job"
       );
       const tuple = expectTuple(value, "get-job");
       const statusCode = expectUint(tuple.status, "job.status");
       const status = JOB_STATUS[Number(statusCode) as keyof typeof JOB_STATUS];
       if (!status) {
-        throw new PerkOSError("READ_FAILED", `Unknown job status ${statusCode}.`);
+        throw new PerkOSError(
+          "READ_FAILED",
+          `Unknown job status ${statusCode}.`
+        );
       }
       const provider = optionalPrincipal(tuple.provider, "job.provider");
       const appealAuthority = tuple["appeal-authority"]
@@ -278,6 +336,9 @@ export class PerkOSClient {
         ...(provider ? { provider } : {}),
         evaluator: expectPrincipal(tuple.evaluator, "job.evaluator"),
         ...(appealAuthority ? { appealAuthority } : {}),
+        ...(tuple.treasury
+          ? { treasury: expectPrincipal(tuple.treasury, "job.treasury") }
+          : {}),
         description: expectString(tuple.description, "job.description"),
         budget: expectUint(tuple.budget, "job.budget"),
         expiredAt: expectUint(tuple["expired-at"], "job.expired-at"),
@@ -310,12 +371,151 @@ export class PerkOSClient {
   ): Promise<bigint> {
     const jobId = toUint(jobIdInput, "jobId");
     const value = unwrapResponse(
-      await this.read(contractForAsset(this.config.contracts, asset), "get-escrow-balance", [
-        Cl.uint(jobId),
-      ]),
+      await this.read(
+        contractForAsset(this.config.contracts, asset),
+        "get-escrow-balance",
+        [Cl.uint(jobId)]
+      ),
       "get-escrow-balance"
     );
     return expectUint(value, "get-escrow-balance");
+  }
+
+  /** Explicit opt-in capability; deployed defaults remain the no-fee generation. */
+  supportsServiceFees(asset: PaymentAsset): boolean {
+    return supportsServiceFees(
+      contractForAsset(this.config.contracts, asset),
+      asset
+    );
+  }
+
+  async getServiceFeePolicy(asset: PaymentAsset): Promise<ServiceFeePolicy> {
+    if (!this.supportsServiceFees(asset))
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        "No service-fee ABI on this configured generation."
+      );
+    const policy = parseServiceFeePolicy(
+      await this.read(
+        contractForAsset(this.config.contracts, asset),
+        "get-protocol-config"
+      ),
+      this.config.network
+    );
+    if (
+      policy.configured &&
+      (policy.reviewWindow !== 12n ||
+        policy.appealWindow !==
+          (this.config.network === "mainnet" ? 144n : 3n) ||
+        policy.treasury === policy.appealAuthority)
+    ) {
+      throw new PerkOSError(
+        "READ_FAILED",
+        "Unexpected protocol window or treasury separation."
+      );
+    }
+    return policy;
+  }
+
+  async getJobServiceFee(
+    asset: PaymentAsset,
+    jobIdInput: bigint | number | string
+  ): Promise<JobServiceFeeRecord> {
+    const jobId = toUint(jobIdInput, "jobId");
+    const policy = await this.getServiceFeePolicy(asset);
+    if (!policy.configured)
+      throw new PerkOSError(
+        "READ_FAILED",
+        "Service-fee protocol is not initialized."
+      );
+    const [job, cv] = await Promise.all([
+      this.getJob(asset, jobId),
+      this.read(
+        contractForAsset(this.config.contracts, asset),
+        "get-job-service-fee",
+        [Cl.uint(jobId)]
+      ),
+    ]);
+    const state = parseJobServiceFee(cv, jobId, this.config.network);
+    if (
+      !job ||
+      job.treasury !== state.treasury ||
+      policy.treasury !== state.treasury ||
+      [job.client, job.provider, job.evaluator, job.appealAuthority].includes(
+        state.treasury
+      ) ||
+      state.feeAmount !== quoteServiceFee(job.budget).fee ||
+      state.serviceRecorded !== [3n, 4n, 7n, 8n].includes(job.statusCode) ||
+      ([3n, 4n].includes(job.statusCode) && !state.settlement) ||
+      (state.settlement &&
+        (state.settlement.gross !== job.budget ||
+          (job.statusCode !== 3n && job.statusCode !== 4n) ||
+          state.settlement.recipient !==
+            (job.statusCode === 3n ? job.provider : job.client)))
+    ) {
+      throw new PerkOSError(
+        "READ_FAILED",
+        "Job and fee accounting do not match."
+      );
+    }
+    return state;
+  }
+
+  initializeServiceFeeProtocol(
+    input: InitializeServiceFeeProtocolInput
+  ): Promise<TransactionReceipt> {
+    return this.execute(this.transactions.initializeServiceFeeProtocol(input));
+  }
+
+  async waiveServiceFee(
+    input: WaiveServiceFeeInput
+  ): Promise<TransactionReceipt> {
+    const [fee, job] = await Promise.all([
+      this.getJobServiceFee(input.asset, input.jobId),
+      this.getJob(input.asset, input.jobId),
+    ]);
+    if (!fee.serviceRecorded || fee.waiver || !job?.appealAuthority)
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        "Waiver requires recorded service, pinned authority and no previous waiver."
+      );
+    return this.execute(
+      this.transactions.waiveServiceFee({
+        ...input,
+        authority: job.appealAuthority,
+      })
+    );
+  }
+
+  async refundServiceFee(
+    asset: PaymentAsset,
+    jobIdInput: bigint | number | string
+  ): Promise<TransactionReceipt> {
+    const jobId = toUint(jobIdInput, "jobId");
+    const state = await this.getJobServiceFee(asset, jobId);
+    const settlement = state.settlement;
+    if (
+      !state.waiver ||
+      !settlement ||
+      settlement.chargedFee <= settlement.refundedFee
+    ) {
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        "No waived collected fee remains refundable."
+      );
+    }
+    return this.execute(
+      this.transactions.refundServiceFee({
+        asset,
+        jobId,
+        treasury: state.treasury,
+        recipient: settlement.recipient,
+        amount: settlement.chargedFee - settlement.refundedFee,
+        ...(asset === "sbtc"
+          ? { sbtcToken: await this.getJobPaymentToken(jobId) }
+          : {}),
+      })
+    );
   }
 
   async getConfiguredSbtcToken(): Promise<string> {
@@ -331,9 +531,11 @@ export class PerkOSClient {
   ): Promise<ContractId> {
     const jobId = toUint(jobIdInput, "jobId");
     const value = unwrapResponse(
-      await this.read(this.config.contracts.sbtcCommerce, "get-job-payment-token", [
-        Cl.uint(jobId),
-      ]),
+      await this.read(
+        this.config.contracts.sbtcCommerce,
+        "get-job-payment-token",
+        [Cl.uint(jobId)]
+      ),
       "get-job-payment-token"
     );
     const token = expectPrincipal(value, "get-job-payment-token");
@@ -343,7 +545,10 @@ export class PerkOSClient {
 
   async getReviewWindow(asset: PaymentAsset): Promise<bigint> {
     const value = unwrapResponse(
-      await this.read(contractForAsset(this.config.contracts, asset), "get-review-window"),
+      await this.read(
+        contractForAsset(this.config.contracts, asset),
+        "get-review-window"
+      ),
       "get-review-window"
     );
     return expectUint(value, "get-review-window");
@@ -351,7 +556,10 @@ export class PerkOSClient {
 
   async getAppealWindow(asset: PaymentAsset): Promise<bigint> {
     const value = unwrapResponse(
-      await this.read(contractForAsset(this.config.contracts, asset), "get-appeal-window"),
+      await this.read(
+        contractForAsset(this.config.contracts, asset),
+        "get-appeal-window"
+      ),
       "get-appeal-window"
     );
     return expectUint(value, "get-appeal-window");
@@ -364,9 +572,11 @@ export class PerkOSClient {
     const jobId = toUint(jobIdInput, "jobId");
     try {
       const value = unwrapResponse(
-        await this.read(contractForAsset(this.config.contracts, asset), "get-decision", [
-          Cl.uint(jobId),
-        ]),
+        await this.read(
+          contractForAsset(this.config.contracts, asset),
+          "get-decision",
+          [Cl.uint(jobId)]
+        ),
         "get-decision"
       );
       const tuple = expectTuple(value, "get-decision");
@@ -374,7 +584,10 @@ export class PerkOSClient {
         tuple["final-decision"],
         "decision.final-decision"
       );
-      const appealedBy = optionalPrincipal(tuple["appealed-by"], "decision.appealed-by");
+      const appealedBy = optionalPrincipal(
+        tuple["appealed-by"],
+        "decision.appealed-by"
+      );
       const appealEvidenceHash = optionalBuffer(
         tuple["appeal-evidence-hash"],
         "decision.appeal-evidence-hash"
@@ -387,7 +600,10 @@ export class PerkOSClient {
         tuple["resolution-hash"],
         "decision.resolution-hash"
       );
-      const finalizedBy = optionalPrincipal(tuple["finalized-by"], "decision.finalized-by");
+      const finalizedBy = optionalPrincipal(
+        tuple["finalized-by"],
+        "decision.finalized-by"
+      );
       const finalizedAtBurn = optionalUint(
         tuple["finalized-at-burn"],
         "decision.finalized-at-burn"
@@ -399,15 +615,29 @@ export class PerkOSClient {
           "decision.original-decision"
         ),
         ...(finalDecisionCode !== undefined
-          ? { finalDecision: decisionFromCode(finalDecisionCode, "decision.final-decision") }
+          ? {
+              finalDecision: decisionFromCode(
+                finalDecisionCode,
+                "decision.final-decision"
+              ),
+            }
           : {}),
-        evidenceHash: expectBuffer(tuple["evidence-hash"], "decision.evidence-hash"),
+        evidenceHash: expectBuffer(
+          tuple["evidence-hash"],
+          "decision.evidence-hash"
+        ),
         explanationHash: expectBuffer(
           tuple["explanation-hash"],
           "decision.explanation-hash"
         ),
-        decidedAtBurn: expectUint(tuple["decided-at-burn"], "decision.decided-at-burn"),
-        appealDeadline: expectUint(tuple["appeal-deadline"], "decision.appeal-deadline"),
+        decidedAtBurn: expectUint(
+          tuple["decided-at-burn"],
+          "decision.decided-at-burn"
+        ),
+        appealDeadline: expectUint(
+          tuple["appeal-deadline"],
+          "decision.appeal-deadline"
+        ),
         ...(appealedBy ? { appealedBy } : {}),
         ...(appealEvidenceHash ? { appealEvidenceHash } : {}),
         ...(resolutionDeadline !== undefined ? { resolutionDeadline } : {}),
@@ -419,7 +649,8 @@ export class PerkOSClient {
       if (
         error instanceof PerkOSError &&
         error.code === "CONTRACT_ERROR" &&
-        (error.details?.clarityCode === 829n || error.details?.clarityCode === 930n)
+        (error.details?.clarityCode === 829n ||
+          error.details?.clarityCode === 930n)
       ) {
         return null;
       }
@@ -461,13 +692,17 @@ export class PerkOSClient {
         outcome,
         outcomeCode,
         pending: expectBoolean(tuple.pending, "reputation-sync.pending"),
-        lastError: expectUint(tuple["last-error"], "reputation-sync.last-error"),
+        lastError: expectUint(
+          tuple["last-error"],
+          "reputation-sync.last-error"
+        ),
       };
     } catch (error) {
       if (
         error instanceof PerkOSError &&
         error.code === "CONTRACT_ERROR" &&
-        (error.details?.clarityCode === 623n || error.details?.clarityCode === 723n)
+        (error.details?.clarityCode === 623n ||
+          error.details?.clarityCode === 723n)
       ) {
         return null;
       }
@@ -478,9 +713,11 @@ export class PerkOSClient {
   async getReputation(agent: string): Promise<ReputationRecord> {
     assertPrincipal(agent, "agent", this.config.network);
     const value = unwrapResponse(
-      await this.read(this.config.contracts.reputationRegistry, "get-reputation", [
-        Cl.principal(agent),
-      ]),
+      await this.read(
+        this.config.contracts.reputationRegistry,
+        "get-reputation",
+        [Cl.principal(agent)]
+      ),
       "get-reputation"
     );
     const tuple = expectTuple(value, "get-reputation");
@@ -492,8 +729,14 @@ export class PerkOSClient {
         tuple["average-score-x100"],
         "reputation.average-score-x100"
       ),
-      completedJobs: expectUint(tuple["completed-jobs"], "reputation.completed-jobs"),
-      disputedJobs: expectUint(tuple["disputed-jobs"], "reputation.disputed-jobs"),
+      completedJobs: expectUint(
+        tuple["completed-jobs"],
+        "reputation.completed-jobs"
+      ),
+      disputedJobs: expectUint(
+        tuple["disputed-jobs"],
+        "reputation.disputed-jobs"
+      ),
     };
   }
 
@@ -505,7 +748,9 @@ export class PerkOSClient {
     return this.execute(this.transactions.updateAgent(input));
   }
 
-  deactivateAgent(agentId: bigint | number | string): Promise<TransactionReceipt> {
+  deactivateAgent(
+    agentId: bigint | number | string
+  ): Promise<TransactionReceipt> {
     return this.execute(this.transactions.deactivateAgent(agentId));
   }
 
@@ -530,6 +775,30 @@ export class PerkOSClient {
       postConditionMode: "deny",
       intent: { operation: "fund-job", asset: input.asset, amount, jobId },
     });
+    if (this.supportsServiceFees(input.asset)) {
+      const [job, fee] = await Promise.all([
+        this.getJob(input.asset, jobId),
+        this.getJobServiceFee(input.asset, jobId),
+      ]);
+      const accepted = input.serviceFeeAcceptance;
+      if (
+        !accepted ||
+        accepted.gross !== amount ||
+        accepted.basisPoints !== 200 ||
+        accepted.rejectionRefund !== "net-after-evaluation" ||
+        accepted.treasury !== fee.treasury ||
+        !job ||
+        job.budget !== amount ||
+        job.statusCode !== 0n ||
+        fee.serviceRecorded ||
+        fee.settlement
+      ) {
+        throw new PerkOSError(
+          "INPUT_INVALID",
+          "Funding requires matching live job budget, treasury and explicit net-refund fee acceptance."
+        );
+      }
+    }
     const sender = input.sender ?? (await this.requireSignerAddress());
     return this.execute(
       this.transactions.fundJob({ ...input, jobId, amount, sender })
@@ -540,26 +809,61 @@ export class PerkOSClient {
     return this.execute(this.transactions.assignProvider(input));
   }
 
-  submitWork(input: SubmitWorkInput): Promise<TransactionReceipt> {
+  async submitWork(input: SubmitWorkInput): Promise<TransactionReceipt> {
+    if (this.supportsServiceFees(input.asset)) {
+      const [job, fee] = await Promise.all([
+        this.getJob(input.asset, input.jobId),
+        this.getJobServiceFee(input.asset, input.jobId),
+      ]);
+      const accepted = input.serviceFeeAcceptance;
+      if (
+        !job ||
+        job.statusCode !== 1n ||
+        !accepted ||
+        accepted.gross !== job.budget ||
+        accepted.treasury !== fee.treasury ||
+        accepted.basisPoints !== 200 ||
+        accepted.rejectionRefund !== "net-after-evaluation"
+      )
+        throw new PerkOSError(
+          "INPUT_INVALID",
+          "Provider must accept the live gross budget, treasury and earned fee."
+        );
+    }
     return this.execute(this.transactions.submitWork(input));
   }
 
   async completeJob(asset: PaymentAsset, jobIdInput: bigint | number | string) {
-    const settlement = await this.settlementInput("complete-job", asset, jobIdInput);
+    const settlement = await this.settlementInput(
+      "complete-job",
+      asset,
+      jobIdInput
+    );
     return this.execute(this.transactions.completeJob(settlement));
   }
 
   async rejectJob(asset: PaymentAsset, jobIdInput: bigint | number | string) {
-    const settlement = await this.settlementInput("reject-job", asset, jobIdInput);
+    const settlement = await this.settlementInput(
+      "reject-job",
+      asset,
+      jobIdInput
+    );
     return this.execute(this.transactions.rejectJob(settlement));
   }
 
   async expireJob(asset: PaymentAsset, jobIdInput: bigint | number | string) {
-    const settlement = await this.settlementInput("expire-job", asset, jobIdInput);
+    const settlement = await this.settlementInput(
+      "expire-job",
+      asset,
+      jobIdInput
+    );
     return this.execute(this.transactions.expireJob(settlement));
   }
 
-  async settleReviewTimeout(asset: PaymentAsset, jobIdInput: bigint | number | string) {
+  async settleReviewTimeout(
+    asset: PaymentAsset,
+    jobIdInput: bigint | number | string
+  ) {
     const settlement = await this.settlementInput(
       "settle-review-timeout",
       asset,
@@ -582,7 +886,10 @@ export class PerkOSClient {
   ): Promise<TransactionReceipt> {
     const decision = await this.getDecision(asset, jobIdInput);
     if (!decision) {
-      throw new PerkOSError("INPUT_INVALID", `Job ${jobIdInput} has no recorded decision.`);
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        `Job ${jobIdInput} has no recorded decision.`
+      );
     }
     const settlement = await this.decisionSettlementInput(
       asset,
@@ -613,7 +920,10 @@ export class PerkOSClient {
   ): Promise<TransactionReceipt> {
     const decision = await this.getDecision(asset, jobIdInput);
     if (!decision) {
-      throw new PerkOSError("INPUT_INVALID", `Job ${jobIdInput} has no recorded decision.`);
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        `Job ${jobIdInput} has no recorded decision.`
+      );
     }
     const settlement = await this.decisionSettlementInput(
       asset,
@@ -627,7 +937,9 @@ export class PerkOSClient {
     asset: PaymentAsset,
     jobIdInput: bigint | number | string
   ): Promise<TransactionReceipt> {
-    return this.execute(this.transactions.retryReputationSync(asset, jobIdInput));
+    return this.execute(
+      this.transactions.retryReputationSync(asset, jobIdInput)
+    );
   }
 
   rateProvider(input: RateProviderInput): Promise<TransactionReceipt> {
@@ -650,8 +962,7 @@ export class PerkOSClient {
       this.config.network
     ).name;
     const readsPinnedToken =
-      asset === "sbtc" &&
-      PINNED_TOKEN_SBTC_CONTRACTS.has(sbtcContractName);
+      asset === "sbtc" && PINNED_TOKEN_SBTC_CONTRACTS.has(sbtcContractName);
     const [job, amount] = await Promise.all([
       this.getJob(asset, jobId),
       this.getEscrowBalance(asset, jobId),
@@ -686,7 +997,7 @@ export class PerkOSClient {
     asset: PaymentAsset,
     jobIdInput: bigint | number | string,
     decision: JobDecision
-  ): Promise<SettleJobInput> {
+  ): Promise<DecisionSettlementInput> {
     const jobId = toUint(jobIdInput, "jobId");
     const [job, amount] = await Promise.all([
       this.getJob(asset, jobId),
@@ -706,18 +1017,49 @@ export class PerkOSClient {
       asset === "sbtc" && amount > 0n
         ? await this.getJobPaymentToken(jobId)
         : undefined;
+    const fee = this.supportsServiceFees(asset)
+      ? await this.getJobServiceFee(asset, jobId)
+      : undefined;
+    if (
+      fee &&
+      (amount !== job.budget ||
+        amount === 0n ||
+        !fee.serviceRecorded ||
+        fee.settlement ||
+        (job.statusCode !== 7n && job.statusCode !== 8n))
+    ) {
+      throw new PerkOSError(
+        "READ_FAILED",
+        "Fee settlement requires recorded service and exact unsettled gross escrow."
+      );
+    }
     return {
       asset,
       jobId,
       amount,
       recipient,
       ...(sbtcToken ? { sbtcToken } : {}),
+      ...(fee
+        ? {
+            serviceFee: {
+              basisPoints: 200 as const,
+              treasury: fee.treasury,
+              gross: amount,
+              fee: fee.waiver ? 0n : fee.feeAmount,
+              net: amount - (fee.waiver ? 0n : fee.feeAmount),
+              waived: !!fee.waiver,
+            },
+          }
+        : {}),
     };
   }
 
   private async requireSignerAddress(): Promise<string> {
     if (!this.signer) {
-      throw new PerkOSError("SIGNER_REQUIRED", "A signer is required to fund a job.");
+      throw new PerkOSError(
+        "SIGNER_REQUIRED",
+        "A signer is required to fund a job."
+      );
     }
     return this.signer.getAddress();
   }
@@ -727,7 +1069,11 @@ export class PerkOSClient {
     functionName: string,
     functionArgs: readonly ClarityValue[] = []
   ): Promise<ClarityValue> {
-    const senderAddress = parseContractId(contract, "contract", this.config.network).address;
+    const senderAddress = parseContractId(
+      contract,
+      "contract",
+      this.config.network
+    ).address;
     return this.readOnlyTransport({
       network: this.config.network,
       ...(this.config.apiUrl ? { apiUrl: this.config.apiUrl } : {}),

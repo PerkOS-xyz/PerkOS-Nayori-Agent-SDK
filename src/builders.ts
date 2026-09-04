@@ -1,6 +1,11 @@
 import { Cl, Pc } from "@stacks/transactions";
 import type { ClarityValue, PostCondition } from "@stacks/transactions";
 import { PerkOSError } from "./errors.js";
+import {
+  quoteServiceFee,
+  supportsServiceFees,
+  validateServiceFeeSplit,
+} from "./service-fees.js";
 import type {
   AppealDecisionInput,
   AssignProviderInput,
@@ -9,6 +14,9 @@ import type {
   CreateJobInput,
   DecisionSettlementInput,
   FundJobInput,
+  InitializeServiceFeeProtocolInput,
+  RefundServiceFeePlanInput,
+  WaiveServiceFeePlanInput,
   JobAmountInput,
   JobDecision,
   PaymentAsset,
@@ -29,8 +37,13 @@ import {
   toUint,
 } from "./validation.js";
 
-function commerceContract(config: ResolvedPerkOSConfig, asset: PaymentAsset): ContractId {
-  return asset === "sbtc" ? config.contracts.sbtcCommerce : config.contracts.stxCommerce;
+function commerceContract(
+  config: ResolvedPerkOSConfig,
+  asset: PaymentAsset
+): ContractId {
+  return asset === "sbtc"
+    ? config.contracts.sbtcCommerce
+    : config.contracts.stxCommerce;
 }
 
 function plan(
@@ -67,7 +80,9 @@ function escrowArgs(
   baseArgs: readonly ClarityValue[],
   sbtcToken?: ContractId
 ): readonly ClarityValue[] {
-  return asset === "sbtc" ? [...baseArgs, tokenArg(config, sbtcToken)] : baseArgs;
+  return asset === "sbtc"
+    ? [...baseArgs, tokenArg(config, sbtcToken)]
+    : baseArgs;
 }
 
 function exactTransfer(
@@ -82,7 +97,10 @@ function exactTransfer(
   }
   return Pc.principal(sender)
     .willSendEq(amount)
-    .ft(sbtcToken ?? config.contracts.sbtcToken, config.contracts.sbtcAssetName);
+    .ft(
+      sbtcToken ?? config.contracts.sbtcToken,
+      config.contracts.sbtcAssetName
+    );
 }
 
 function deliverableBuffer(value: string | Uint8Array): Uint8Array {
@@ -120,7 +138,10 @@ export class PerkOSTransactionBuilder {
     assertPrincipal(input.wallet, "wallet", this.config.network);
     const endpoints = input.endpoints ?? [];
     if (endpoints.length > 10) {
-      throw new PerkOSError("INPUT_INVALID", "endpoints cannot contain more than 10 entries.");
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        "endpoints cannot contain more than 10 entries."
+      );
     }
     const endpointCVs = endpoints.map((endpoint, index) => {
       assertAscii(endpoint.name, `endpoints[${index}].name`, 32);
@@ -147,7 +168,8 @@ export class PerkOSTransactionBuilder {
   updateAgent(input: UpdateAgentInput): ContractCallPlan {
     const agentId = toUint(input.agentId, "agentId");
     if (input.name !== undefined) assertAscii(input.name, "name", 64);
-    if (input.description !== undefined) assertAscii(input.description, "description", 256);
+    if (input.description !== undefined)
+      assertAscii(input.description, "description", 256);
     if (input.wallet !== undefined) {
       assertPrincipal(input.wallet, "wallet", this.config.network);
     }
@@ -157,11 +179,15 @@ export class PerkOSTransactionBuilder {
       "update-agent",
       [
         Cl.uint(agentId),
-        input.name === undefined ? Cl.none() : Cl.some(Cl.stringAscii(input.name)),
+        input.name === undefined
+          ? Cl.none()
+          : Cl.some(Cl.stringAscii(input.name)),
         input.description === undefined
           ? Cl.none()
           : Cl.some(Cl.stringAscii(input.description)),
-        input.wallet === undefined ? Cl.none() : Cl.some(Cl.principal(input.wallet)),
+        input.wallet === undefined
+          ? Cl.none()
+          : Cl.some(Cl.principal(input.wallet)),
       ],
       { operation: "update-agent" }
     );
@@ -180,9 +206,13 @@ export class PerkOSTransactionBuilder {
 
   createJob(input: CreateJobInput): ContractCallPlan {
     assertPrincipal(input.evaluator, "evaluator", this.config.network);
-    if (input.provider) assertPrincipal(input.provider, "provider", this.config.network);
+    if (input.provider)
+      assertPrincipal(input.provider, "provider", this.config.network);
     if (input.provider === input.evaluator) {
-      throw new PerkOSError("INPUT_INVALID", "provider and evaluator must be different.");
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        "provider and evaluator must be different."
+      );
     }
     assertAscii(input.description, "description", 512);
     const expiredAt = toUint(input.expiredAt, "expiredAt");
@@ -223,6 +253,36 @@ export class PerkOSTransactionBuilder {
     }
     assertPrincipal(input.sender, "sender", this.config.network);
     const contract = commerceContract(this.config, input.asset);
+    if (supportsServiceFees(contract, input.asset)) {
+      const acceptance = input.serviceFeeAcceptance;
+      if (
+        !acceptance ||
+        acceptance.gross !== amount ||
+        acceptance.basisPoints !== 200 ||
+        acceptance.rejectionRefund !== "net-after-evaluation"
+      ) {
+        throw new PerkOSError(
+          "INPUT_INVALID",
+          "Explicit 2% earned-fee acceptance, including net rejection refund, is required."
+        );
+      }
+      validateServiceFeeSplit(
+        {
+          ...quoteServiceFee(amount),
+          treasury: acceptance.treasury,
+          waived: false,
+        },
+        amount,
+        this.config.network
+      );
+      if (acceptance.treasury === input.sender)
+        throw new PerkOSError("INPUT_INVALID", "Treasury cannot fund a job.");
+    } else if (input.serviceFeeAcceptance) {
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        "This contract generation has no earned service fee."
+      );
+    }
     return plan(
       this.config,
       contract,
@@ -234,6 +294,15 @@ export class PerkOSTransactionBuilder {
         amount,
         jobId,
         sender: input.sender,
+        ...(input.serviceFeeAcceptance
+          ? {
+              serviceFee: {
+                ...quoteServiceFee(amount),
+                treasury: input.serviceFeeAcceptance.treasury,
+                waived: false,
+              },
+            }
+          : {}),
       },
       [exactTransfer(this.config, input.asset, input.sender, amount)]
     );
@@ -258,12 +327,55 @@ export class PerkOSTransactionBuilder {
 
   submitWork(input: SubmitWorkInput): ContractCallPlan {
     const jobId = toUint(input.jobId, "jobId");
+    const acceptance = input.serviceFeeAcceptance;
+    const feeContract = supportsServiceFees(
+      commerceContract(this.config, input.asset),
+      input.asset
+    );
+    if (feeContract) {
+      if (
+        !acceptance ||
+        acceptance.gross <= 0n ||
+        acceptance.basisPoints !== 200 ||
+        acceptance.rejectionRefund !== "net-after-evaluation"
+      )
+        throw new PerkOSError(
+          "INPUT_INVALID",
+          "Provider must accept the gross budget and earned fee before submission."
+        );
+      validateServiceFeeSplit(
+        {
+          ...quoteServiceFee(acceptance.gross),
+          treasury: acceptance.treasury,
+          waived: false,
+        },
+        acceptance.gross,
+        this.config.network
+      );
+    } else if (acceptance)
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        "Unexpected service fee acceptance for this generation."
+      );
     return plan(
       this.config,
       commerceContract(this.config, input.asset),
       "submit-work",
       [Cl.uint(jobId), Cl.buffer(deliverableBuffer(input.deliverable))],
-      { operation: "submit-work", asset: input.asset, jobId }
+      {
+        operation: "submit-work",
+        asset: input.asset,
+        jobId,
+        ...(acceptance
+          ? {
+              serviceFee: {
+                ...quoteServiceFee(acceptance.gross),
+                treasury: acceptance.treasury,
+                waived: false,
+              },
+            }
+          : {}),
+      }
     );
   }
 
@@ -305,10 +417,7 @@ export class PerkOSTransactionBuilder {
       this.config,
       commerceContract(this.config, input.asset),
       "appeal-decision",
-      [
-        Cl.uint(jobId),
-        Cl.buffer(toHash32(input.evidenceHash, "evidenceHash")),
-      ],
+      [Cl.uint(jobId), Cl.buffer(toHash32(input.evidenceHash, "evidenceHash"))],
       { operation: "appeal-decision", asset: input.asset, jobId }
     );
   }
@@ -363,6 +472,115 @@ export class PerkOSTransactionBuilder {
     );
   }
 
+  initializeServiceFeeProtocol(
+    input: InitializeServiceFeeProtocolInput
+  ): ContractCallPlan {
+    const contract = this.requireServiceFees(input.asset);
+    const appealWindow = toUint(input.appealWindow, "appealWindow");
+    const expectedWindow = this.config.network === "mainnet" ? 144n : 3n;
+    for (const [field, value] of Object.entries({
+      owner: input.owner,
+      treasury: input.treasury,
+      appealAuthority: input.appealAuthority,
+    })) {
+      assertPrincipal(value, field, this.config.network);
+    }
+    if (
+      appealWindow !== expectedWindow ||
+      input.treasury === input.owner ||
+      input.treasury === input.appealAuthority
+    ) {
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        "Initialization requires a separate treasury and the network-specific appeal window (testnet 3, mainnet 144)."
+      );
+    }
+    return plan(
+      this.config,
+      contract,
+      "initialize-protocol",
+      [
+        Cl.uint(appealWindow),
+        Cl.principal(input.appealAuthority),
+        Cl.principal(input.treasury),
+      ],
+      {
+        operation: "initialize-protocol",
+        asset: input.asset,
+        sender: input.owner,
+      }
+    );
+  }
+
+  waiveServiceFee(input: WaiveServiceFeePlanInput): ContractCallPlan {
+    const contract = this.requireServiceFees(input.asset);
+    const jobId = toUint(input.jobId, "jobId");
+    assertPrincipal(input.authority, "authority", this.config.network);
+    return plan(
+      this.config,
+      contract,
+      "waive-service-fee",
+      [Cl.uint(jobId), Cl.buffer(toHash32(input.evidenceHash, "evidenceHash"))],
+      {
+        operation: "waive-service-fee",
+        asset: input.asset,
+        jobId,
+        sender: input.authority,
+      }
+    );
+  }
+
+  refundServiceFee(input: RefundServiceFeePlanInput): ContractCallPlan {
+    const contract = this.requireServiceFees(input.asset);
+    const jobId = toUint(input.jobId, "jobId");
+    const amount = toUint(input.amount, "amount");
+    assertPrincipal(input.treasury, "treasury", this.config.network);
+    assertPrincipal(input.recipient, "recipient", this.config.network);
+    if (input.treasury === input.recipient)
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        "Refund recipient cannot be treasury."
+      );
+    if (input.asset === "sbtc" && !input.sbtcToken)
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        "Refund requires the job-pinned sBTC token."
+      );
+    return plan(
+      this.config,
+      contract,
+      "refund-service-fee",
+      escrowArgs(this.config, input.asset, [Cl.uint(jobId)], input.sbtcToken),
+      {
+        operation: "refund-service-fee",
+        asset: input.asset,
+        jobId,
+        amount,
+        sender: input.treasury,
+        recipient: input.recipient,
+      },
+      [
+        exactTransfer(
+          this.config,
+          input.asset,
+          input.treasury,
+          amount,
+          input.sbtcToken
+        ),
+      ]
+    );
+  }
+
+  private requireServiceFees(asset: PaymentAsset): ContractId {
+    const contract = commerceContract(this.config, asset);
+    if (!supportsServiceFees(contract, asset))
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        "Operation requires STX v6 or sBTC v5 explicitly configured."
+      );
+    return contract;
+  }
+
   private decisionSettlement(
     operation: "finalize-decision" | "resolve-appeal" | "settle-appeal-timeout",
     input: DecisionSettlementInput,
@@ -372,9 +590,32 @@ export class PerkOSTransactionBuilder {
     const amount = toUint(input.amount, "amount", true);
     assertPrincipal(input.recipient, "recipient", this.config.network);
     const contract = commerceContract(this.config, input.asset);
+    if (supportsServiceFees(contract, input.asset)) {
+      if (!input.serviceFee || amount === 0n)
+        throw new PerkOSError(
+          "INPUT_INVALID",
+          "Fee settlement requires a verified split and positive gross escrow."
+        );
+      validateServiceFeeSplit(input.serviceFee, amount, this.config.network);
+      if (input.serviceFee.treasury === input.recipient)
+        throw new PerkOSError(
+          "INPUT_INVALID",
+          "Economic recipient cannot be treasury."
+        );
+      if (input.asset === "sbtc" && !input.sbtcToken)
+        throw new PerkOSError(
+          "INPUT_INVALID",
+          "Settlement requires the job-pinned sBTC token."
+        );
+    } else if (input.serviceFee) {
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        "Unexpected fee metadata for a no-fee contract."
+      );
+    }
     const sbtcToken =
       input.asset === "sbtc"
-        ? input.sbtcToken ?? this.config.contracts.sbtcToken
+        ? (input.sbtcToken ?? this.config.contracts.sbtcToken)
         : undefined;
     if (sbtcToken) parseContractId(sbtcToken, "sbtcToken", this.config.network);
     const postConditions =
@@ -392,6 +633,7 @@ export class PerkOSTransactionBuilder {
         amount,
         jobId,
         recipient: input.recipient,
+        ...(input.serviceFee ? { serviceFee: input.serviceFee } : {}),
       },
       postConditions
     );
@@ -409,9 +651,18 @@ export class PerkOSTransactionBuilder {
     const amount = toUint(input.amount, "amount", true);
     assertPrincipal(input.recipient, "recipient", this.config.network);
     const contract = commerceContract(this.config, input.asset);
+    if (
+      supportsServiceFees(contract, input.asset) &&
+      (operation === "complete-job" || operation === "reject-job")
+    ) {
+      throw new PerkOSError(
+        "INPUT_INVALID",
+        "Use recordDecision and the autonomous decision settlement flow for this generation."
+      );
+    }
     const sbtcToken =
       input.asset === "sbtc"
-        ? input.sbtcToken ?? this.config.contracts.sbtcToken
+        ? (input.sbtcToken ?? this.config.contracts.sbtcToken)
         : undefined;
     if (sbtcToken) parseContractId(sbtcToken, "sbtcToken", this.config.network);
     const postConditions =

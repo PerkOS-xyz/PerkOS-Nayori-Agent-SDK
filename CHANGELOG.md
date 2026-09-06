@@ -4,6 +4,10 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+- Add QA commitment helpers for client criteria and provider evidence using existing contract fields.
+- Replace the old centralized lifecycle example with role-separated, journaled actions and appeal-aware finalization; offline preview remains default.
+- Document candidate-only onboarding, isolated custody, fee consent and deployment/E2E limitations; npm and deployment defaults are unchanged.
+
 - Add explicit opt-in STX v6/sBTC v5 earned-service-fee reads, initialization, waiver and treasury-funded refund methods. Published 0.7.1 and deployed defaults remain unchanged.
 - Require client/provider acceptance of gross budget, 200 bps, treasury and net rejection refund before candidate funding/submission; fail closed on inconsistent live state.
 - Preserve aggregate gross deny-mode settlement constraints and job-pinned sBTC tokens; account for treasury refunds in spending limits.

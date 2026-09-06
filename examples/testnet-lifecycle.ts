@@ -1,305 +1,199 @@
-import {
-  HeadlessSigner,
-  PerkOSClient,
-  PerkOSError,
+/**
+ * Role-separated QA example. Preview is offline; live actions require explicit consent.
+ * No evaluator key, fake deliverable, automatic retries or mainnet path.
+ */
+import { mkdirSync, readFileSync, rmdirSync } from "node:fs";
+import { isAbsolute } from "node:path";
+import { pathToFileURL } from "node:url";
+import { PerkOSClient, prepareEvaluationJob, prepareEvaluationSubmission, evaluationJobId,
+  type CriteriaCommitmentInput, type EvaluationEvidence, type PerkOSSigner, type ServiceFeeAcceptance,
 } from "@perkos/agent-sdk";
-import type {
-  ContractCallPlan,
-  PerkOSSigner,
-  TransactionConfirmation,
-  TransactionReceipt,
-} from "@perkos/agent-sdk";
-import { fetchChainTip } from "./testnet-api.js";
+import { QuickstartJournal, checkpointedTransaction, intentHash } from "./testnet-journal.js";
 
-const NETWORK = "testnet" as const;
-const DEFAULT_API_URL = "https://api.testnet.hiro.so";
-const DRY_RUN_CLIENT = "ST1THWXQ8368SDN2MJGE4BMDKMCHZ2GSVTSQDA7QF";
-const DRY_RUN_PROVIDER = "ST3AZN3BSQYJ5VWMNG92N88Z4G9498VYSHDZD9EK";
-const DRY_RUN_EVALUATOR = "ST1YXCNCJT2NJZR6G4NYNE6NZ0CPDKPWKVJDRPKTJ";
-const DEMO_JOB_ID = 1n;
-const DEMO_AMOUNT = 100n;
-
-function json(value: unknown): string {
-  return JSON.stringify(
-    value,
-    (_key, current) =>
-      typeof current === "bigint" ? current.toString() : current,
-    2
-  );
+const DEPLOYER = "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5";
+const API = "https://api.testnet.hiro.so";
+const contracts = {
+  stxCommerce: `${DEPLOYER}.agentic-commerce-v6` as const,
+  sbtcCommerce: `${DEPLOYER}.sbtc-commerce-v5` as const,
+};
+const steps = ["register", "create", "set-budget", "fund", "assign", "submit", "evaluate", "status", "finalize"] as const;
+type Step = typeof steps[number];
+interface RunConfig extends Omit<CriteriaCommitmentInput, "contract"> {
+  role: "client" | "provider";
+  provider: string;
+  treasury: string;
+  amount: string;
+  expiredAt: string;
+  jobId?: string;
+  agentName?: string;
+  evidence?: readonly EvaluationEvidence[];
 }
-
-function printPlan(label: string, plan: ContractCallPlan): void {
-  console.log(`\n${label}`);
-  console.log(
-    json({
-      network: plan.network,
-      contract: plan.contract,
-      functionName: plan.functionName,
-      intent: plan.intent,
-      postConditionMode: plan.postConditionMode,
-      postConditionCount: plan.postConditions.length,
-    })
-  );
+function ensure(ok: boolean, reason: string): asserts ok { if (!ok) throw new Error(reason); }
+function loadRun(path: string): RunConfig {
+  ensure(isAbsolute(path), "absolute_config_required");
+  const input = JSON.parse(readFileSync(path, "utf8")) as RunConfig;
+  ensure(input.network === "testnet" && ["stx", "sbtc"].includes(input.asset), "testnet_only");
+  ensure(["client", "provider"].includes(input.role), "invalid_role");
+  ensure([input.client, input.provider, input.evaluator, input.treasury].every(value => /^ST[A-Z0-9]{20,41}$/.test(value)) &&
+    new Set([input.client, input.provider, input.evaluator, input.treasury]).size === 4, "distinct_testnet_roles_required");
+  ensure(/^[1-9][0-9]*$/.test(input.amount) && BigInt(input.amount) <= (input.asset === "sbtc" ? 1000n : 100000n), "test_amount_cap");
+  ensure(/^[1-9][0-9]*$/.test(input.expiredAt), "expiry_required");
+  ensure(input.jobId === undefined || /^[1-9][0-9]*$/.test(input.jobId), "invalid_job_id");
+  return input;
 }
-
-function dryRun(): void {
-  const preview = new PerkOSClient({
-    network: NETWORK,
-    spendingPolicy: {
-      allowedNetworks: [NETWORK],
-      allowedAssets: ["sbtc"],
-      maxPerTransaction: { sbtc: DEMO_AMOUNT },
-      maxPerSession: { sbtc: DEMO_AMOUNT },
-    },
-  });
-  const expiresAt = 1_000_000n;
-  const plans = [
-    [
-      "1. Register provider agent",
-      preview.transactions.registerAgent({
-        name: "PerkOS Testnet Provider",
-        description: "Agent SDK transactional quickstart provider",
-        wallet: DRY_RUN_PROVIDER,
-        endpoints: [{ name: "mcp", url: "https://example.com/mcp" }],
-      }),
-    ],
-    [
-      "2. Create sBTC job with distinct provider and evaluator",
-      preview.transactions.createJob({
-        asset: "sbtc",
-        provider: DRY_RUN_PROVIDER,
-        evaluator: DRY_RUN_EVALUATOR,
-        expiredAt: expiresAt,
-        description: "Create a signed testnet lifecycle receipt",
-      }),
-    ],
-    [
-      "3. Set job budget",
-      preview.transactions.setBudget({
-        asset: "sbtc",
-        jobId: DEMO_JOB_ID,
-        amount: DEMO_AMOUNT,
-      }),
-    ],
-    [
-      "4. Fund exact sBTC escrow",
-      preview.transactions.fundJob({
-        asset: "sbtc",
-        jobId: DEMO_JOB_ID,
-        amount: DEMO_AMOUNT,
-        sender: DRY_RUN_CLIENT,
-      }),
-    ],
-    [
-      "5. Provider submits deliverable",
-      preview.transactions.submitWork({
-        asset: "sbtc",
-        jobId: DEMO_JOB_ID,
-        deliverable: "ipfs:bafy-perkos-testnet-receipt",
-      }),
-    ],
-    [
-      "6. Evaluator releases escrow",
-      preview.transactions.completeJob({
-        asset: "sbtc",
-        jobId: DEMO_JOB_ID,
-        amount: DEMO_AMOUNT,
-        recipient: DRY_RUN_PROVIDER,
-      }),
-    ],
-    [
-      "7. Client rates provider",
-      preview.transactions.rateProvider({
-        asset: "sbtc",
-        jobId: DEMO_JOB_ID,
-        score: 5n,
-        comment: "Completed through the Agent SDK quickstart",
-      }),
-    ],
-  ] as const;
-
-  console.log("PerkOS sBTC lifecycle: safe testnet preview");
-  console.log("No wallet, key, transaction, or network request was used.");
-  for (const [label, plan] of plans) printPlan(label, plan);
-  console.log("\nFunding policy decision");
-  console.log(json(preview.preview(plans[3][1])));
-  console.log(
-    "\nTo broadcast, copy examples/testnet.env.example, fund all three testnet roles with fee STX, fund the client with testnet sBTC, and set PERKOS_CONFIRM_TESTNET_BROADCAST=yes."
-  );
+async function tip() {
+  const response = await fetch(API + "/v2/info", { redirect: "error", signal: AbortSignal.timeout(15000) });
+  ensure(response.ok, "testnet_unavailable");
+  const info = await response.json() as Record<string, unknown>;
+  ensure(info.network_id === 2147483648, "wrong_network");
+  const burn = info.burn_block_height;
+  ensure(typeof burn === "number" && Number.isSafeInteger(burn) && burn >= 0, "invalid_burn_height");
+  const stacks = info.stacks_tip_height;
+  ensure(typeof stacks === "number" && Number.isSafeInteger(stacks) && stacks >= 0, "invalid_stacks_height");
+  return { burn: BigInt(burn), stacks: BigInt(stacks) };
 }
-
-function requiredEnvironment(name: string): string {
-  const value = process.env[name]?.trim();
-  if (!value) throw new Error(`${name} is required for live testnet mode.`);
-  return value;
+function print(value: unknown) {
+  console.log(JSON.stringify(value, (_key, item: unknown) => typeof item === "bigint" ? item.toString() : item, 2));
 }
-
-function amountFromEnvironment(): bigint {
-  const value = requiredEnvironment("PERKOS_AMOUNT");
-  if (!/^\d+$/.test(value) || BigInt(value) === 0n) {
-    throw new Error("PERKOS_AMOUNT must be a positive integer number of satoshis.");
+async function main() {
+  const action = process.env.PERKOS_ACTION ?? "preview";
+  if (action === "preview") {
+    print({ mode: "offline-preview", network: "testnet", contracts, steps,
+      note: "Client creates/funds/assigns; provider submits actual evidence. The isolated evaluator records a decision; finalize waits for the appeal deadline. No signer or network used." });
+    return;
   }
-  return BigInt(value);
-}
-
-function okUint(confirmation: TransactionConfirmation, label: string): bigint {
-  const repr = confirmation.result?.repr;
-  const match = repr?.match(/^\(ok u(\d+)\)$/);
-  if (!match?.[1]) {
-    throw new Error(`${label} did not return an (ok uint) result: ${repr ?? "missing"}.`);
+  ensure(steps.includes(action as Step), "unknown_action");
+  const step = action as Step;
+  ensure(process.env.PERKOS_CONFIRM_TESTNET_BROADCAST === "yes" || step === "status", "explicit_testnet_consent_required");
+  const run = loadRun(process.env.PERKOS_RUN_CONFIG ?? "");
+  const contract = run.asset === "stx" ? contracts.stxCommerce : contracts.sbtcCommerce;
+  const input = { ...run, contract };
+  const prepared = await prepareEvaluationJob(input);
+  const wallet = run.role === "client" ? run.client : run.provider;
+  const amount = BigInt(run.amount);
+  const id = run.jobId ? BigInt(run.jobId) : undefined;
+  const config = { network: "testnet" as const, apiUrl: API, contracts,
+    spendingPolicy: { allowedNetworks: ["testnet"] as const, allowedAssets: [run.asset],
+      maxPerTransaction: { [run.asset]: amount }, maxPerSession: { [run.asset]: amount } } };
+  const reader = new PerkOSClient(config);
+  const { burn, stacks } = await tip();
+  if (step === "status") {
+    ensure(id !== undefined, "job_id_required");
+    const job = await reader.getJob(run.asset, id);
+    const decision = await reader.getDecision(run.asset, id);
+    const escrow = await reader.getEscrowBalance(run.asset, id);
+    print({ job, decision, escrow, burn,
+      note: "A decision is not a payout. Confirm settlement transfers and reputation separately." });
+    return;
   }
-  return BigInt(match[1]);
-}
+  ensure(!["create", "set-budget", "fund", "assign", "finalize"].includes(step) || run.role === "client", "client_role_required");
+  ensure(step !== "submit" || run.role === "provider", "provider_role_required");
+  ensure(["register", "create"].includes(step) || id !== undefined, "job_id_required");
+  const acceptance: ServiceFeeAcceptance = { gross: amount, basisPoints: 200,
+    treasury: run.treasury, rejectionRefund: "net-after-evaluation" };
+  if (["fund", "submit"].includes(step)) ensure(
+    process.env.PERKOS_ACCEPT_SERVICE_FEE === "200bps-net-after-evaluation", "explicit_service_fee_consent_required");
 
-async function broadcastAndConfirm(
-  label: string,
-  client: PerkOSClient,
-  action: () => Promise<TransactionReceipt>
-): Promise<TransactionConfirmation> {
-  console.log(`\n${label}`);
-  const broadcast = await action();
-  console.log(`Broadcast: ${broadcast.explorerUrl}`);
-  const confirmation = await client.confirm(broadcast, {
-    pollIntervalMs: 5_000,
-    timeoutMs: 10 * 60_000,
-  });
-  console.log(`Confirmation: ${confirmation.status}`);
-  if (confirmation.status !== "success") {
-    throw new PerkOSError(
-      "CONFIRMATION_FAILED",
-      `${label} ended with ${confirmation.status}.`,
-      { txid: confirmation.txid, result: confirmation.result }
-    );
+  async function currentJob() {
+    ensure(id !== undefined, "job_id_required");
+    const job = await reader.getJob(run.asset, id);
+    ensure(!!job && job.client === run.client && job.evaluator === run.evaluator &&
+      job.description === prepared.description && job.treasury === run.treasury, "job_snapshot_mismatch");
+    return job;
   }
-  return confirmation;
-}
-
-function liveClient(
-  signer: PerkOSSigner,
-  apiUrl: string,
-  amount?: bigint
-): PerkOSClient {
-  return new PerkOSClient({
-    network: NETWORK,
-    apiUrl,
-    signer,
-    ...(amount === undefined
-      ? {}
-      : {
-          spendingPolicy: {
-            allowedNetworks: [NETWORK],
-            allowedAssets: ["sbtc"],
-            maxPerTransaction: { sbtc: amount },
-            maxPerSession: { sbtc: amount },
-          },
-        }),
-  });
-}
-
-async function liveRun(): Promise<void> {
-  const amount = amountFromEnvironment();
-  const apiUrl = (process.env.PERKOS_API_URL?.trim() || DEFAULT_API_URL).replace(
-    /\/+$/,
-    ""
-  );
-  const clientSigner = new HeadlessSigner({
-    network: NETWORK,
-    apiUrl,
-    privateKeyProvider: () => requiredEnvironment("PERKOS_CLIENT_PRIVATE_KEY"),
-  });
-  const providerSigner = new HeadlessSigner({
-    network: NETWORK,
-    apiUrl,
-    privateKeyProvider: () => requiredEnvironment("PERKOS_PROVIDER_PRIVATE_KEY"),
-  });
-  const evaluatorSigner = new HeadlessSigner({
-    network: NETWORK,
-    apiUrl,
-    privateKeyProvider: () => requiredEnvironment("PERKOS_EVALUATOR_PRIVATE_KEY"),
-  });
-  const [clientAddress, providerAddress, evaluatorAddress, tip] = await Promise.all([
-    clientSigner.getAddress(),
-    providerSigner.getAddress(),
-    evaluatorSigner.getAddress(),
-    fetchChainTip(apiUrl),
-  ]);
-  if (new Set([clientAddress, providerAddress, evaluatorAddress]).size !== 3) {
-    throw new Error("Client, provider, and evaluator keys must control distinct addresses.");
+  if (step === "evaluate") {
+    const job = await currentJob();
+    ensure(job.status === "submitted" && job.provider === run.provider && job.reviewDeadline !== undefined, "job_not_submitted");
+    const committed = await prepareEvaluationSubmission({ ...input, jobId: run.jobId!, evidence: run.evidence ?? [] });
+    ensure(job.deliverable?.replace(/^0x/, "") === Buffer.from(committed.deliverable).toString("hex"), "evidence_mismatch");
+    // An explicit QA origin is required. No bearer token or evaluator key is used.
+    const endpoint = new URL(process.env.PERKOS_EVALUATOR_URL ?? "");
+    ensure(endpoint.protocol === "https:" && !endpoint.username && !endpoint.password &&
+      endpoint.pathname === "/" && !endpoint.search && !endpoint.hash, "https_evaluator_origin_required");
+    const response = await fetch(new URL("/v1/evaluations", endpoint), {
+      method: "POST", redirect: "error", signal: AbortSignal.timeout(120000),
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ commitmentVersion: "1", evaluationId: await evaluationJobId({
+        network: "testnet", contract, jobId: run.jobId! }), network: "testnet", asset: run.asset, contract, jobId: run.jobId,
+        job: { client: run.client, provider: run.provider, evaluator: run.evaluator,
+          status: "submitted", description: job.description, reviewDeadlineBurn: job.reviewDeadline.toString() },
+        acceptanceCriteria: run.acceptanceCriteria, evidence: run.evidence }),
+    });
+    ensure(response.status === 202, "evaluation_not_admitted");
+    print({ admitted: true, evaluationId: await evaluationJobId({ network: "testnet", contract, jobId: run.jobId! }),
+      note: "Queued is not approved or paid. Poll the evaluation status and the on-chain job." });
+    return;
   }
 
-  const client = liveClient(clientSigner, apiUrl, amount);
-  const provider = liveClient(providerSigner, apiUrl);
-  const evaluator = liveClient(evaluatorSigner, apiUrl);
-  const expiresAt = tip + 1_000n;
-  const run = Date.now().toString(36);
-
-  console.log("PerkOS sBTC lifecycle: LIVE TESTNET MODE");
-  console.log(
-    json({
-      network: NETWORK,
-      amountSatoshis: amount,
-      client: clientAddress,
-      provider: providerAddress,
-      evaluator: evaluatorAddress,
-      expiresAt,
-    })
-  );
-
-  await broadcastAndConfirm("1. Register provider agent", provider, () =>
-    provider.registerAgent({
-      name: `Testnet Provider ${run}`,
-      description: "PerkOS Agent SDK transactional quickstart provider",
-      wallet: providerAddress,
-      endpoints: [{ name: "mcp", url: "https://example.com/mcp" }],
-    })
-  );
-  const created = await broadcastAndConfirm("2. Create sBTC job", client, () =>
-    client.createJob({
-      asset: "sbtc",
-      provider: providerAddress,
-      evaluator: evaluatorAddress,
-      expiredAt: expiresAt,
-      description: `Agent SDK testnet lifecycle ${run}`,
-    })
-  );
-  const jobId = okUint(created, "create-job");
-  console.log(`Job ID: ${jobId}`);
-
-  await broadcastAndConfirm("3. Set job budget", client, () =>
-    client.setBudget({ asset: "sbtc", jobId, amount })
-  );
-  await broadcastAndConfirm("4. Fund exact sBTC escrow", client, () =>
-    client.fundJob({ asset: "sbtc", jobId, amount })
-  );
-  await broadcastAndConfirm("5. Provider submits deliverable", provider, () =>
-    provider.submitWork({
-      asset: "sbtc",
-      jobId,
-      deliverable: `ipfs:perkos-${run}`,
-    })
-  );
-  await broadcastAndConfirm("6. Evaluator releases escrow", evaluator, () =>
-    evaluator.completeJob("sbtc", jobId)
-  );
-  await broadcastAndConfirm("7. Client rates provider", client, () =>
-    client.rateProvider({
-      asset: "sbtc",
-      jobId,
-      score: 5n,
-      comment: "Completed through the Agent SDK quickstart",
-    })
-  );
-
-  const [job, reputation] = await Promise.all([
-    client.getJob("sbtc", jobId),
-    client.getReputation(providerAddress),
-  ]);
-  console.log("\nFinal on-chain state");
-  console.log(json({ job, reputation }));
+  const journalPath = process.env.PERKOS_JOURNAL ?? "";
+  ensure(isAbsolute(journalPath), "absolute_journal_required");
+  // Atomic directory lock across processes. A crash deliberately leaves it for manual reconciliation.
+  const lock = journalPath + ".lock";
+  mkdirSync(lock, { mode: 0o700 });
+  let journal: QuickstartJournal | undefined;
+  try {
+    journal = new QuickstartJournal(journalPath);
+    const key = step + ":" + (["register", "create"].includes(step) ? "new" : run.jobId!);
+    const intent = intentHash({ step, run, contract });
+    const activeJournal = journal;
+    const send = async () => {
+      if (step === "create") ensure(BigInt(run.expiredAt) > stacks, "expired_job");
+      if (!["register", "create"].includes(step)) {
+        const job = await currentJob();
+        ensure(job.budget === amount || step === "set-budget", "budget_mismatch");
+        if (step === "set-budget") ensure(job.status === "open", "job_not_open");
+        if (step === "fund") {
+          ensure(job.status === "open" && await reader.getEscrowBalance(run.asset, id!) === 0n, "escrow_not_empty");
+          const policy = await reader.getServiceFeePolicy(run.asset);
+          ensure(policy.configured && policy.basisPoints === 200 && policy.treasury === run.treasury, "fee_policy_mismatch");
+        }
+        if (step === "assign") ensure(job.status === "funded" && !job.provider, "job_not_assignable");
+        if (step === "submit") ensure(job.status === "funded" && job.provider === run.provider, "job_not_assigned_to_provider");
+        if (step === "finalize") {
+          const decision = await reader.getDecision(run.asset, id!);
+          ensure(job.status === "decision-pending" && !!decision && !decision.appealedBy &&
+            !decision.finalDecision && burn > decision.appealDeadline, "waiting_for_appeal_deadline_or_resolution");
+        }
+      }
+      const signerPath = process.env.PERKOS_SIGNER_MODULE ?? "";
+      ensure(isAbsolute(signerPath), "absolute_signer_module_required");
+      const module = await import(pathToFileURL(signerPath).href) as { signer?: PerkOSSigner };
+      const signer = module.signer;
+      ensure(!!signer && await signer.getAddress() === wallet, "signer_role_mismatch");
+      const client = new PerkOSClient({ ...config, signer: {
+        getAddress: () => signer.getAddress(),
+        signAndBroadcast: async plan => ({ txid: await checkpointedTransaction(
+          activeJournal, key, intent, async () => (await signer.signAndBroadcast(plan)).txid,
+        ) }),
+      } });
+      if (step === "register") return (await client.registerAgent({
+        name: run.agentName ?? "Nayori QA participant", description: "Controlled QA participant", wallet, endpoints: [],
+      })).txid;
+      if (step === "create") return (await client.createJob({
+        asset: run.asset, evaluator: run.evaluator, expiredAt: BigInt(run.expiredAt), description: prepared.description,
+      })).txid;
+      if (step === "set-budget") return (await client.setBudget({ asset: run.asset, jobId: id!, amount })).txid;
+      if (step === "fund") return (await client.fundJob({ asset: run.asset, jobId: id!, amount, serviceFeeAcceptance: acceptance })).txid;
+      if (step === "assign") return (await client.assignProvider({ asset: run.asset, jobId: id!, provider: run.provider })).txid;
+      if (step === "submit") {
+        const committed = await prepareEvaluationSubmission({ ...input, jobId: run.jobId!, evidence: run.evidence ?? [] });
+        return (await client.submitWork({ asset: run.asset, jobId: id!, deliverable: committed.deliverable,
+          serviceFeeAcceptance: acceptance })).txid;
+      }
+      return (await client.finalizeDecision(run.asset, id!)).txid;
+    };
+    // A prior signed attempt bypasses mutable preflight and only confirms its saved txid.
+    const prior = journal.lookup(key, intent);
+    const txid = prior ? await checkpointedTransaction(journal, key, intent, async () => {
+      throw new Error("unexpected_retry");
+    }) : await send();
+    const confirmation = await reader.confirm(txid, { timeoutMs: 120000, pollIntervalMs: 10000 });
+    print({ step, txid, status: confirmation.status, result: confirmation.result?.repr, block: confirmation.blockHeight });
+    ensure(confirmation.status === "success", "not_confirmed_success_do_not_resend");
+  } finally { journal?.close(); rmdirSync(lock); }
 }
-
-if (process.env.PERKOS_CONFIRM_TESTNET_BROADCAST === "yes") {
-  await liveRun();
-} else {
-  dryRun();
-}
+main().catch(() => {
+  // Raw signer/network/schema errors can contain credentials. Details belong in operator diagnostics.
+  console.error("Quickstart stopped safely. Verify config, on-chain state and journal before retrying; never delete an ambiguous attempt to resend.");
+  process.exitCode = 1;
+});

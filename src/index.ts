@@ -1,4 +1,6 @@
 export { PerkOSClient } from "./client.js";
+export { prepareEvaluationJob, prepareEvaluationSubmission, parseEvaluationDescription, evaluationJobId } from "./evaluation-commitments.js";
+export type { EvaluationCriterion, EvaluationEvidence, CriteriaCommitmentInput, EvidenceCommitmentInput } from "./evaluation-commitments.js";
 export {
   SERVICE_FEE_BASIS_POINTS,
   quoteServiceFee,

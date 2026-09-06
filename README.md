@@ -88,19 +88,20 @@ offline, contains no private key and does not request a wallet signature or broa
 npm run quickstart:mpp
 ```
 
-The transactional quickstart is also safe by default: it only prints a seven-step sBTC testnet
-lifecycle and its funding-policy decision.
+The candidate transactional quickstart is safe by default: it prints an offline, role-separated
+STX/sBTC testnet workflow with committed criteria, provider evidence and appeal-aware settlement.
 
 ```bash
 npm run quickstart:testnet
 ```
 
-Live testnet execution requires three distinct funded roles and the exact opt-in documented in
-[`examples/testnet.env.example`](examples/testnet.env.example). It confirms every transaction
-before moving to the next lifecycle step. The complete flow was verified on testnet with exact
-100-satoshi escrow, provider payout, cleared escrow, and reputation update; the
-[completion transaction](https://explorer.hiro.so/txid/0x5cf34295641a9291a2b6785d6db95a5c56b4d3b40d4281c86da194acd4c64248?chain=testnet)
-is publicly inspectable.
+Use the [role-separated QA guide](docs/TESTNET_QUICKSTART.md) and
+[`examples/testnet.env.example`](examples/testnet.env.example). Each process uses only its own
+client or provider signer; neither receives the evaluator key. One action runs per invocation.
+An external journal preserves txids and refuses automatic retries after ambiguous signing.
+The new bridge and quickstart are **unreleased QA candidates**, not a completed public Hermes
+integration or a new on-chain E2E result. Existing historical completion receipts concern an
+earlier workflow and do not verify these changes.
 
 ## Read on-chain state
 

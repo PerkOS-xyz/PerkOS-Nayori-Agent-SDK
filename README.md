@@ -635,12 +635,15 @@ responsible disclosure process.
 
 ## QA promotion
 
-`main` is the canonical integration branch. The `Promote exact main commit to QA` workflow accepts
-only a full commit SHA already contained in `main`, requires a fast-forward from the current `qa`
-branch, reruns verification, package inspection and dependency audit, and then pushes that exact
-SHA without force. The protected branch must grant bypass only to the official GitHub Actions app
-before the first promotion; administrator enforcement must remain enabled. QA consumes an exact
-commit or tarball and never publishes npm as a side effect.
+New integration work is reviewed in pull requests targeting `qa`; promotion to `main` is a
+separate reviewed release after QA verification. QA consumes an exact commit or tarball and
+never publishes npm as a side effect. Operator deployments are initiated from the approved Mac,
+with image builds on the VPS; do not assume GitHub-hosted runners can reach that server.
+
+The repository also retains the historical `Promote exact main commit to QA` workflow. It accepts
+only a full SHA already in `main` and a fast-forward from `qa`. It is not the forward path for
+new QA-only changes: do not force or rewind branches to make it run. Branch protection and
+restricted GitHub Actions bypass remain required where that legacy workflow is used.
 
 ## Development
 

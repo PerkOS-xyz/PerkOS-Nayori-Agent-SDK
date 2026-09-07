@@ -4,6 +4,11 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+- Return `null` for absent reputation-sync records on autonomous STX/sBTC contracts
+  (`u823`/`u923`), preserving earlier `u623`/`u723` handling. Keep unrelated contract
+  errors visible; add regression coverage and readable error descriptions. No changes
+  to signing, settlement, contract defaults or npm publication.
+
 - Allow 45 seconds for public QA evaluation admission (15 seconds for status reads)
   to accommodate paced eligibility checks. Return sanitized, actionable quota,
   eligibility and transport errors without automatic retries or budget changes.

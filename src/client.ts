@@ -702,7 +702,9 @@ export class PerkOSClient {
         error instanceof PerkOSError &&
         error.code === "CONTRACT_ERROR" &&
         (error.details?.clarityCode === 623n ||
-          error.details?.clarityCode === 723n)
+          error.details?.clarityCode === 723n ||
+          error.details?.clarityCode === 823n ||
+          error.details?.clarityCode === 923n)
       ) {
         return null;
       }

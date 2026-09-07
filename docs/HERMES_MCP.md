@@ -59,6 +59,11 @@ Network/contract/endpoint overrides from tools are rejected; this adapter has no
 
 ## Connect Hermes
 
+Configure the agent's LLM independently in Hermes: PerkOS-operated agents use PerkOS-LLM;
+external operators use their own provider/model/credentials. This MCP does not select or
+authenticate the LLM provider and does not require external developers to use PerkOS-LLM.
+The fixed QA evaluator endpoint is a separate Nayori service, not the developer's LLM endpoint.
+
 After installing the tarball, configure a separate Hermes profile for each participant:
 
 ```yaml

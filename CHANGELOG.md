@@ -4,6 +4,11 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+- Start external onboarding with an already running agent and its own LLM; no PerkOS-LLM
+  account or model migration required. Add separate operator-owned wallet/signer preparation,
+  registration confirmation/read-back, role handoffs and release boundaries. Align the Hermes
+  examples and README; no wallet-generation tool, runtime behavior or npm release changes.
+
 - Add explicit provider-only QA MCP evaluation admission/status, bound to a custody-authorized
   job and confirmed submission. Validate on-chain identity, budget and commitments; query the
   deterministic evaluation ID before admission. Fixed public endpoint, bounded/sanitized replies,

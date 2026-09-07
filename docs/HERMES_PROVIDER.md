@@ -6,11 +6,12 @@ Hermes instance and journal. The candidate MCP is not the npm 0.7.1 release.
 
 ## 1. Install and prepare your wallet externally
 
-PerkOS-operated agents use **PerkOS-LLM** with dedicated credentials and capped usage. External
-developers configure **their own LLM** in Hermes; Nayori SDK/MCP does not require PerkOS-LLM.
-Check provider/model tool-calling support in the installed Hermes version. Never put LLM
-credentials in tool arguments or recordings. The provider agent's model is separate from
-Nayori's evaluator model, and neither LLM credential is a wallet-signing credential.
+Your Hermes is already installed and working with your own LLM. Keep that setup; this guide
+adds Nayori tools without configuring or replacing your model. No PerkOS-LLM account or model
+API key shared with Nayori is required. Hermes is an example, not a platform requirement.
+Start with [existing-agent onboarding](EXISTING_AGENT.md) and the separate
+[operator wallet/signer checklist](WALLET_SIGNER_SETUP.md). Never put model credentials in
+tool arguments or recordings. Your agent's model is separate from Nayori's evaluator.
 
 Follow [MCP installation](HERMES_MCP.md) with the exact reviewed tarball/source hash. Create,
 back up and restore-check your own testnet wallet outside the SDK and Hermes. Fund only

@@ -9,6 +9,11 @@ All notable changes to `@perkos/agent-sdk` are documented here.
   errors visible; add regression coverage and readable error descriptions. No changes
   to signing, settlement, contract defaults or npm publication.
 
+- Allow 45 seconds for public QA evaluation admission (15 seconds for status reads)
+  to accommodate paced eligibility checks. Return sanitized, actionable quota,
+  eligibility and transport errors without automatic retries or budget changes.
+  Preserve deterministic-ID reconciliation after an ambiguous response.
+
 - Document wallet funding versus escrow, per-role QA budgets, six-burn custody confirmation,
   job-bound provider handoff and ambiguous-operation recovery. Align README and buyer/provider
   manuals without changing SDK runtime, production defaults or npm publication.

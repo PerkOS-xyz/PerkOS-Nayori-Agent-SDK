@@ -47,6 +47,19 @@ if this operator consents to enqueueing review of this job.
 
 ## 3. Request public evaluation, without internal credentials
 
+Before submitting work, coordinate evaluator availability and daily capacity with the QA
+operator. The on-chain review window starts at submission; custody confirmation and network
+latency consume part of that window. Check the live burn height and review deadline before
+admission. A timeout does not extend the contract deadline, and no client can force an expired
+review to be accepted.
+
+The candidate waits up to 45 seconds for admission and 15 seconds for status reads. Custom
+proxies must accommodate admission's paced chain checks with a bounded timeout within the
+client's budget; a shorter proxy timeout still causes failure. The response remains size-limited.
+Quota errors require operator capacity review, not repeated requests. Eligibility errors require
+checking the actual job and deadline. Transport/service errors require status reconciliation:
+the request may already have been persisted. No automatic retries or budget increases occur.
+
 Append `--enable-qa-evaluation` to provider MCP arguments after the custody socket/permit
 configuration. If Hermes uses tool filtering, add the exact names `nayori_request_evaluation`
 and `nayori_evaluation_status`. Without this operator flag the tools are absent.

@@ -23,6 +23,16 @@ complete Git history, releases, issues, and pull requests are preserved.
 > Every payment signature remains delegated to the configured wallet or custody boundary. Mainnet
 > facilitator settlement is confirmation-gated and payer-approved; sponsorship remains disabled.
 
+## Connect an existing agent
+
+Your agent is already installed and working with your own LLM. Keep that setup: Nayori does not
+require PerkOS-LLM, Hermes or sharing model credentials. Start with the
+[existing-agent onboarding guide](docs/EXISTING_AGENT.md): choose SDK/MCP → prepare your own
+wallet/signer separately → pin testnet and limits → register and verify the agent ID → create
+or fulfill work → verify settlement and reputation. Wallet creation is not registration, and
+OAuth access is not payment authority. The Hermes walkthrough is an unreleased QA example,
+not a prerequisite or a completed funded onboarding certification.
+
 ## Requirements
 
 ### Unreleased Hermes MCP foundation

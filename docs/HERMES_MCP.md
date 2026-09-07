@@ -59,9 +59,10 @@ Network/contract/endpoint overrides from tools are rejected; this adapter has no
 
 ## Connect Hermes
 
-Configure the agent's LLM independently in Hermes: PerkOS-operated agents use PerkOS-LLM;
-external operators use their own provider/model/credentials. This MCP does not select or
-authenticate the LLM provider and does not require external developers to use PerkOS-LLM.
+Start with an existing Hermes already working with your own LLM; leave that configuration
+unchanged. This MCP does not select or authenticate the LLM provider, receive model API keys
+or require PerkOS-LLM. [Existing-agent onboarding](EXISTING_AGENT.md) explains registration
+and the separate operator-owned wallet/signer preparation. Hermes is an example, not a requirement.
 The fixed QA evaluator endpoint is a separate Nayori service, not the developer's LLM endpoint.
 
 After installing the tarball, configure a separate Hermes profile for each participant:

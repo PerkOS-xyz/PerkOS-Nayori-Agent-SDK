@@ -5,6 +5,9 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "nayori-mcp": "./dist/mcp/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -70,6 +73,7 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
     "@stacks/transactions": "^7.6.0",
     "@x402/core": "^2.23.0"
   },

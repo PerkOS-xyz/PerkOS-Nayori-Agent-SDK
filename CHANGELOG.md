@@ -4,6 +4,11 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+- Return `null` for absent reputation-sync records on autonomous STX/sBTC contracts
+  (`u823`/`u923`), preserving earlier `u623`/`u723` handling. Keep unrelated contract
+  errors visible; add regression coverage and readable error descriptions. No changes
+  to signing, settlement, contract defaults or npm publication.
+
 - Document wallet funding versus escrow, per-role QA budgets, six-burn custody confirmation,
   job-bound provider handoff and ambiguous-operation recovery. Align README and buyer/provider
   manuals without changing SDK runtime, production defaults or npm publication.

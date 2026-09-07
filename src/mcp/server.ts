@@ -4,7 +4,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema, type Tool } from "@model
 import { fetchCallReadOnlyFunction } from "@stacks/transactions";
 import { PerkOSClient } from "../client.js";
 import type { CustodyPort } from "../custody/socket.js";
-import { qaEvaluation } from "./evaluation.js";
+import { qaEvaluation, QaEvaluationError } from "./evaluation.js";
 import { assertPrincipal } from "../validation.js";
 import { prepareEvaluationJob, prepareEvaluationSubmission,
   type EvaluationCriterion, type EvaluationEvidence } from "../evaluation-commitments.js";
@@ -181,8 +181,10 @@ export function createHermesMcp(profileInput: unknown, reader: Reader = qaReader
         }
       }
       return { content: [{ type: "text" as const, text: json(result) }] };
-    } catch {
+    } catch (error) {
       // Do not reflect raw input, RPC responses, credentials or exception messages to the model.
+      if (error instanceof QaEvaluationError) return { isError: true, content: [{ type: "text" as const,
+        text: json({ code: error.code, message: new QaEvaluationError(error.code).message, automaticRetry: false }) }] };
       return { isError: true, content: [{ type: "text" as const,
         text: evaluation ? "Nayori QA request failed. Check evaluation and custody status before retrying; review may already be queued and a transaction may already be signed or broadcast."
           : custody ? "Nayori QA request failed. Reconcile custody status before retrying; an operation may already be signed or broadcast."

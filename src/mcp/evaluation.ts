@@ -7,6 +7,18 @@ import type { HermesProfile } from "./server.js";
 
 export const QA_EVALUATOR = "https://evaluator.qa.nayori.ai";
 const MAX = 32768;
+const READ_TIMEOUT_MS = 15000;
+// Admission checks several paced chain reads before persisting the request.
+const ADMISSION_TIMEOUT_MS = 45000;
+const SAFE_ERRORS = {
+  admission_limit: "QA evaluation quota reached. Ask the operator to review capacity; do not automatically retry or change budgets.",
+  ineligible: "QA evaluation is not eligible. Check the on-chain job, commitments and review deadline before taking another action.",
+  unavailable: "QA evaluator is unavailable. Query evaluation status before any retry; admission may be uncertain.",
+  transport: "QA evaluation transport failed or timed out. Query the deterministic evaluation status before any retry; do not repeat a signed operation.",
+} as const;
+export class QaEvaluationError extends Error {
+  constructor(readonly code: keyof typeof SAFE_ERRORS) { super(SAFE_ERRORS[code]); }
+}
 function check(ok: unknown): asserts ok { if (!ok) throw new Error("qa_evaluation_guard_failed"); }
 export interface EvaluationInput {
   asset: "stx" | "sbtc"; jobId: string; description: string;
@@ -37,9 +49,13 @@ export function qaEvaluation(profile: Readonly<HermesProfile>, custody: CustodyP
     return { contract, amount: BigInt(permit.amount), expiresAt: String(permit.expiresAt), id: await evaluationJobId({ network: "testnet", contract, jobId }) };
   }
   async function http(path: string, init?: RequestInit): Promise<{ code: number; data: Record<string, unknown> }> {
-    const response = await fetchImpl(QA_EVALUATOR + path, { ...init, redirect: "error", signal: AbortSignal.timeout(15000),
-      headers: { accept: "application/json", ...(init?.method === "POST" ? { "content-type": "application/json" } : {}) } });
-    check([200, 202, 404].includes(response.status));
+    let response: Response;
+    try {
+      response = await fetchImpl(QA_EVALUATOR + path, { ...init, redirect: "error",
+        signal: AbortSignal.timeout(init?.method === "POST" ? ADMISSION_TIMEOUT_MS : READ_TIMEOUT_MS),
+        headers: { accept: "application/json", ...(init?.method === "POST" ? { "content-type": "application/json" } : {}) } });
+    } catch { throw new QaEvaluationError("transport"); }
+    check([200, 202, 404, 422, 429, 503].includes(response.status));
     check(Number(response.headers.get("content-length") ?? 0) <= MAX && response.body);
     const stream = response.body.getReader(); const chunks: Uint8Array[] = []; let length = 0;
     try {
@@ -48,6 +64,11 @@ export function qaEvaluation(profile: Readonly<HermesProfile>, custody: CustodyP
     } finally { await stream.cancel(); stream.releaseLock(); }
     const data: unknown = JSON.parse(Buffer.concat(chunks).toString("utf8"));
     check(data && typeof data === "object" && !Array.isArray(data));
+    const error = (data as Record<string, unknown>).error;
+    if (response.status === 429 && error === "evaluation_admission_limit") throw new QaEvaluationError("admission_limit");
+    if (response.status === 422) throw new QaEvaluationError("ineligible");
+    if (response.status === 503) throw new QaEvaluationError("unavailable");
+    check([200, 202, 404].includes(response.status));
     return { code: response.status, data: data as Record<string, unknown> };
   }
   function summary(data: Record<string, unknown>, id: string, contract: string, asset: string, jobId: string) {

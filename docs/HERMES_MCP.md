@@ -112,6 +112,12 @@ not MCP, fetches/validates evidence bytes and rechecks eligibility, deadlines an
 The operator explicitly authorizes enqueueing evaluation work by enabling the option.
 No internal API key, wallet signature, second fee or x402 purchase is attached.
 
+Admission allows 45 seconds for paced eligibility reads; status lookup allows 15 seconds.
+Configure custom relay/proxy timeouts accordingly and check capacity before submission.
+Safe MCP error codes distinguish `admission_limit`, `ineligible`, `unavailable` and `transport`.
+All prohibit automatic retry. They contain fixed SDK guidance, never upstream error details.
+The contract's review deadline remains authoritative even after an HTTP timeout.
+
 The adapter looks up the deterministic job-scoped evaluation ID before POST. The server's
 durable idempotency remains the authority across processes/restarts. HTTP errors/timeouts
 do not trigger automatic retry: query status first. A changed manifest cannot bypass the

@@ -35,6 +35,32 @@ async function setup() {
 }
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 describe("bounded public QA evaluation admission", () => {
+  it("allows paced admission reads while retaining a shorter status timeout", async () => {
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+    const s = await setup(); await s.port.request(input);
+    expect(timeout.mock.calls.map(([ms]) => ms)).toEqual([15000, 45000]);
+    expect(s.fetch).toHaveBeenCalledTimes(2);
+  });
+  it.each([
+    [429, "evaluation_admission_limit", "admission_limit"],
+    [422, "ineligible_job", "ineligible"],
+    [503, "unavailable", "unavailable"],
+  ])("provides bounded actionable errors for HTTP %s without retry", async (status, error, code) => {
+    const s = await setup(); s.fetch.mockReset()
+      .mockResolvedValueOnce(response({ error: "evaluation_not_found" }, 404))
+      .mockResolvedValueOnce(response({ error, detail: "never-reflect-this-secret" }, Number(status)));
+    await expect(s.port.request(input)).rejects.toMatchObject({ code });
+    expect(s.fetch).toHaveBeenCalledTimes(2); expect(s.custody.execute).not.toHaveBeenCalled();
+  });
+  it("reconciles an accepted request after a lost POST response without a second admission", async () => {
+    const s = await setup(); s.fetch.mockReset()
+      .mockResolvedValueOnce(response({ error: "evaluation_not_found" }, 404))
+      .mockRejectedValueOnce(Error("private transport detail"))
+      .mockResolvedValueOnce(response(s.record));
+    await expect(s.port.request(input)).rejects.toMatchObject({ code: "transport" });
+    expect(await s.port.request(input)).toMatchObject({ status: "queued" });
+    expect(s.fetch.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+  });
   it("uses actual commitments, fixed endpoint and no bearer/signing", async () => {
     const s = await setup(); const result = await s.port.request(input) as { status: string; settlementVerified: boolean };
     expect(result.status).toBe("queued"); expect(result.settlementVerified).toBe(false);
@@ -106,6 +132,21 @@ describe("bounded public QA evaluation admission", () => {
   });
 });
 describe("optional official MCP interface", () => {
+  it("returns fixed quota guidance through the real MCP protocol without upstream details", async () => {
+    const s = await setup(); vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValueOnce(response({ error: "evaluation_not_found" }, 404))
+      .mockResolvedValueOnce(response({ error: "evaluation_admission_limit", detail: "private-upstream-detail" }, 429)));
+    const server = createHermesMcp(profile, s.reader, s.custody, true), client = new Client({ name: "qa", version: "1" });
+    const [st, ct] = InMemoryTransport.createLinkedPair();
+    try {
+      await server.connect(st); await client.connect(ct);
+      const result = await client.callTool({ name: "nayori_request_evaluation", arguments: input });
+      expect(result.isError).toBe(true);
+      expect(JSON.stringify(result)).toContain("admission_limit");
+      expect(JSON.stringify(result)).not.toContain("private-upstream-detail");
+      expect(s.custody.execute).not.toHaveBeenCalled();
+    } finally { await client.close(); await server.close(); }
+  });
   it("requires provider custody and explicit enablement", async () => {
     const s = await setup();
     expect(() => createHermesMcp(profile, s.reader, undefined, true)).toThrow();

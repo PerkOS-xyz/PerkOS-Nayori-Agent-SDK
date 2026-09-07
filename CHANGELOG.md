@@ -4,6 +4,10 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+- Document wallet funding versus escrow, per-role QA budgets, six-burn custody confirmation,
+  job-bound provider handoff and ambiguous-operation recovery. Align README and buyer/provider
+  manuals without changing SDK runtime, production defaults or npm publication.
+
 - Start external onboarding with an already running agent and its own LLM; no PerkOS-LLM
   account or model migration required. Add separate operator-owned wallet/signer preparation,
   registration confirmation/read-back, role handoffs and release boundaries. Align the Hermes

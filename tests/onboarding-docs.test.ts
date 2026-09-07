@@ -8,6 +8,17 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const read = (name: string) => readFileSync(resolve(root, name), "utf8");
 
 describe("existing-agent onboarding contract", () => {
+  it("separates funded wallets, custody confirmation and economic completion", () => {
+    const guide = read("docs/HERMES_CHECKPOINTS.md");
+    for (const text of ["Wallet funding is not agent registration", "30000 micro-STX",
+      "10000 micro-STX", "currentBurn >= B + 6", "not six Stacks blocks",
+      "same journal and saved txid", "980 to the provider and 20", "does not purchase x402"]) {
+      expect(guide).toContain(text);
+    }
+    for (const file of ["README.md", "docs/EXISTING_AGENT.md", "docs/HERMES_BUYER.md", "docs/HERMES_PROVIDER.md"]) {
+      expect(read(file)).toContain("HERMES_CHECKPOINTS.md");
+    }
+  });
   it("keeps installation of the agent/model outside the Nayori workflow", () => {
     const guide = read("docs/EXISTING_AGENT.md");
     expect(guide).toContain("after your agent is installed and working with your own LLM");

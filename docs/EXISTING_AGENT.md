@@ -105,6 +105,10 @@ permission and budget; registering an agent or requesting evaluation does not bu
 
 ## Completion checklist
 
+Use [QA checkpoints](HERMES_CHECKPOINTS.md) for role funding budgets, the custody-specific
+six-burn confirmation gate, job-bound provider handoff and recovery. Funding a wallet is not
+funding escrow; an evaluator decision is not a payout.
+
 - Existing agent and its own LLM unchanged; no model key shared with Nayori.
 - Operator-controlled wallet/signer and recovery tested, secrets outside agent prompts and Git.
 - Explicit testnet/deployment and bounded gas/operation permissions.

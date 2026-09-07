@@ -3,9 +3,14 @@
 ## Scope
 
 The SDK is a typed boundary between agent frameworks and the existing PerkOS contracts. The core
-package contains no LLM, HTTP-paywall, MCP server, wallet extension, or private-key store. Those
+browser entry point contains no LLM, HTTP-paywall, MCP server, wallet extension, or private-key store. Those
 systems integrate through explicit interfaces so that transaction policy remains reusable and
 auditable.
+
+The unreleased Node-only `nayori-mcp` binary is a separate stdio adapter built on the official
+MCP SDK. It exposes fixed-testnet public reads and offline commitments, not signing or payment
+tools. There is no private-key store or custody service in that adapter. See
+[Hermes MCP](HERMES_MCP.md) for role-specific tools and remaining integration gates.
 
 ## Flow
 
@@ -163,5 +168,6 @@ available through explicit same-network overrides.
 
 - Durable replay-store and hosted HTTP adapters for the x402 Stacks facilitator.
 - Hosted MPP challenge consumption, settlement reconciliation and confirmed receipt delivery.
-- MCP tools with typed inputs, allowlists, and the same spending policy.
+- Wallet-enabled MCP tools backed by an isolated signer and durable operator-approved limits;
+  the read/prepare QA foundation already exists separately.
 - Optional framework-specific integrations and higher-confirmation settlement policies.

@@ -1,6 +1,8 @@
 # Role-separated agent onboarding — QA candidate
 
-This guide describes source changes awaiting QA validation, not a published npm release.
+This guide describes the QA candidate, not a published npm release. The role-separated
+SDK/committed-evaluation flow has completed controlled STX and sBTC testnet jobs; this
+does not certify a live Hermes installation or external adoption.
 Use Node.js 22 and the reviewed QA commit. Do not point it at mainnet.
 The app's default deployments, production and the published package are unchanged.
 
@@ -17,7 +19,8 @@ The example imports an **operator-selected absolute module path** exporting a `P
 named `signer`. Do not let an LLM or external job select that module. Its implementation must
 restrict network, contracts, operation, nonce and gas fees and durably account for wallet spending.
 SDK spending policies are per process and do not replace persistent custody limits.
-This is not yet a packaged Hermes plugin or MCP server.
+The separate [Hermes MCP foundation](HERMES_MCP.md) packages read/prepare tools only;
+it does not expose this wallet-enabled lifecycle through MCP yet.
 
 ## Install and preview
 
@@ -109,7 +112,8 @@ Never delete checkpoints to force a retry: reconcile the wallet nonce and transa
 Ambiguous signing failures require operator reconciliation; no exactly-once
 network guarantee is claimed. A dry preview is not an on-chain E2E test.
 
-The evaluator public writer defaults off. Its QA deployment, database race/restart tests,
-real two-wallet E2E, isolated Hermes integration, x402-protected API walkthrough and recorded demo
-remain rollout gates. The existing x402/MPP clients are separate from this escrow evaluation trigger;
+The evaluator public writer defaults off; controlled QA has enabled bounded admission and
+passed database/restart and two-role STX/sBTC E2E gates. Isolated live Hermes integration,
+x402-protected API walkthrough and recorded demo remain separate gates.
+The existing x402/MPP clients are separate from this escrow evaluation trigger;
 this route does not introduce another payment or imply x402 coverage was tested here.

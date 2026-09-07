@@ -2,14 +2,16 @@
 import { constants, openSync, closeSync, fstatSync, readFileSync } from "node:fs";
 import { isAbsolute } from "node:path";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { createHermesMcp } from "./server.js";
+import { createHermesMcp, parseProfile } from "./server.js";
+import { custodyPort } from "../custody/socket.js";
 
 async function main() {
   const args = process.argv.slice(2);
   if (args.length === 1 && args[0] === "--help") {
-    console.log("nayori-mcp --config /absolute/public-profile.json\nQA testnet read/prepare only. No signing, broadcast, x402 or private keys."); return;
+    console.log("nayori-mcp --config /absolute/public-profile.json [--custody-socket /ipc/nayori.sock --permit-hash SHA256]\nDefault: QA read/prepare only. Optional remote custody delegation; never provide private keys to MCP."); return;
   }
-  if (args.length !== 2 || args[0] !== "--config" || !isAbsolute(args[1]!)) throw new Error("config_required");
+  if (![2, 6].includes(args.length) || args[0] !== "--config" || !isAbsolute(args[1]!) ||
+    args.length === 6 && (args[2] !== "--custody-socket" || args[4] !== "--permit-hash")) throw new Error("config_required");
   const fd = openSync(args[1]!, constants.O_RDONLY | constants.O_NOFOLLOW);
   let profile: unknown;
   try {
@@ -17,7 +19,9 @@ async function main() {
     if (!s.isFile() || s.size > 4096) throw new Error("invalid_profile");
     profile = JSON.parse(readFileSync(fd, "utf8"));
   } finally { closeSync(fd); }
-  const server = createHermesMcp(profile);
+  const parsed = parseProfile(profile);
+  const custody = args.length === 6 ? custodyPort(args[3]!, args[5]!, parsed) : undefined;
+  const server = createHermesMcp(parsed, undefined, custody);
   await server.connect(new StdioServerTransport());
 }
 main().catch(() => { console.error("Nayori MCP could not start. Supply a valid public QA profile; never include private keys."); process.exitCode = 1; });

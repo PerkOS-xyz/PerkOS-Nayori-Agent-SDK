@@ -11,6 +11,10 @@ The unreleased Node-only `nayori-mcp` binary is a separate stdio adapter built o
 MCP SDK. It exposes fixed-testnet public reads and offline commitments, not signing or payment
 tools. There is no private-key store or custody service in that adapter. See
 [Hermes MCP](HERMES_MCP.md) for role-specific tools and remaining integration gates.
+The optional [QA custody candidate](HERMES_CUSTODY.md) runs separately: operator permit,
+wallet-scoped lock, durable reservation/txid ledger and fixed testnet SDK backend. MCP delegates
+bounded requests over a filesystem Unix socket; it never receives a key. Distinct Linux identity
+and access-control verification are deployment gates, not claims established by a same-UID test.
 
 ## Flow
 
@@ -168,6 +172,6 @@ available through explicit same-network overrides.
 
 - Durable replay-store and hosted HTTP adapters for the x402 Stacks facilitator.
 - Hosted MPP challenge consumption, settlement reconciliation and confirmed receipt delivery.
-- Wallet-enabled MCP tools backed by an isolated signer and durable operator-approved limits;
+- Deployment/isolation validation of the candidate wallet-enabled MCP delegation and durable operator-approved limits;
   the read/prepare QA foundation already exists separately.
 - Optional framework-specific integrations and higher-confirmation settlement policies.

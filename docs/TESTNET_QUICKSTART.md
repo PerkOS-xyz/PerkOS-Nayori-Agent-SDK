@@ -19,8 +19,9 @@ The example imports an **operator-selected absolute module path** exporting a `P
 named `signer`. Do not let an LLM or external job select that module. Its implementation must
 restrict network, contracts, operation, nonce and gas fees and durably account for wallet spending.
 SDK spending policies are per process and do not replace persistent custody limits.
-The separate [Hermes MCP foundation](HERMES_MCP.md) packages read/prepare tools only;
-it does not expose this wallet-enabled lifecycle through MCP yet.
+The separate [Hermes MCP adapter](HERMES_MCP.md) defaults to read/prepare only. Optional
+[bounded custody delegation](HERMES_CUSTODY.md) is a QA source candidate for wallet-enabled
+actions; it still requires review, deployment, Linux isolation and actual Hermes E2E validation.
 
 ## Install and preview
 

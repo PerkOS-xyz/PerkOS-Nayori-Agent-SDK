@@ -29,8 +29,10 @@ complete Git history, releases, issues, and pull requests are preserved.
 
 The QA candidate includes the Node-only `nayori-mcp` stdio binary for public testnet
 reads and offline buyer/provider commitments. It has **no signer, broadcast, x402 purchase
-or wallet-generation tools**, and is not yet published or validated as a live Hermes
-buyer/provider installation. See [Hermes MCP setup and boundaries](docs/HERMES_MCP.md).
+or wallet-generation tools by default**. Optional operator-configured delegation to the separate
+`nayori-custody` candidate enables bounded QA actions without putting a key in MCP. Neither
+candidate is published or validated as a live Hermes buyer/provider installation. See
+[MCP setup](docs/HERMES_MCP.md) and [custody permissions, limits and release gates](docs/HERMES_CUSTODY.md).
 
 ### Unreleased earned-service-fee integration
 

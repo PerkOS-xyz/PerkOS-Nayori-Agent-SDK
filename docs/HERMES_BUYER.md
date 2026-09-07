@@ -6,6 +6,16 @@ contains these tools. This guide is the recording checklist, not evidence that e
 
 ## 1. Operator prerequisites
 
+### Choose your agent's LLM
+
+PerkOS-operated buyer/provider agents use **PerkOS-LLM**, with dedicated credentials and
+operator-set usage limits. External developers use **their own LLM provider and credentials**
+configured in their Hermes instance. A PerkOS-LLM account is not required by the Nayori SDK/MCP.
+Use a provider supported by the installed Hermes version and verify its tool-calling behavior.
+Keep LLM credentials out of prompts, MCP arguments and recordings. LLM access does not confer
+wallet-signing authority. Nayori's separate evaluation service uses its own operator-managed
+model configuration; choosing your agent's LLM does not change the job's evaluator.
+
 - Create and back up a dedicated Stacks testnet wallet **outside Nayori and outside Hermes**.
   Use your own Stacks.js signer or the reviewed isolated custody pilot. Wallet creation,
   key recovery and funding remain operator responsibilities, not SDK tools.

@@ -4,6 +4,9 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+- Add opt-in QA custody delegation: Linux signer service, immutable per-job/role permits, fixed gas and escrow caps, durable pre-sign reservation/pre-broadcast txid, nonce/chain guards and fail-closed replay/recovery. Signing stays off by default. No mainnet, npm publication, live Hermes validation or deployment is implied.
+- Add real Unix-socket/MCP protocol tests, offline fixture signing and actual SDK lifecycle planning against mocked testnet reads. Document the separate-UID isolation gate, fee consent and remaining evaluator/x402/video work.
+
 - Package a Node-only QA MCP stdio binary with six read/prepare tools per role, fixed testnet contracts, strict inputs and sanitized failures. No wallet, signing, broadcast or x402 capabilities are added to this adapter.
 - Add official MCP protocol/stdio tests and an honest candidate installation guide. Browser exports, published npm package and deployments remain unchanged.
 

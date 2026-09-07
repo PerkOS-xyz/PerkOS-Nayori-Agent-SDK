@@ -6,7 +6,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "nayori-mcp": "./dist/mcp/cli.js"
+    "nayori-mcp": "./dist/mcp/cli.js",
+    "nayori-custody": "./dist/custody/cli.js"
   },
   "exports": {
     ".": {

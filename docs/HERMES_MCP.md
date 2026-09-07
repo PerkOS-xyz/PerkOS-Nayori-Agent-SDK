@@ -1,9 +1,10 @@
-# Hermes MCP — signer-free QA foundation
+# Hermes MCP — QA adapter
 
 **Unreleased QA candidate. Not yet published to npm, not a complete wallet-enabled
-Hermes integration.** This increment packages read/prepare tools using the actual SDK.
-It does not register agents, create/fund/submit/settle jobs, request evaluations, perform
-x402 purchases or generate a wallet. Existing wallet-enabled quickstart remains separate.
+Hermes integration.** By default this packages read/prepare tools using the actual SDK.
+Optional [custody delegation](HERMES_CUSTODY.md) adds bounded register/create/fund/assign/submit/finalize
+requests to a separate operator-controlled signer. This is not deployed or funded by default.
+Neither mode requests evaluations, performs x402 purchases or generates wallets.
 
 ## Architecture and installation
 
@@ -93,15 +94,15 @@ Never put wallet keys into Hermes's config, environment, skill, prompts or tool 
   `evidenceBytesVerified: false`; the evaluator still must check allowlisted HTTPS content.
 - Errors do not reflect raw RPC responses, user inputs or diagnostics into the model.
 - A decision is not payout confirmation. Use transaction events and fee/reputation checks.
-- There is no wallet isolation claim from merely running two same-user processes. Future
-  signing requires a distinct custody boundary with durable operator-approved limits.
+- There is no wallet isolation claim from merely running two same-user processes. The optional
+  custody candidate requires verified Linux isolation and durable operator-approved limits.
 
 ## Validation and remaining work
 
 Automated tests cover official MCP client/server handshake, schemas, role separation,
 BigInt serialization, offline commitments, sanitized failures and real subprocess stdio.
 These are not a live Hermes end-to-end test or new paid transactions. Complete the isolated
-signer, spending approvals, actual Hermes buyer/provider session, x402 walkthrough and video
+signer deployment/isolation gate, actual Hermes buyer/provider session, x402 walkthrough and video
 before claiming autonomous external onboarding. No server deployment is needed to test stdio.
 
 Sources: [Hermes MCP](https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp),

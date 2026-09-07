@@ -4,7 +4,8 @@
 Hermes integration.** By default this packages read/prepare tools using the actual SDK.
 Optional [custody delegation](HERMES_CUSTODY.md) adds bounded register/create/fund/assign/submit/finalize
 requests to a separate operator-controlled signer. This is not deployed or funded by default.
-Neither mode requests evaluations, performs x402 purchases or generates wallets.
+An additional provider-only opt-in can request public QA evaluations for the permitted job.
+Neither mode performs x402 purchases or generates wallets.
 
 ## Architecture and installation
 
@@ -85,6 +86,35 @@ Never put wallet keys into Hermes's config, environment, skill, prompts or tool 
 | nayori_prepare_submission | Provider | Offline evidence commitment; does not submit work |
 
 ## Boundaries and errors
+
+### Optional provider evaluation admission
+
+Only after configuring provider custody, the operator may append `--enable-qa-evaluation`
+to the MCP CLI arguments (after `--permit-hash` and its value). Add these **exact names** to
+Hermes's tool include list if one is configured:
+
+- `nayori_request_evaluation`: accepts the same asset, jobId, description, acceptanceCriteria
+  and evidence as preparation. Requires an enabled, unexpired provider permit and a confirmed
+  submit in its durable journal. It compares client/provider/evaluator/treasury, budget, criteria
+  and evidence commitments against the actual SDK job read before any admission request.
+- `nayori_evaluation_status`: accepts only asset and jobId; both must match the configured
+  custody permit. Remains available for reconciliation after permit expiry.
+
+Requests go only to `https://evaluator.qa.nayori.ai/v1/evaluations`. Evidence must use that
+HTTPS origin; this narrow pilot does not support arbitrary storage providers. The evaluator,
+not MCP, fetches/validates evidence bytes and rechecks eligibility, deadlines and capacity.
+The operator explicitly authorizes enqueueing evaluation work by enabling the option.
+No internal API key, wallet signature, second fee or x402 purchase is attached.
+
+The adapter looks up the deterministic job-scoped evaluation ID before POST. The server's
+durable idempotency remains the authority across processes/restarts. HTTP errors/timeouts
+do not trigger automatic retry: query status first. A changed manifest cannot bypass the
+on-chain commitment. Status responses expose only bounded identity/state/txid fields, not
+arbitrary public explanations or raw errors. `confirmed` here describes the evaluator, not a
+verified escrow payout. Buyer custody still finalizes after the actual appeal deadline.
+
+This is an unreleased source candidate with mocked HTTP/chain tests, not a newly completed
+funded Hermes E2E, security audit or npm release. Without the flag, tool availability is unchanged.
 
 - No arbitrary shell, file-reading, secret-export, transaction-signing or broadcast tool.
 - Unknown fields, wrong roles, unsupported assets, oversized payloads and invalid IDs fail closed.

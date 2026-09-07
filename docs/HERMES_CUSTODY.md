@@ -121,8 +121,9 @@ The evaluator still must validate those bytes and judge the actual work.
 
 Recommended sequence: buyer register → create → status/confirmed job ID → set-budget → fund →
 assign; provider register → submit. Request each new action only after the previous one confirms.
-The existing isolated evaluator admission workflow is still separate: this candidate adds no
-LLM API credential, evaluation-admission tool or x402 purchase tool. After an on-chain decision
+Provider MCP can separately opt into [public QA evaluation admission](HERMES_MCP.md#optional-provider-evaluation-admission)
+after a confirmed submission. No LLM API credential, internal evaluator bearer or x402 purchase
+is added to custody. After an on-chain decision
 and the appeal deadline, the buyer can finalize. Appealed jobs are blocked for human resolution;
 this pilot does not expose appeal, refund, review-timeout or administrative actions.
 

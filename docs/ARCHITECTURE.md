@@ -16,6 +16,12 @@ wallet-scoped lock, durable reservation/txid ledger and fixed testnet SDK backen
 bounded requests over a filesystem Unix socket; it never receives a key. Distinct Linux identity
 and access-control verification are deployment gates, not claims established by a same-UID test.
 
+The provider-only evaluation opt-in connects MCP to the fixed public QA evaluator origin.
+It binds admission to the configured custody job and its confirmed submission, validates SDK
+commitments against on-chain state, then reuses the deterministic evaluation ID. Evaluator
+credentials, signing and byte verification stay outside MCP. x402 purchases remain a separate
+integration gate; evaluation admission does not add another payment.
+
 ## Flow
 
 ```text

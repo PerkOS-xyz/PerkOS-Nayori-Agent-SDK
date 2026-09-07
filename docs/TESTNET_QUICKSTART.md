@@ -22,6 +22,9 @@ SDK spending policies are per process and do not replace persistent custody limi
 The separate [Hermes MCP adapter](HERMES_MCP.md) defaults to read/prepare only. Optional
 [bounded custody delegation](HERMES_CUSTODY.md) is a QA source candidate for wallet-enabled
 actions; it still requires review, deployment, Linux isolation and actual Hermes E2E validation.
+Provider MCP may additionally opt into public QA evaluation admission after its confirmed
+submission; see [the exact tools and operator flag](HERMES_MCP.md#optional-provider-evaluation-admission).
+The CLI walkthrough below remains a separate operator-driven example, not proof of Hermes autonomy.
 
 ## Install and preview
 

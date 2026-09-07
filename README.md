@@ -25,6 +25,13 @@ complete Git history, releases, issues, and pull requests are preserved.
 
 ## Requirements
 
+### Unreleased Hermes MCP foundation
+
+The QA candidate includes the Node-only `nayori-mcp` stdio binary for public testnet
+reads and offline buyer/provider commitments. It has **no signer, broadcast, x402 purchase
+or wallet-generation tools**, and is not yet published or validated as a live Hermes
+buyer/provider installation. See [Hermes MCP setup and boundaries](docs/HERMES_MCP.md).
+
 ### Unreleased earned-service-fee integration
 
 This branch adds opt-in STX v6/sBTC v5 support for a 2% **included**, evaluation-earned fee:

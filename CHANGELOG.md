@@ -4,6 +4,9 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+- Package a Node-only QA MCP stdio binary with six read/prepare tools per role, fixed testnet contracts, strict inputs and sanitized failures. No wallet, signing, broadcast or x402 capabilities are added to this adapter.
+- Add official MCP protocol/stdio tests and an honest candidate installation guide. Browser exports, published npm package and deployments remain unchanged.
+
 - Add QA commitment helpers for client criteria and provider evidence using existing contract fields.
 - Replace the old centralized lifecycle example with role-separated, journaled actions and appeal-aware finalization; offline preview remains default.
 - Document candidate-only onboarding, isolated custody, fee consent and deployment/E2E limitations; npm and deployment defaults are unchanged.

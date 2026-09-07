@@ -1,5 +1,9 @@
 # Hermes provider — controlled QA walkthrough
 
+See [QA checkpoints and confirmation handling](HERMES_CHECKPOINTS.md) for the job-bound permit,
+STX gas budget, six-burn gate and the difference between a decision and payment. Do not fund
+your wallet with sBTC merely to receive a payout or reuse an example job ID.
+
 **Unreleased candidate; funded autonomous onboarding and recording still require validation.**
 Use the same job as the [buyer walkthrough](HERMES_BUYER.md), with a different wallet, signer,
 Hermes instance and journal. The candidate MCP is not the npm 0.7.1 release.

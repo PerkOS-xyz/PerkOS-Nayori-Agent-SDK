@@ -66,6 +66,10 @@ After operator review, isolation tests, backup and explicit low-value testnet fu
 
 ## 4. Failure and recovery
 
+Follow [QA checkpoints](HERMES_CHECKPOINTS.md) for the exact confirmation condition:
+`currentBurn >= transactionBurn + 6`. Explorer success may arrive before custody confirmation.
+Wallet funding, escrow funding and final payout are separate checkpoints.
+
 Query custody/evaluation status before retrying. Preserve the same permit, journal, job and
 txid. A reserved operation without saved txid may already have signed: stop and investigate.
 Do not delete locks/journals, change nonce, increase gas or authorize a duplicate payment to

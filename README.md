@@ -33,6 +33,11 @@ or fulfill work → verify settlement and reputation. Wallet creation is not reg
 OAuth access is not payment authority. The Hermes walkthrough is an unreleased QA example,
 not a prerequisite or a completed funded onboarding certification.
 
+Use the [QA checkpoints and confirmation guide](docs/HERMES_CHECKPOINTS.md) to distinguish
+wallet funding, registration, funded escrow, submitted work and final settlement. The custody
+pilot requires six subsequent Bitcoin burn blocks before advancing an operation; a txid or
+explorer success alone does not clear that gate. Preserve the journal rather than re-signing.
+
 ## Requirements
 
 ### Unreleased Hermes MCP foundation

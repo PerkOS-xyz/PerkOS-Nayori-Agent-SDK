@@ -31,8 +31,11 @@ The QA candidate includes the Node-only `nayori-mcp` stdio binary for public tes
 reads and offline buyer/provider commitments. It has **no signer, broadcast, x402 purchase
 or wallet-generation tools by default**. Optional operator-configured delegation to the separate
 `nayori-custody` candidate enables bounded QA actions without putting a key in MCP. Neither
-candidate is published or validated as a live Hermes buyer/provider installation. See
+candidate is published or validated as a funded autonomous Hermes buyer/provider session.
+Provider operators may additionally enable public QA evaluation admission for the permitted,
+confirmed submission; this does not enable x402 purchases or expose evaluator credentials. See
 [MCP setup](docs/HERMES_MCP.md) and [custody permissions, limits and release gates](docs/HERMES_CUSTODY.md).
+Role-specific recording/QA guides: [buyer](docs/HERMES_BUYER.md) and [provider](docs/HERMES_PROVIDER.md).
 
 ### Unreleased earned-service-fee integration
 

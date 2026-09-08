@@ -1,5 +1,9 @@
 # Hermes custody — bounded QA execution candidate
 
+The post-0.8.0-rc.1 source adds [operator-bound confirmation policy](CONFIRMATION_POLICY.md)
+for new version-2 permits. It is not yet published/deployed. Version-1 permits below keep their
+original hashes and six-block behavior; never mutate an active run or reset its journal.
+
 **Published in npm 0.8.0-rc.1; deployment remains a controlled QA pilot. Do not enable funded wallets before your Linux isolation gate.**
 This candidate adds `nayori-custody`, a separate Node service, and optional delegation from
 `nayori-mcp`. It is not in published npm 0.7.1. No mainnet mode exists.

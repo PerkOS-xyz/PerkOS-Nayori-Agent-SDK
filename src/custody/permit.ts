@@ -1,5 +1,6 @@
 /** Operator-owned QA authorization. Never constructed from an LLM tool argument. */
 import { createHash } from "node:crypto";
+import { parseConfirmationPolicy, DEFAULT_CONFIRMATION_POLICY, type ConfirmationPolicy } from "../confirmation-policy.js";
 import { parseProfile, QA_CONTRACTS, type HermesProfile } from "../mcp/server.js";
 import { prepareEvaluationJob, prepareEvaluationSubmission, type EvaluationCriterion,
   type EvaluationEvidence } from "../evaluation-commitments.js";
@@ -8,7 +9,8 @@ export const GAS_PER_ACTION = 5000n;
 export const ACTIONS = ["register", "create", "set-budget", "fund", "assign", "submit", "finalize"] as const;
 export type Action = typeof ACTIONS[number];
 export interface Permit {
-  readonly version: 1;
+  readonly version: 1 | 2;
+  readonly confirmationPolicy?: Readonly<ConfirmationPolicy>;
   readonly id: string;
   readonly profile: Readonly<HermesProfile>;
   readonly asset: "stx" | "sbtc";
@@ -47,9 +49,11 @@ export function commitmentInput(p: Permit) {
     description: p.description, acceptanceCriteria: p.acceptanceCriteria };
 }
 export async function parsePermit(value: unknown): Promise<Readonly<Permit>> {
+  const version = (value as { version?: unknown } | null)?.version;
   const r = object(value, ["version", "id", "profile", "asset", "amount", "gasBudget", "expiresAt",
-    "expiredAt", "jobId", "description", "acceptanceCriteria", "agentName", "actions", "evidenceOrigins", "serviceFeeConsent"]);
-  guard(r.version === 1 && typeof r.id === "string" && /^[a-z0-9-]{1,64}$/.test(r.id));
+    "expiredAt", "jobId", "description", "acceptanceCriteria", "agentName", "actions", "evidenceOrigins", "serviceFeeConsent",
+    ...(version === 2 ? ["confirmationPolicy"] : [])]);
+  guard((r.version === 1 || r.version === 2) && typeof r.id === "string" && /^[a-z0-9-]{1,64}$/.test(r.id));
   const profile = parseProfile(r.profile);
   guard(r.asset === "stx" || r.asset === "sbtc");
   guard(positive(r.amount) <= (r.asset === "stx" ? 100000n : 1000n));
@@ -75,13 +79,17 @@ export async function parsePermit(value: unknown): Promise<Readonly<Permit>> {
     guard([c.id, c.requirement, c.verification].every(v => typeof v === "string"));
     return Object.freeze({ id: c.id as string, requirement: c.requirement as string, verification: c.verification as string });
   });
-  const p: Permit = { version: 1, id: r.id, profile, asset: r.asset, amount: r.amount as string,
+  const p: Permit = { version: r.version, id: r.id, profile, asset: r.asset, amount: r.amount as string,
     gasBudget: r.gasBudget as string, expiresAt: r.expiresAt, expiredAt: r.expiredAt as string,
     jobId: r.jobId as string | null, description: r.description, acceptanceCriteria: Object.freeze(criteria),
     agentName: r.agentName, actions: Object.freeze([...r.actions] as Action[]),
-    evidenceOrigins: Object.freeze([...r.evidenceOrigins] as string[]), serviceFeeConsent: r.serviceFeeConsent };
+    evidenceOrigins: Object.freeze([...r.evidenceOrigins] as string[]), serviceFeeConsent: r.serviceFeeConsent,
+    ...(r.version === 2 ? { confirmationPolicy: parseConfirmationPolicy(profile.network, r.confirmationPolicy) } : {}) };
   await prepareEvaluationJob(commitmentInput(p));
   return Object.freeze(p);
+}
+export function permitConfirmationPolicy(p: Permit): Readonly<ConfirmationPolicy> {
+  return parseConfirmationPolicy(p.profile.network, p.version === 1 ? DEFAULT_CONFIRMATION_POLICY : p.confirmationPolicy);
 }
 export async function parseExecution(value: unknown, p: Permit, jobId: string | null): Promise<ExecutionRequest> {
   guard(value && typeof value === "object");

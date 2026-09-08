@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — configurable confirmation policy
+
+- Add network-validated operator workflow/settlement confirmation policy and progress helpers.
+- Add version-2 QA permits binding the policy to their immutable hash; preserve version-1 hashes and six-block defaults.
+- Expose policy/progress in custody status and recheck prior confirmations before the next signature.
+- Keep mainnet helper minimums, testnet-only pilot signing, contract windows, journals and published packages unchanged.
+
 All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased

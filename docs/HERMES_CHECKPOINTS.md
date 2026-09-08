@@ -1,5 +1,9 @@
 # Hermes QA checkpoints and confirmation handling
 
+For the new, unreleased version-2 permit option, see [confirmation policy](CONFIRMATION_POLICY.md).
+This walkthrough and the immutable npm 0.8.0-rc.1 artifact retain version-1 six-block behavior.
+The new option must not be applied by editing an in-flight permit or resetting its allowance.
+
 This guide uses **published QA prerelease 0.8.0-rc.1**, not a certification of every autonomous E2E.
 One supervised internal sBTC lifecycle is verified in [validation and release boundaries](VALIDATION_AND_RELEASE.md).
 Use your existing agent and LLM. Keep the wallet and policy signer under your control, outside

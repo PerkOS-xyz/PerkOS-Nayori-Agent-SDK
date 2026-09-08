@@ -5,7 +5,8 @@ import { prepareEvaluationJob, prepareEvaluationSubmission } from "../evaluation
 import type { ContractCallPlan } from "../types.js";
 import type { CustodyBackend } from "./engine.js";
 import { readPrivateFile } from "./ledger.js";
-import { GAS_PER_ACTION, commitmentInput, guard } from "./permit.js";
+import { GAS_PER_ACTION, commitmentInput, guard, permitConfirmationPolicy } from "./permit.js";
+import { confirmationProgress, DEFAULT_CONFIRMATION_POLICY } from "../confirmation-policy.js";
 
 const TOKEN = "SN3VMHXEN64ZZF71JQ5VESXDWTR301XTTXGF4J8F1.sbtc-token";
 const contracts = { ...QA_CONTRACTS, sbtcToken: TOKEN } as const;
@@ -113,15 +114,17 @@ export function testnetBackend(keyFile: string): CustodyBackend {
       const txid: unknown = await response.json();
       guard(typeof txid === "string" && "0x" + txid.replace(/^0x/, "") === signed.txid);
     },
-    async confirmation(txid) {
+    async confirmation(txid, permit, action) {
       guard(/^0x[a-f0-9]{64}$/.test(txid));
       const tx = await get(`/extended/v1/tx/${txid}`);
       const info = await tip();
       const result = tx.tx_result as { repr?: unknown } | undefined;
-      // Six anchored burn confirmations before advancing the wallet workflow; reorg risk is not zero.
-      return { success: tx.tx_id === txid && tx.canonical === true && tx.is_unanchored === false &&
-        tx.tx_status === "success" && Number.isSafeInteger(tx.burn_block_height) &&
-        info.burn >= BigInt(tx.burn_block_height as number) + 6n,
+      const progress = confirmationProgress("testnet", permit ? permitConfirmationPolicy(permit) : DEFAULT_CONFIRMATION_POLICY,
+        action === "finalize" ? "settlement" : "workflow", txid, {
+          txid: tx.tx_id as string, canonical: tx.canonical as boolean, isUnanchored: tx.is_unanchored as boolean,
+          status: tx.tx_status as string, burnBlockHeight: tx.burn_block_height as number, currentBurnBlockHeight: Number(info.burn),
+        });
+      return { success: progress.ready, progress,
         result: typeof result?.repr === "string" ? result.repr : "" };
     },
   };

@@ -1,13 +1,14 @@
 import type { ContractCallPlan } from "../types.js";
 import { QA_CONTRACTS } from "../mcp/server.js";
 import { Ledger } from "./ledger.js";
-import { GAS_PER_ACTION, guard, hash, parseExecution, type Permit, type ExecutionRequest } from "./permit.js";
+import { GAS_PER_ACTION, guard, hash, parseExecution, permitConfirmationPolicy, type Permit, type ExecutionRequest, type Action } from "./permit.js";
+import type { confirmationProgress } from "../confirmation-policy.js";
 
 export interface CustodyBackend {
   prepare(permit: Permit, request: ExecutionRequest, jobId: string | null): Promise<ContractCallPlan>;
   sign(plan: ContractCallPlan, wallet: string, expiresAt: string): Promise<{ txid: string; bytes: Uint8Array }>;
   broadcast(signed: { txid: string; bytes: Uint8Array }): Promise<void>;
-  confirmation(txid: string): Promise<{ success: boolean; result: string }>;
+  confirmation(txid: string, permit?: Permit, action?: Action): Promise<{ success: boolean; result: string; progress?: ReturnType<typeof confirmationProgress> }>;
 }
 const FUNCTIONS = { register: "register-agent", create: "create-job", "set-budget": "set-budget",
   fund: "fund-job", assign: "assign-provider", submit: "submit-work", finalize: "finalize-decision" } as const;
@@ -16,6 +17,7 @@ export class CustodyEngine {
   private busy = false;
   private poisoned = false;
   private closing = false;
+  private progress: Record<string, ReturnType<typeof confirmationProgress>> = {};
   private onIdle: (() => void) | undefined;
   constructor(readonly permit: Permit, private readonly ledger: Ledger,
     private readonly backend: CustodyBackend, private readonly enabled = false,
@@ -35,6 +37,7 @@ export class CustodyEngine {
       expiresAt: this.permit.expiresAt, gasBudget: this.permit.gasBudget, gasPerAction: GAS_PER_ACTION.toString(),
       gasReserved: (BigInt(this.ledger.entries.filter(e => e.state === "reserved").length) * GAS_PER_ACTION).toString(),
       jobId: this.jobId(), actions: this.permit.actions,
+      confirmationPolicy: permitConfirmationPolicy(this.permit), confirmationProgress: { ...this.progress },
       operations: this.permit.actions.map(a => this.ledger.latest(a)).filter(Boolean),
       classification: "internal-team-operated-not-m2-adoption", evidenceBytesVerified: false };
   }
@@ -44,7 +47,8 @@ export class CustodyEngine {
       for (const action of this.permit.actions) {
         const e = this.ledger.latest(action);
         if (e?.state !== "signed") continue;
-        const c = await this.backend.confirmation(e.txid!);
+        const c = await this.backend.confirmation(e.txid!, this.permit, action);
+        if (c.progress) this.progress[action] = c.progress;
         // Pending, missing, aborted and noncanonical transactions remain blocked. Never rebroadcast.
         if (!c.success) continue;
         let jobId: string | null = null;
@@ -68,6 +72,15 @@ export class CustodyEngine {
       if (prior) { guard(prior.intent === intent); return this.status(); }
       guard(this.enabled && this.now() < Date.parse(this.permit.expiresAt));
       guard(!this.permit.actions.some(a => { const e = this.ledger.latest(a); return e && e.state !== "confirmed"; }));
+      // A journal confirmation is historical, not permission to ignore a later reorg.
+      for (const action of this.permit.actions) {
+        const previous = this.ledger.latest(action);
+        if (previous?.state === "confirmed") {
+          const checked = await this.backend.confirmation(previous.txid!, this.permit, action);
+          if (checked.progress) this.progress[action] = checked.progress;
+          guard(checked.success);
+        }
+      }
       const reserved = BigInt(this.ledger.entries.filter(e => e.state === "reserved").length) * GAS_PER_ACTION;
       guard(reserved + GAS_PER_ACTION <= BigInt(this.permit.gasBudget));
       const plan = await this.backend.prepare(this.permit, request, this.jobId());

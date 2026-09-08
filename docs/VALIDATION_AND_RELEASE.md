@@ -34,7 +34,8 @@ Do not send funds to the addresses in this historical evidence.
 | --- | --- |
 | npm `@perkos/agent-sdk@0.7.1` | Published v5/v4 baseline; does not include the local QA Hermes/custody/fee additions |
 | Reviewed QA source above | Tested v6/v5 opt-in fee path, local Hermes MCP, custody and evaluation admission |
-| Local QA tarball | Still reports version 0.7.1; source commit and artifact integrity distinguish it from npm |
+| Historical QA tarball used in the lifecycle | Reports version 0.7.1; source commit and artifact integrity distinguish it from npm |
+| Current source candidate | 0.8.0-rc.1, not published; see [candidate notes](RELEASE_0.8.0_RC1.md) |
 
 Do not publish the candidate over 0.7.1 or describe it as an npm-only installation test. Use
 the [exact-artifact installation procedure](HERMES_MCP.md), never an unpinned financial `npx`.

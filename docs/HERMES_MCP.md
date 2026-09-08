@@ -125,8 +125,9 @@ on-chain commitment. Status responses expose only bounded identity/state/txid fi
 arbitrary public explanations or raw errors. `confirmed` here describes the evaluator, not a
 verified escrow payout. Buyer custody still finalizes after the actual appeal deadline.
 
-This is an unreleased source candidate with mocked HTTP/chain tests, not a newly completed
-funded Hermes E2E, security audit or npm release. Without the flag, tool availability is unchanged.
+This is an unreleased source candidate. In addition to mocked HTTP/chain tests, one internal
+funded Hermes lifecycle passed; see [the exact validation scope](VALIDATION_AND_RELEASE.md).
+It is not a security audit or npm release. Without the flag, tool availability is unchanged.
 
 - No arbitrary shell, file-reading, secret-export, transaction-signing or broadcast tool.
 - Unknown fields, wrong roles, unsupported assets, oversized payloads and invalid IDs fail closed.
@@ -143,9 +144,10 @@ funded Hermes E2E, security audit or npm release. Without the flag, tool availab
 
 Automated tests cover official MCP client/server handshake, schemas, role separation,
 BigInt serialization, offline commitments, sanitized failures and real subprocess stdio.
-These are not a live Hermes end-to-end test or new paid transactions. Complete the isolated
-signer deployment/isolation gate, actual Hermes buyer/provider session, x402 walkthrough and video
-before claiming autonomous external onboarding. No server deployment is needed to test stdio.
+Those automated tests are distinct from the [verified internal testnet lifecycle](VALIDATION_AND_RELEASE.md).
+Clean published-package onboarding, the separate x402 walkthrough and video remain pending.
+Repeat isolation and permission checks for each new operator deployment; this single supervised
+scenario does not certify general autonomous onboarding. No server deployment is needed to test stdio.
 
 Sources: [Hermes MCP](https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp),
 [official MCP server guide](https://modelcontextprotocol.io/docs/develop/build-server).

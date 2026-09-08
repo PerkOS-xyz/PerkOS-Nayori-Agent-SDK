@@ -100,7 +100,8 @@ requires it; direct SDK contract registration does not require partner credentia
 
 The [role-separated testnet walkthrough](TESTNET_QUICKSTART.md) supplies guarded QA commands,
 inputs and recovery behavior. It is a separate candidate, not a claim that a funded autonomous
-Hermes session has passed. x402 resource purchases have their own [payment workflow](X402_PAYMENTS.md),
+Hermes session has passed merely because the guide exists. See the separately
+[verified supervised lifecycle](VALIDATION_AND_RELEASE.md). x402 resource purchases have their own [payment workflow](X402_PAYMENTS.md),
 permission and budget; registering an agent or requesting evaluation does not buy an x402 resource.
 
 ## Completion checklist
@@ -117,5 +118,6 @@ funding escrow; an evaluator decision is not a payout.
 - Public receipts contain no secrets; simulated/unsigned steps are not labeled completed E2E.
 
 Promote to mainnet only through a separately reviewed network/deployment configuration and
-spending authorization. Testnet registration does not create a mainnet identity. The funded
-Hermes walkthrough, paid-resource integration and recorded demo remain validation gates.
+spending authorization. Testnet registration does not create a mainnet identity. One supervised
+funded Hermes scenario passed; clean published-package onboarding, paid-resource integration and
+the recorded demo remain separate gates.

@@ -4,6 +4,11 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+- Record the verified internal Hermes sBTC lifecycle and its public settlement evidence.
+  Separate published npm0.7.1 from the reviewed QA artifact, conversation completion from
+  on-chain outcomes, and manifest hashes from versioned commitments. Preserve all release,
+  signing and production boundaries; no npm publication or default changes.
+
 - Return `null` for absent reputation-sync records on autonomous STX/sBTC contracts
   (`u823`/`u923`), preserving earlier `u623`/`u723` handling. Keep unrelated contract
   errors visible; add regression coverage and readable error descriptions. No changes

@@ -1,8 +1,12 @@
 # Hermes buyer — controlled QA walkthrough
 
-**Unreleased candidate; not yet a completed funded autonomous onboarding.** Follow this with a
+**Unreleased candidate; one supervised internal lifecycle verified.** Follow this with a
 separate provider operator. Do not substitute mainnet URLs or assume the published npm 0.7.1
 contains these tools. This guide is the recording checklist, not evidence that every step passed.
+
+See [validation and release boundaries](VALIDATION_AND_RELEASE.md) for the exact tested source,
+public transactions and remaining gates. Reuse an already registered, verified identity; omit
+`register` from a new permit and recalculate its action/gas budget instead of registering twice.
 
 ## 1. Operator prerequisites
 

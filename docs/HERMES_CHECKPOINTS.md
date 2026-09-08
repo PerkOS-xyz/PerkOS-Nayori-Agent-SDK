@@ -1,6 +1,7 @@
 # Hermes QA checkpoints and confirmation handling
 
 This is an **unreleased QA candidate**, not a completed funded autonomous E2E certification.
+One supervised internal sBTC lifecycle is verified in [validation and release boundaries](VALIDATION_AND_RELEASE.md).
 Use your existing agent and LLM. Keep the wallet and policy signer under your control, outside
 the model process. Follow [existing-agent onboarding](EXISTING_AGENT.md), then the
 [buyer](HERMES_BUYER.md) or [provider](HERMES_PROVIDER.md) manual.
@@ -58,6 +59,11 @@ The buyer completes registration, creation, budget, funding and assignment one a
 Issue the provider's permit only after independently verifying the real job ID, identities,
 criteria, expiry, token and exact funded escrow. Never use a synthetic job ID in a funded permit.
 The provider's pilot permit is job-bound; it then registers and submits with its own signer.
+
+If the identity is already registered, verify the active record and reuse it; omit registration
+from the permit and recalculate the cap. The verified repeat cycle used five buyer actions
+(25000 micro-STX) and one provider submission (5000 micro-STX), excluding incoming funding and
+the evaluator's own gas. These do not replace the first-registration budgets above.
 
 Preserve the submitted evidence bytes. An evaluator decision does not move escrow. Wait through
 the job's actual appeal deadline and respect any appeal; do not replace the chain deadline with

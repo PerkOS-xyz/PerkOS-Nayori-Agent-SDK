@@ -1,6 +1,6 @@
 {
   "name": "@perkos/agent-sdk",
-  "version": "0.7.1",
+  "version": "0.8.0-rc.1",
   "description": "TypeScript SDK for agent identity, escrow settlement, and reputation on Stacks.",
   "type": "module",
   "main": "./dist/index.js",
@@ -68,6 +68,7 @@
   "license": "MIT",
   "publishConfig": {
     "access": "public",
+    "tag": "next",
     "provenance": true
   },
   "engines": {

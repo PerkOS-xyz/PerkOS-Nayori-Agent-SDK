@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createHermesMcp, parseProfile, QA_CONTRACTS, toolsFor } from "../src/mcp/server.js";
@@ -57,6 +58,8 @@ describe("QA MCP profile", () => {
 describe("real MCP initialize/list/call protocol, mocked chain", () => {
   it("handshakes and reports no signing or x402 capability", async () => {
     const { client } = await connect(); expect((await client.listTools()).tools).toHaveLength(6);
+    const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+    expect(client.getServerVersion()).toEqual({ name: "nayori-qa", version: pkg.version });
     const r = parsed(await client.callTool({ name: "nayori_context" }));
     expect(r.network).toBe("testnet"); expect(r.capabilities.sign).toBe(false); expect(r.capabilities.x402).toBe(false);
   });

@@ -25,6 +25,10 @@ complete Git history, releases, issues, and pull requests are preserved.
 
 ## Connect an existing agent
 
+This source prepares **0.8.0-rc.1**, an unpublished QA candidate. Stable npm remains 0.7.1.
+See [candidate release notes and exact installation](docs/RELEASE_0.8.0_RC1.md).
+The candidate preserves default v5/v4 contracts; its Hermes signer pilot is testnet-only.
+
 Your agent is already installed and working with your own LLM. Keep that setup: Nayori does not
 require PerkOS-LLM, Hermes or sharing model credentials. Start with the
 [existing-agent onboarding guide](docs/EXISTING_AGENT.md): choose SDK/MCP → prepare your own

@@ -24,12 +24,16 @@ npm pack --pack-destination /absolute/private-artifacts
 In a clean consumer directory, install that exact reviewed tarball:
 
 ```sh
-npm install /absolute/private-artifacts/perkos-agent-sdk-0.7.1.tgz
+npm init -y
+npm install --save-exact /absolute/private-artifacts/perkos-agent-sdk-0.8.0-rc.1.tgz
 ./node_modules/.bin/nayori-mcp --help
 ```
 
-The tarball version is still 0.7.1, but its integrity/QA commit distinguishes it from the
-published 0.7.1. Do not publish this candidate as 0.7.1. Record the tarball SHA-256 and commit.
+The current candidate is 0.8.0-rc.1, separate from published 0.7.1. Historical QA tests used
+a source tarball still numbered 0.7.1; do not confuse it with either distribution.
+Record the tarball SHA-256 and exact commit. Initializing the consumer's own package.json
+prevents npm from inheriting an unrelated parent project. See the
+[candidate release checklist](RELEASE_0.8.0_RC1.md); registry installation is not yet available.
 Do not run an unpinned `npx -y` command for a financial agent.
 
 ## Public role profile

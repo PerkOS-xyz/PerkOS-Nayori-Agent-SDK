@@ -4,8 +4,14 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+## 0.8.0-rc.1 — QA release candidate (not published)
+
+This candidate packages the QA additions below without changing the default v5/v4 contracts.
+Publication requires separate approval and must use the `next` tag, leaving `latest` at 0.7.1.
+See [candidate release notes](docs/RELEASE_0.8.0_RC1.md) for installation and validation gates.
+
 - Record the verified internal Hermes sBTC lifecycle and its public settlement evidence.
-  Separate published npm0.7.1 from the reviewed QA artifact, conversation completion from
+  Separate published npm 0.7.1 from the reviewed QA artifact, conversation completion from
   on-chain outcomes, and manifest hashes from versioned commitments. Preserve all release,
   signing and production boundaries; no npm publication or default changes.
 

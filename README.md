@@ -25,7 +25,7 @@ complete Git history, releases, issues, and pull requests are preserved.
 
 ## Connect an existing agent
 
-This source prepares **0.8.0-rc.1**, an unpublished QA candidate. Stable npm remains 0.7.1.
+**0.8.0-rc.1 is published on npm under `next` for QA testing.** Stable `latest` remains 0.7.1.
 See [candidate release notes and exact installation](docs/RELEASE_0.8.0_RC1.md).
 The candidate preserves default v5/v4 contracts; its Hermes signer pilot is testnet-only.
 
@@ -34,7 +34,7 @@ require PerkOS-LLM, Hermes or sharing model credentials. Start with the
 [existing-agent onboarding guide](docs/EXISTING_AGENT.md): choose SDK/MCP → prepare your own
 wallet/signer separately → pin testnet and limits → register and verify the agent ID → create
 or fulfill work → verify settlement and reputation. Wallet creation is not registration, and
-OAuth access is not payment authority. The Hermes walkthrough is an unreleased QA example,
+OAuth access is not payment authority. The Hermes walkthrough uses the published QA prerelease,
 not a prerequisite. One operator-supervised internal sBTC lifecycle has passed; this is not
 certification of external onboarding. See [validation and release boundaries](docs/VALIDATION_AND_RELEASE.md).
 
@@ -45,14 +45,14 @@ explorer success alone does not clear that gate. Preserve the journal rather tha
 
 ## Requirements
 
-### Unreleased Hermes MCP foundation
+### Published QA Hermes MCP prerelease
 
 The QA candidate includes the Node-only `nayori-mcp` stdio binary for public testnet
 reads and offline buyer/provider commitments. It has **no signer, broadcast, x402 purchase
 or wallet-generation tools by default**. Optional operator-configured delegation to the separate
-`nayori-custody` candidate enables bounded QA actions without putting a key in MCP. Neither
-candidate is published. The reviewed QA source passed one funded, operator-supervised Hermes
-buyer/provider lifecycle; npm-only installation, broader autonomy and x402 remain separate gates.
+`nayori-custody` pilot enables bounded QA actions without putting a key in MCP. Both are included
+in npm 0.8.0-rc.1. A clean registry install passed offline checks for both roles. The earlier QA
+source passed one funded, operator-supervised lifecycle; broader autonomy and x402 remain separate gates.
 Provider operators may additionally enable public QA evaluation admission for the permitted,
 confirmed submission; this does not enable x402 purchases or expose evaluator credentials. See
 [MCP setup](docs/HERMES_MCP.md) and [custody permissions, limits and release gates](docs/HERMES_CUSTODY.md).
@@ -61,7 +61,7 @@ Evaluation admission has a bounded 45-second timeout; status reads retain 15 sec
 Check evaluator capacity before submission and reconcile the existing evaluation ID after
 an error. Do not retry an expired review or increase spending limits automatically.
 
-### Unreleased earned-service-fee integration
+### Opt-in QA earned-service-fee integration
 
 This branch adds opt-in STX v6/sBTC v5 support for a 2% **included**, evaluation-earned fee:
 net provider payout on approval or net client refund on evaluated rejection. The full budget
@@ -135,9 +135,9 @@ Use the [role-separated QA guide](docs/TESTNET_QUICKSTART.md) and
 [`examples/testnet.env.example`](examples/testnet.env.example). Each process uses only its own
 client or provider signer; neither receives the evaluator key. One action runs per invocation.
 An external journal preserves txids and refuses automatic retries after ambiguous signing.
-The new bridge and quickstart are **unreleased QA candidates**, not a completed public Hermes
-integration or a new on-chain E2E result. Existing historical completion receipts concern an
-earlier workflow and do not verify these changes.
+The bridge and quickstart ship in **0.8.0-rc.1 for QA**. Registry installation and offline role
+checks passed; this is not a new funded E2E. The historical supervised lifecycle used earlier
+QA source. See [the separate evidence scopes](docs/VALIDATION_AND_RELEASE.md).
 
 ## Read on-chain state
 

@@ -1,6 +1,6 @@
 # Hermes QA checkpoints and confirmation handling
 
-This is an **unreleased QA candidate**, not a completed funded autonomous E2E certification.
+This guide uses **published QA prerelease 0.8.0-rc.1**, not a certification of every autonomous E2E.
 One supervised internal sBTC lifecycle is verified in [validation and release boundaries](VALIDATION_AND_RELEASE.md).
 Use your existing agent and LLM. Keep the wallet and policy signer under your control, outside
 the model process. Follow [existing-agent onboarding](EXISTING_AGENT.md), then the

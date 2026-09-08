@@ -1,10 +1,10 @@
 # Role-separated agent onboarding — QA candidate
 
-This guide describes the QA candidate, not a published npm release. The role-separated
+This guide describes the QA walkthrough shipped in npm 0.8.0-rc.1. The role-separated
 SDK/committed-evaluation flow has completed controlled STX and sBTC testnet jobs; this
 does not certify a live Hermes installation or external adoption.
 Use Node.js 22 and the reviewed QA commit. Do not point it at mainnet.
-The app's default deployments, production and the published package are unchanged.
+The app's default deployments and production are unchanged; stable latest remains 0.7.1.
 
 ## Roles and custody
 
@@ -37,8 +37,9 @@ npm run quickstart:testnet
 ```
 
 The last command defaults to offline preview; it does not load a signer or call a network.
-For clean-consumer testing, build and pack the candidate, then install that tarball in a
-separate project with Node 22 and `tsx`. Do not publish or overwrite npm 0.7.1.
+For a separate consumer, install pinned npm 0.8.0-rc.1 with Node 22 and a reviewed `tsx` version.
+The commands above are repository scripts, not scripts added to the consumer's package.json.
+For the Hermes binary setup, follow [MCP installation](HERMES_MCP.md). Never overwrite a published version.
 
 ## Supply real job inputs
 

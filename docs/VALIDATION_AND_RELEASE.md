@@ -35,10 +35,12 @@ Do not send funds to the addresses in this historical evidence.
 | npm `@perkos/agent-sdk@0.7.1` | Published v5/v4 baseline; does not include the local QA Hermes/custody/fee additions |
 | Reviewed QA source above | Tested v6/v5 opt-in fee path, local Hermes MCP, custody and evaluation admission |
 | Historical QA tarball used in the lifecycle | Reports version 0.7.1; source commit and artifact integrity distinguish it from npm |
-| Current source candidate | 0.8.0-rc.1, not published; see [candidate notes](RELEASE_0.8.0_RC1.md) |
+| Published QA prerelease | npm 0.8.0-rc.1 under `next`; clean registry installation and offline role checks passed; see [release notes](RELEASE_0.8.0_RC1.md) |
 
-Do not publish the candidate over 0.7.1 or describe it as an npm-only installation test. Use
-the [exact-artifact installation procedure](HERMES_MCP.md), never an unpinned financial `npx`.
+Do not describe the earlier funded lifecycle as an npm-only E2E. The separate 0.8.0-rc.1 registry
+installation verified imports, CLI, version, buyer/provider MCP and offline preparation without
+keys, signing or evaluator/LLM requests. Use the [pinned installation procedure](HERMES_MCP.md),
+never an unpinned financial `npx`.
 
 Before external distribution: review and merge the release changes, assign a new package version,
 run the SDK gate, pack and inspect its allowlisted contents, then install that exact artifact in
@@ -71,7 +73,7 @@ Never accept a mismatched hash by copying the expected value from the response u
 
 ## Still outside this proof
 
-- Fresh npm-only installation, new-agent registration in this cycle, and the developer video.
+- A new funded npm-only lifecycle, new-agent registration in this cycle, and the developer video.
 - Autonomous operation from one instruction without the operator's staged gates.
 - The separate x402/MPP resource-purchase workflow; local QA MCP does not purchase x402.
 - Other assets, rejection/appeal/recovery scenarios, or production fee activation.

@@ -1,6 +1,6 @@
 # Hermes buyer — controlled QA walkthrough
 
-**Unreleased candidate; one supervised internal lifecycle verified.** Follow this with a
+**Published QA prerelease 0.8.0-rc.1; one earlier supervised lifecycle verified.** Follow this with a
 separate provider operator. Do not substitute mainnet URLs or assume the published npm 0.7.1
 contains these tools. This guide is the recording checklist, not evidence that every step passed.
 
@@ -26,9 +26,9 @@ prompts, MCP arguments and recordings. Your agent's model is separate from Nayor
   recovery material, environment contents or authorization headers in a recording.
 - Keep the buyer key only inside its signer boundary. Hermes must not share that UID,
   key mount, writable policy, Docker socket, sudo or access to the provider's socket.
-- Install the exact reviewed QA tarball as described in [MCP setup](HERMES_MCP.md).
-  Record source SHA and artifact SHA-256. Do not use unpinned `npx` or confuse candidate
-  version 0.7.1 with the different publicly distributed 0.7.1 artifact.
+- Install `@perkos/agent-sdk@0.8.0-rc.1` with `--save-exact` as described in [MCP setup](HERMES_MCP.md).
+  Preserve the lockfile and registry integrity. Stable 0.7.1 does not include this bridge.
+  Do not use unpinned `npx` or mistake installation for permission to sign.
 
 ## 2. Configure and verify permissions
 

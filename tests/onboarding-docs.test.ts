@@ -37,7 +37,7 @@ describe("existing-agent onboarding contract", () => {
     expect(guide).toContain("after your agent is installed and working with your own LLM");
     expect(guide).toContain("No PerkOS-LLM account or credentials are required");
     expect(guide).toContain("Hermes is an example integration, not a requirement");
-    expect(guide).toMatch(/unreleased QA candidate/i);
+expect(guide).toMatch(/published QA prerelease 0\.8\.0-rc\.1/i);
     expect(guide).toContain("different");
   });
 

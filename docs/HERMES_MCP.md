@@ -1,7 +1,7 @@
 # Hermes MCP — QA adapter
 
-**Unreleased QA candidate. Not yet published to npm, not a complete wallet-enabled
-Hermes integration.** By default this packages read/prepare tools using the actual SDK.
+**Published QA prerelease 0.8.0-rc.1, not a turnkey production wallet integration.**
+By default this packages read/prepare tools using the actual SDK.
 Optional [custody delegation](HERMES_CUSTODY.md) adds bounded register/create/fund/assign/submit/finalize
 requests to a separate operator-controlled signer. This is not deployed or funded by default.
 An additional provider-only opt-in can request public QA evaluations for the permitted job.
@@ -13,7 +13,21 @@ Hermes → local MCP stdio → Nayori SDK → fixed public Stacks testnet reads.
 Preparation tools are offline. There is no signer in the process or tool arguments.
 The browser SDK entry point does not import this Node-only adapter.
 
-Build and verify the reviewed QA source, then pack it outside the checkout:
+Use Node 20+ and npm 10+. In a separate integration directory, install the exact published
+prerelease; initialize a package.json only if the directory does not already have one:
+
+```sh
+npm init -y
+npm install --save-exact @perkos/agent-sdk@0.8.0-rc.1
+./node_modules/.bin/nayori-mcp --help
+./node_modules/.bin/nayori-custody --help
+```
+
+Keep the lockfile. `latest` is still 0.7.1; an unpinned install does not select this QA bridge.
+The [release notes](RELEASE_0.8.0_RC1.md) contain the verified registry integrity. Installation
+and offline checks for both roles passed; no funded wallet or LLM is needed for those checks.
+
+For source development only, build and verify the reviewed QA source, then pack outside the checkout:
 
 ```sh
 npm ci
@@ -33,7 +47,7 @@ The current candidate is 0.8.0-rc.1, separate from published 0.7.1. Historical Q
 a source tarball still numbered 0.7.1; do not confuse it with either distribution.
 Record the tarball SHA-256 and exact commit. Initializing the consumer's own package.json
 prevents npm from inheriting an unrelated parent project. See the
-[candidate release checklist](RELEASE_0.8.0_RC1.md); registry installation is not yet available.
+[release checklist](RELEASE_0.8.0_RC1.md); do not overwrite or republish the existing npm version.
 Do not run an unpinned `npx -y` command for a financial agent.
 
 ## Public role profile
@@ -69,7 +83,7 @@ or require PerkOS-LLM. [Existing-agent onboarding](EXISTING_AGENT.md) explains r
 and the separate operator-owned wallet/signer preparation. Hermes is an example, not a requirement.
 The fixed QA evaluator endpoint is a separate Nayori service, not the developer's LLM endpoint.
 
-After installing the tarball, configure a separate Hermes profile for each participant:
+After installing the pinned package, configure a separate Hermes profile for each participant:
 
 ```yaml
 mcp_servers:
@@ -129,9 +143,9 @@ on-chain commitment. Status responses expose only bounded identity/state/txid fi
 arbitrary public explanations or raw errors. `confirmed` here describes the evaluator, not a
 verified escrow payout. Buyer custody still finalizes after the actual appeal deadline.
 
-This is an unreleased source candidate. In addition to mocked HTTP/chain tests, one internal
+This is a published QA prerelease. In addition to mocked HTTP/chain tests, one earlier internal
 funded Hermes lifecycle passed; see [the exact validation scope](VALIDATION_AND_RELEASE.md).
-It is not a security audit or npm release. Without the flag, tool availability is unchanged.
+It is not a security audit or production promotion. Without the flag, tool availability is unchanged.
 
 - No arbitrary shell, file-reading, secret-export, transaction-signing or broadcast tool.
 - Unknown fields, wrong roles, unsupported assets, oversized payloads and invalid IDs fail closed.
@@ -149,7 +163,8 @@ It is not a security audit or npm release. Without the flag, tool availability i
 Automated tests cover official MCP client/server handshake, schemas, role separation,
 BigInt serialization, offline commitments, sanitized failures and real subprocess stdio.
 Those automated tests are distinct from the [verified internal testnet lifecycle](VALIDATION_AND_RELEASE.md).
-Clean published-package onboarding, the separate x402 walkthrough and video remain pending.
+Clean registry installation and offline role checks passed. A new funded run from npm,
+the separate x402 walkthrough and video remain pending.
 Repeat isolation and permission checks for each new operator deployment; this single supervised
 scenario does not certify general autonomous onboarding. No server deployment is needed to test stdio.
 

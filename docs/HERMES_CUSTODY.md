@@ -1,6 +1,6 @@
 # Hermes custody — bounded QA execution candidate
 
-**Unreleased; deployed only for the controlled QA pilot. Do not enable funded wallets before your Linux isolation gate.**
+**Published in npm 0.8.0-rc.1; deployment remains a controlled QA pilot. Do not enable funded wallets before your Linux isolation gate.**
 This candidate adds `nayori-custody`, a separate Node service, and optional delegation from
 `nayori-mcp`. It is not in published npm 0.7.1. No mainnet mode exists.
 
@@ -86,7 +86,8 @@ match the buyer's job. A provider never gets create/fund/assign/finalize authori
 
 ## Start and connect
 
-Install the exact reviewed QA tarball on each side. Record its SHA-256 and source commit.
+Install the exact npm 0.8.0-rc.1 package on each side using [MCP setup](HERMES_MCP.md).
+Preserve the lockfile and verify registry integrity against the release notes.
 First start with **signing disabled**, without a funded key:
 
 ```sh
@@ -160,5 +161,5 @@ this pilot does not expose appeal, refund, review-timeout or administrative acti
 3. Crash/restart and concurrency tests across those OS identities, first with unfunded fixtures.
 4. Explicitly approved low-value testnet buyer/provider run using **actual Hermes**, including
    evaluator admission, exact payout events and recovery. Internal actors are not M2 adoption.
-5. Complete the x402 onboarding walkthrough, release version/npm distribution, two operator
-   manuals and developer video. Production/mainnet remain unchanged until separately approved.
+5. The prerelease is distributed on npm and both role manuals are available. Complete the
+   separate x402 walkthrough and developer video. Production/mainnet require separate approval.

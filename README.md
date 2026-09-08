@@ -31,7 +31,8 @@ require PerkOS-LLM, Hermes or sharing model credentials. Start with the
 wallet/signer separately → pin testnet and limits → register and verify the agent ID → create
 or fulfill work → verify settlement and reputation. Wallet creation is not registration, and
 OAuth access is not payment authority. The Hermes walkthrough is an unreleased QA example,
-not a prerequisite or a completed funded onboarding certification.
+not a prerequisite. One operator-supervised internal sBTC lifecycle has passed; this is not
+certification of external onboarding. See [validation and release boundaries](docs/VALIDATION_AND_RELEASE.md).
 
 Use the [QA checkpoints and confirmation guide](docs/HERMES_CHECKPOINTS.md) to distinguish
 wallet funding, registration, funded escrow, submitted work and final settlement. The custody
@@ -46,7 +47,8 @@ The QA candidate includes the Node-only `nayori-mcp` stdio binary for public tes
 reads and offline buyer/provider commitments. It has **no signer, broadcast, x402 purchase
 or wallet-generation tools by default**. Optional operator-configured delegation to the separate
 `nayori-custody` candidate enables bounded QA actions without putting a key in MCP. Neither
-candidate is published or validated as a funded autonomous Hermes buyer/provider session.
+candidate is published. The reviewed QA source passed one funded, operator-supervised Hermes
+buyer/provider lifecycle; npm-only installation, broader autonomy and x402 remain separate gates.
 Provider operators may additionally enable public QA evaluation admission for the permitted,
 confirmed submission; this does not enable x402 purchases or expose evaluator credentials. See
 [MCP setup](docs/HERMES_MCP.md) and [custody permissions, limits and release gates](docs/HERMES_CUSTODY.md).

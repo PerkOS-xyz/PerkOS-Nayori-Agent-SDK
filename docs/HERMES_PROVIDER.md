@@ -1,5 +1,9 @@
 # Hermes provider — controlled QA walkthrough
 
+See [validation and release boundaries](VALIDATION_AND_RELEASE.md) for the verified internal
+scenario and remaining distribution/video gates. An existing active registration is reused
+after readback, not registered again; adjust the permit and gas cap to omit that action.
+
 See [QA checkpoints and confirmation handling](HERMES_CHECKPOINTS.md) for the job-bound permit,
 STX gas budget, six-burn gate and the difference between a decision and payment. Do not fund
 your wallet with sBTC merely to receive a payout or reuse an example job ID.

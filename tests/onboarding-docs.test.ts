@@ -8,6 +8,19 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const read = (name: string) => readFileSync(resolve(root, name), "utf8");
 
 describe("existing-agent onboarding contract", () => {
+  it("distinguishes verified QA evidence, distribution and independent outcome checks", () => {
+    const guide = read("docs/VALIDATION_AND_RELEASE.md");
+    for (const text of ["fc0537477fda819fa9cce8e74e543be0d49ea3a4", "job 14",
+      "26 Hermes calls", "completed=true", "never reuse", "980", "14240",
+      "npm-only", "intentionally different", "unknown", "team-operated"])
+      expect(guide).toContain(text);
+    for (const file of ["README.md", "docs/HERMES_BUYER.md", "docs/HERMES_PROVIDER.md",
+      "docs/HERMES_MCP.md", "docs/HERMES_CHECKPOINTS.md", "docs/EXISTING_AGENT.md"])
+      expect(read(file)).toContain("VALIDATION_AND_RELEASE.md");
+    for (const match of guide.matchAll(/\]\(([^)#]+)(?:#[^)]*)?\)/g)) {
+      if (!/^https?:/.test(match[1]!)) expect(existsSync(resolve(root, "docs", match[1]!))).toBe(true);
+    }
+  });
   it("separates funded wallets, custody confirmation and economic completion", () => {
     const guide = read("docs/HERMES_CHECKPOINTS.md");
     for (const text of ["Wallet funding is not agent registration", "30000 micro-STX",

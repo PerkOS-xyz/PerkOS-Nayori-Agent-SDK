@@ -1,8 +1,11 @@
 # Hermes custody — bounded QA execution candidate
 
-**Unreleased and not deployed. Do not enable funded wallets before the Linux isolation gate.**
+**Unreleased; deployed only for the controlled QA pilot. Do not enable funded wallets before your Linux isolation gate.**
 This candidate adds `nayori-custody`, a separate Node service, and optional delegation from
 `nayori-mcp`. It is not in published npm 0.7.1. No mainnet mode exists.
+
+[One supervised internal lifecycle](VALIDATION_AND_RELEASE.md) passed with isolated signers.
+That historical evidence does not authorize your deployment, wallet or spending limits.
 
 ## Trust boundary
 

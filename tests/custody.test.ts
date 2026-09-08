@@ -140,6 +140,25 @@ describe("durable reservation, gas and replay control", () => {
   });
 });
 describe("private files and locks", () => {
+  it("pins v2 policy to permit hash and rejects a policy change against the existing journal", async () => {
+    const old = await parsePermit(raw);
+    expect(old).not.toHaveProperty("confirmationPolicy");
+    expect(hash(old)).toBe(hash(raw));
+    const s = await setup({ version: 2, confirmationPolicy: { workflowBurnBlocks: 0, settlementBurnBlocks: 6 } });
+    expect(s.engine.status().confirmationPolicy.workflowBurnBlocks).toBe(0);
+    const changed = await parsePermit({ ...raw, version: 2, confirmationPolicy: { workflowBurnBlocks: 1, settlementBurnBlocks: 6 } });
+    expect(hash(changed)).not.toBe(hash(s.permit));
+    s.ledger.close(); expect(() => new Ledger(s.dir, hash(changed), profile.client)).toThrow();
+    await expect(parsePermit({ ...raw, confirmationPolicy: { workflowBurnBlocks: 0, settlementBurnBlocks: 6 } })).rejects.toThrow();
+    await expect(parseExecution({ action: "create", confirmationPolicy: { workflowBurnBlocks: 0, settlementBurnBlocks: 0 } }, s.permit, null)).rejects.toThrow();
+  });
+  it("blocks the next action if an earlier confirmed transaction loses canonical confirmation", async () => {
+    const s = await setup(); await s.engine.execute({ action: "create" }); await s.engine.reconcile();
+    s.backend.confirmation.mockResolvedValue({ success: false, result: "" });
+    await expect(s.engine.execute({ action: "register" })).rejects.toThrow();
+    expect(s.backend.sign).toHaveBeenCalledTimes(1);
+    expect(s.engine.status().gasReserved).toBe("5000");
+  });
   it("prevents another process or permit from resetting the wallet ledger", async () => {
     const s = await setup(); expect(() => new Ledger(s.dir, hash(s.permit), profile.client)).toThrow();
     s.ledger.close(); expect(() => new Ledger(s.dir, "b".repeat(64), profile.client)).toThrow();
@@ -161,6 +180,16 @@ describe("private files and locks", () => {
   });
 });
 describe("actual SDK planning and offline signing", () => {
+  it("uses the permit-bound policy in the real backend and exposes progress without signing", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL) => new URL(input).pathname === "/v2/info"
+      ? Response.json({ network_id: 2147483648, burn_block_height: 100, stacks_tip_height: 100 })
+      : Response.json({ tx_id: txid, canonical: true, is_unanchored: false, tx_status: "success", burn_block_height: 100, tx_result: { repr: "(ok true)" } })));
+    const p = await parsePermit({ ...raw, version: 2, confirmationPolicy: { workflowBurnBlocks: 0, settlementBurnBlocks: 6 } });
+    const backend = testnetBackend("/never-read/key");
+    expect(await backend.confirmation(txid, p, "fund")).toMatchObject({ success: true, progress: { remainingBurnBlocks: 0 } });
+    expect(await backend.confirmation(txid, p, "finalize")).toMatchObject({ success: false, progress: { remainingBurnBlocks: 6 } });
+    expect(await backend.confirmation(txid, await parsePermit(raw), "fund")).toMatchObject({ success: false });
+  });
   function mockNetwork(nonce = 0) {
     const fetcher = vi.fn(async (input: string | URL, init?: RequestInit) => {
       const url = new URL(input); expect(url.origin).toBe("https://api.testnet.hiro.so"); expect(init?.redirect).toBe("error");

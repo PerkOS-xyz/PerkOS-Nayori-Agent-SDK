@@ -45,6 +45,14 @@ explorer success alone does not clear that gate. Preserve the journal rather tha
 
 ## Requirements
 
+### Configurable timing source candidate
+
+[Confirmation policy and timing](docs/CONFIRMATION_POLICY.md) separates transaction depth,
+evaluation feedback and contractual appeal windows. The post-0.8.0-rc.1 source adds operator-bound
+version-2 QA permits and read-only progress, with conservative mainnet helpers. This is **not yet
+published or deployed**; existing version-1 permits and npm 0.8.0-rc.1 retain six burn blocks.
+The Hermes signer remains testnet-only; contract deadlines and x402/MPP are unchanged.
+
 ### Published QA Hermes MCP prerelease
 
 The QA candidate includes the Node-only `nayori-mcp` stdio binary for public testnet

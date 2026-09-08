@@ -257,3 +257,5 @@ export type {
   PolicySignerOptions,
   PolicySignerRequest,
 } from "./x402-paying.js";
+export { DEFAULT_CONFIRMATION_POLICY, parseConfirmationPolicy, confirmationProgress } from "./confirmation-policy.js";
+export type { ConfirmationPolicy, ConfirmationObservation } from "./confirmation-policy.js";

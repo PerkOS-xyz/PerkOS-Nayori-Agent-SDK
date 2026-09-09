@@ -13,16 +13,38 @@ maps to `provider`. The same Node-only `nayori-mcp` stdio server exposes the too
 | Client | Connection | Nayori verification status |
 |---|---|---|
 | Hermes | Local MCP stdio configuration | Supervised internal npm rc.2 job16 lifecycle verified |
-| OpenClaw | Local MCP server configuration | Official client setup documented; Nayori client E2E pending |
-| Codex | Local MCP stdio configuration | Official client setup documented; Nayori client E2E pending |
-| Claude Code | Local MCP stdio configuration | Official client setup documented; Nayori client E2E pending |
+| OpenClaw | Local MCP server configuration | Both-role native connection verified; Nayori client E2E pending |
+| Codex | Local MCP stdio configuration | Both-role native connection and unsigned preparation verified; Nayori client E2E pending |
+| Claude Code | Local MCP stdio configuration | Both-role native connection verified; Nayori client E2E pending |
 
 MCP transport support is **not** proof of registration, secure custody, autonomous completion,
-x402 purchase or mainnet readiness. Other clients still need a real handshake, tool-discovery,
-role, isolation and funded-workflow test before claiming equivalent validation. “Claude” here
+x402 purchase or mainnet readiness. The connection checks below do not replace model-driven
+tool use, signer isolation or a funded-workflow test. “Claude” here
 means Claude Code; hosted web connectors are not interchangeable with a local stdio process.
 
 ## Safe connection prerequisites
+
+### Measured connection scope — 2026-09-09
+
+The actual clients connected to the public `@perkos/agent-sdk@0.8.0-rc.2` package, not a
+mock server or a source checkout. Each client was tested separately as consumer (`client`)
+and provider, with exactly six read/prepare tools and no opposite-role preparation tool:
+
+| Pinned client | Verified operation | Not exercised |
+|---|---|---|
+| OpenClaw 2026.9.3 | Native `mcp probe`: initialization and tool discovery, both roles | Tool invocation or an LLM conversation |
+| Codex CLI 0.153.4 | Native app-server connection, `nayori_context` and role-specific unsigned preparation, both roles | An LLM turn or funded execution |
+| Claude Code via Agent SDK 0.3.266 | Native `mcpServerStatus()`: connected status and tool discovery, both roles | Tool invocation or an LLM conversation |
+
+Codex preparation was compared with the same published SDK's direct ESM API. Context reported
+testnet, the correct role and signing/broadcast/x402 disabled. Provider preparation did not
+download or verify artifact bytes. The tests ran with Node 26.1.0 in disposable, non-root,
+network-disabled containers with read-only roots and no wallet/model credentials or signer.
+**Zero LLM turns, signatures and transactions.** These are six client/role connection cases,
+not six commerce E2Es, proof of same-user custody isolation or external adoption.
+Future conversations and funded workflows require separate verification and bounded authorization.
+
+### Prepare your own configuration
 
 Install the exact public `@perkos/agent-sdk@0.8.0-rc.2` in a dedicated consumer directory and keep
 its lockfile. Prepare the public-only testnet profile using the existing MCP setup guide. Replace
@@ -56,7 +78,7 @@ For releases with the documented `openclaw mcp set` command:
 
 ```sh
 openclaw mcp set nayori_qa '{"command":"/absolute/path/to/node","args":["/absolute/consumer/node_modules/@perkos/agent-sdk/dist/mcp/cli.js","--config","/absolute/private-config/public-profile.json"]}'
-openclaw mcp doctor nayori_qa --probe
+openclaw mcp probe nayori_qa --json
 ```
 
 Check your installed version's CLI help first. This configures OpenClaw as a client of Nayori;

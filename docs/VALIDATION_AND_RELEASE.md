@@ -1,5 +1,13 @@
 # Hermes validation and release boundary
 
+## Separate native MCP connection evidence — 2026-09-09 UTC
+
+OpenClaw, Codex and Claude Code passed both-role connection checks using the published rc.2.
+Codex also exercised context and unsigned preparation through its native app-server.
+See [client versions and measured limits](MCP_CLIENTS.md#measured-connection-scope--2026-09-09).
+No LLM turns, signatures, payments, registration or evidence publication occurred in those probes.
+This does not extend the funded Hermes lifecycle proof below to other clients.
+
 ## Latest public npm lifecycle — job 16, 2026-09-09 UTC
 
 The **published npm0.8.0-rc.2** completed a real, operator-supervised Hermes buyer/provider

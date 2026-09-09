@@ -7,15 +7,24 @@ describe("QA release candidate metadata", () => {
   it("keeps manifest and lockfile aligned and protects the stable distribution tag", () => {
     const pkg = JSON.parse(read("package.json"));
     const lock = JSON.parse(read("package-lock.json"));
-    expect(pkg.version).toBe("0.8.0-rc.1");
+    expect(pkg.version).toBe("0.8.0-rc.2");
     expect(lock.version).toBe(pkg.version);
     expect(lock.packages[""].version).toBe(pkg.version);
     expect(pkg.publishConfig.tag).toBe("next");
     expect(pkg.publishConfig.provenance).toBe(true);
+    expect(read("src/mcp/server.ts")).toContain(`version: "${pkg.version}"`);
     expect(pkg.bin).toEqual({
       "nayori-mcp": "./dist/mcp/cli.js",
       "nayori-custody": "./dist/custody/cli.js",
     });
+  });
+
+  it("separates the unpublished rc.2 from the immutable published rc.1", () => {
+    const notes = read("docs/RELEASE_0.8.0_RC2.md");
+    for (const phrase of ["Not published", "0.8.0-rc.2.tgz", "next", "latest",
+      "version-1", "fresh reviewed budget", "not a funded E2E of rc.2"])
+      expect(notes).toContain(phrase);
+    expect(read("README.md")).toContain("RELEASE_0.8.0_RC2.md");
   });
 
   it("documents exact artifact installation without claiming publication or a new E2E", () => {

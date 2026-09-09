@@ -47,6 +47,9 @@ explorer success alone does not clear that gate. Preserve the journal rather tha
 
 ### Configurable timing source candidate
 
+[0.8.0-rc.2 release preparation](docs/RELEASE_0.8.0_RC2.md) assigns a distinct version to
+these changes. It is not published; do not overwrite or reinstall rc.1 expecting new behavior.
+
 [Confirmation policy and timing](docs/CONFIRMATION_POLICY.md) separates transaction depth,
 evaluation feedback and contractual appeal windows. The post-0.8.0-rc.1 source adds operator-bound
 version-2 QA permits and read-only progress, with conservative mainnet helpers. This is **not yet

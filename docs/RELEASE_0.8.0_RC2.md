@@ -1,8 +1,24 @@
 # 0.8.0-rc.2 — configurable confirmation policy
 
-**Not published.** This source candidate follows the reviewed confirmation-policy change.
-It needs QA review/merge and a separate publication approval. The published `next` remains
-0.8.0-rc.1 until verified otherwise; stable `latest` remains 0.7.1. Never overwrite rc.1.
+**Published on npm under `next` on 2026-09-09 UTC.** Stable `latest` remains 0.7.1.
+The operator-authorized publication used the exact reviewed VPS artifact from QA merge
+`e89ce2949b58392b073ab1b1f357c8a4d8667903`, published from the Mac without provenance attestation.
+Never overwrite rc.1 or rc.2. The immutable package retains its pre-publication documentation;
+this source note records the verified registry state.
+
+```sh
+npm install --save-exact @perkos/agent-sdk@0.8.0-rc.2
+```
+
+Verified registry integrity:
+`sha512-1I4Fva8P+HbBpxxtECocb0j8AuoBhEEaW5nH0EBXmZCV7TA5TjRhPZAozdpsiMObTd9KBb56H7ab6SeNJJK6hQ==`.
+Downloaded tarball SHA-256:
+`f079d44fc0c60f64da302df9ec0d61af56d865410ce80993ff0c7871d85f715d`.
+Source validation: 369 tests, typecheck/build and isolated tarball consumer checks passed.
+An independent clean installation from the public registry passed 12 checks covering import,
+confirmation-policy limits/progress and both CLI help entrypoints, with no credentials,
+signatures, broadcasts or LLM calls. The first install saw stale registry metadata; retry with a
+fresh cache succeeded after the accepted publication propagated. The package was not republished.
 
 ## Included and unchanged boundaries
 
@@ -44,11 +60,11 @@ The earlier internal job15 used the immutable npm0.8.0-rc.1 and version-1 permit
 approval,98/2settlement, escrow0 and reputation reconciliation. That is **not a funded E2E of rc.2**,
 new registration, external adoption, an external security review or production certification.
 
-1. Merge the reviewed release PR into QA; verify tests, tarball contents and isolated install.
-2. With publication approval, publish from the operator Mac under `next`, not GitHub Actions.
-   Do not silently move `latest`. Do not claim provenance unless an attestation exists.
-3. Verify exact registry version/integrity and both dist-tags; update installation docs only
-   after successful publication. No automatic retry of an ambiguous publish.
+1. Completed: QA merge, source tests, tarball inspection and isolated install.
+2. Completed: approved publication from the operator Mac under `next`, not GitHub Actions.
+   `latest` was not moved. No provenance attestation is claimed.
+3. Completed: exact registry version/integrity, downloaded bytes and both dist-tags verified.
+   Do not retry or republish an already accepted release.
 4. Before a transactional test, obtain a fresh reviewed budget and new version-2 permits.
    Never rewrite completed job15 permissions/journals or reuse its exhausted gas allowance.
 5. Validate the buyer/provider walkthroughs and deployed QA timing views before promotion.

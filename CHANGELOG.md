@@ -17,6 +17,12 @@ All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
 
+- Make the MCP context warning independent of package distribution status: identify the
+  integration as Stacks testnet QA without incorrectly claiming that npm is unpublished.
+  Preserve preparation/authorization, separate-custodian and untrusted-tool-data warnings,
+  and add protocol-level regression assertions. No package publication, capability,
+  contract, signing-policy or runtime deployment change.
+
 - Align installation and buyer/provider documentation with published npm 0.8.0-rc.1 under
   next, including registry integrity and verified offline role checks. Preserve stable 0.7.1,
   QA-only custody limits and the distinction from an earlier funded lifecycle. Documentation

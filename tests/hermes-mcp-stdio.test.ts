@@ -5,7 +5,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { expect, it } from "vitest";
 
-it("speaks actual stdio MCP with no stdout noise, keys or network for context/preparation", async () => {
+it.each([false, true])("speaks actual stdio MCP without noise/keys; discovery opt-in=%s", async discovery => {
   const dir = mkdtempSync(join(tmpdir(), "nayori-mcp-stdio-"));
   const config = join(dir, "public-profile.json");
   writeFileSync(config, JSON.stringify({ network: "testnet", role: "client",
@@ -15,11 +15,11 @@ it("speaks actual stdio MCP with no stdout noise, keys or network for context/pr
     treasury: "ST1E7E64H8VSSSGE0RPWF90RRC91MQG7CRQRM1BFX" }));
   const client = new Client({ name: "stdio-consumer", version: "1" });
   const transport = new StdioClientTransport({ command: process.execPath,
-    args: ["--import", "tsx", resolve("src/mcp/cli.ts"), "--config", config], env: {}, stderr: "pipe" });
+    args: ["--import", "tsx", resolve("src/mcp/cli.ts"), "--config", config, ...(discovery ? ["--enable-job-discovery"] : [])], env: {}, stderr: "pipe" });
   let stderr = ""; transport.stderr?.on("data", b => { stderr += String(b); });
   try {
     await client.connect(transport);
-    expect((await client.listTools()).tools).toHaveLength(6);
+    expect((await client.listTools()).tools).toHaveLength(discovery ? 7 : 6);
     expect((await client.callTool({ name: "nayori_context" })).isError).not.toBe(true);
     const result = await client.callTool({ name: "nayori_prepare_job", arguments: { asset: "stx",
       description: "Compute 7+5", acceptanceCriteria: [{ id: "sum", requirement: "result12", verification: "Arithmetic" }] } });

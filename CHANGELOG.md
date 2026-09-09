@@ -2,6 +2,9 @@
 
 ## Unreleased — reproducible QA onboarding
 
+- Add opt-in `--enable-job-discovery` and bounded read-only `nayori_list_jobs`, with fixed-upper-ID pagination, status filters, wallet relation and sanitized errors. No claiming or authority expansion.
+- Add neutral Nayori MCP source naming while retaining Hermes compatibility aliases and six default tools. Document source-only availability separately from immutable npm rc.2 and native-client proof.
+
 - Align buyer/provider, MCP, custody and checkpoint manuals with published rc.2 and new v2 policy0/6; preserve v1/default6/6 and immutable release boundaries.
 - Add a standalone clean-consumer diagnostic for actual npm SDK/MCP stdio, with no signer, keys, registration, LLM or business-network calls. It is not retroactively in npmrc.2.
 - Record the supervised job16 npmrc.2 settlement and six confirmations, distinguish fresh registration/evidence upload/x402/video gates, and add documentation regressions.

@@ -6,6 +6,10 @@ Shared prerequisites: [installation and public profile](HERMES_MCP.md), [clean i
 
 ## Choose your MCP client
 
+For the **unreleased QA source candidate**, optional [read-only job discovery](MCP_JOB_DISCOVERY.md)
+adds paginated on-chain reads for both roles. It is not part of npm rc.2 or the six-tool
+connection evidence below, and does not authorize a provider to claim or execute a job.
+
 Nayori's role workflow is independent of the agent application. Use an existing agent and your
 own configured model; no PerkOS-LLM account is required. Consumer maps to SDK `client`; provider
 maps to `provider`. The same Node-only `nayori-mcp` stdio server exposes the tools for either role.

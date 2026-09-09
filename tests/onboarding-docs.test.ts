@@ -9,6 +9,8 @@ const read = (name: string) => readFileSync(resolve(root, name), "utf8");
 
 describe("existing-agent onboarding contract", () => {
   it("keeps current role guides on rc.2 and the standalone diagnostic outside the immutable package", () => {
+    expect(read("docs/HERMES_BUYER.md")).toContain("# Hermes consumer manual");
+    expect(read("docs/HERMES_BUYER.md")).toContain("SDK role remains `client`");
     for (const file of ["HERMES_BUYER.md", "HERMES_PROVIDER.md", "HERMES_MCP.md", "EXISTING_AGENT.md"]) {
       const guide = read("docs/" + file);
       expect(guide).toContain("0.8.0-rc.2");

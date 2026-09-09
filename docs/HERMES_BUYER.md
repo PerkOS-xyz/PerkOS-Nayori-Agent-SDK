@@ -1,4 +1,6 @@
-# Hermes buyer — controlled QA walkthrough
+# Hermes consumer manual — controlled QA walkthrough
+
+The consumer requests and funds work; its SDK role remains `client` (the buyer).
 
 **Published QA prerelease 0.8.0-rc.2; supervised npm lifecycle verified (job 16).** Follow this with a
 separate provider operator. Do not substitute mainnet URLs or assume the published npm 0.7.1

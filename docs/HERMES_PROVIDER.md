@@ -9,7 +9,7 @@ STX gas budget, six-burn gate and the difference between a decision and payment.
 your wallet with sBTC merely to receive a payout or reuse an example job ID.
 
 **Published QA prerelease 0.8.0-rc.2; job16 npm lifecycle verified, fresh registration/video separate.**
-Use the same job as the [buyer walkthrough](HERMES_BUYER.md), with a different wallet, signer,
+Use the same job as the [consumer walkthrough](HERMES_BUYER.md), with a different wallet, signer,
 Hermes instance and journal. The candidate MCP is not the npm 0.7.1 release.
 
 ## 1. Install and prepare your wallet externally

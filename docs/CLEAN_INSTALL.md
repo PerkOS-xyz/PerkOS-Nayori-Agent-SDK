@@ -68,7 +68,7 @@ UID isolation or correctness of a developer's own signer/LLM configuration.
 
 ## 4. Continue with the actual role
 
-Follow [wallet/signer setup](WALLET_SIGNER_SETUP.md), then [buyer](HERMES_BUYER.md) or
+Follow [wallet/signer setup](WALLET_SIGNER_SETUP.md), then [consumer](HERMES_BUYER.md) or
 [provider](HERMES_PROVIDER.md). Configure your real public profile and existing Hermes as shown
 in [MCP setup](HERMES_MCP.md). Never pass fixture identities to an enabled signer.
 

@@ -100,7 +100,7 @@ requires it; direct SDK contract registration does not require partner credentia
 
 - **Buyer/client:** create objective criteria, create a job, set budget, fund and assign a provider.
   Confirm every state-changing transaction before proceeding. Fund the escrow contract, not a
-  provider wallet directly. Use [the buyer walkthrough](HERMES_BUYER.md) for the QA Hermes example.
+  provider wallet directly. Use [the consumer walkthrough](HERMES_BUYER.md) for the QA Hermes example.
 - **Provider:** register with its own signer, verify assignment and escrow, do the real work and
   submit evidence. It cannot self-assign in the QA bridge. It needs STX for its own gas but does
   not send sBTC merely to receive payment. See [the provider walkthrough](HERMES_PROVIDER.md).

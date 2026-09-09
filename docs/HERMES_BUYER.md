@@ -1,4 +1,9 @@
-# Hermes buyer — controlled QA walkthrough
+# Agent consumer manual — controlled QA walkthrough
+
+The consumer requests and funds work; its SDK role remains `client` (the buyer).
+
+Choose [Hermes, OpenClaw, Codex or Claude Code](MCP_CLIENTS.md). Hermes is the verified internal
+example; other client-specific E2Es remain pending. This filename is retained for link compatibility.
 
 **Published QA prerelease 0.8.0-rc.2; supervised npm lifecycle verified (job 16).** Follow this with a
 separate provider operator. Do not substitute mainnet URLs or assume the published npm 0.7.1
@@ -12,21 +17,21 @@ public transactions and remaining gates. Reuse an already registered, verified i
 
 ### Bring your working agent
 
-Your Hermes is already installed and working with your own LLM. Keep that configuration;
+Your agent is already installed and working with your own LLM. Keep that configuration;
 this guide adds Nayori tools, not a model provider. No PerkOS-LLM account, model migration or
 model API key shared with Nayori is required. Hermes is an example, not a platform requirement.
 Start with [existing-agent onboarding](EXISTING_AGENT.md) and the separate
 [operator wallet/signer checklist](WALLET_SIGNER_SETUP.md). Keep model credentials out of
 prompts, MCP arguments and recordings. Your agent's model is separate from Nayori's evaluator.
 
-- Create and back up a dedicated Stacks testnet wallet **outside Nayori and outside Hermes**.
+- Create and back up a dedicated Stacks testnet wallet **outside Nayori and outside the agent**.
   Use your own Stacks.js signer or the reviewed isolated custody pilot. Wallet creation,
   key recovery and funding remain operator responsibilities, not SDK tools.
 - Verify the restored key derives the expected address before funding. Never display keys,
   recovery material, environment contents or authorization headers in a recording.
-- Keep the buyer key only inside its signer boundary. Hermes must not share that UID,
+- Keep the buyer key only inside its signer boundary. The agent must not share that UID,
   key mount, writable policy, Docker socket, sudo or access to the provider's socket.
-- Install `@perkos/agent-sdk@0.8.0-rc.2` with `--save-exact` as described in [MCP setup](HERMES_MCP.md).
+- Install `@perkos/agent-sdk@0.8.0-rc.2` with `--save-exact` as described in [MCP client setup](MCP_CLIENTS.md).
   Preserve the lockfile and registry integrity. Stable 0.7.1 does not include this bridge.
   Do not use unpinned `npx` or mistake installation for permission to sign.
 
@@ -44,7 +49,7 @@ The pilot allows at most one job per permit: up to 1000 atomic sBTC units or 100
 caps, not a live network fee quote. The buyer's six actions normally require a 30000 cap.
 Accept the included 200 bps evaluation-earned fee and net refund after evaluated rejection.
 
-Configure Hermes using the exact paths in MCP setup. Verify `nayori_context` reports
+Configure your agent using the exact paths in MCP setup. Verify `nayori_context` reports
 testnet, your wallet and the fixed v6/v5 contracts. With custody, verify
 `nayori_custody_status` reports the intended permit and zero unexpected operations. A context
 response does not prove wallet ownership or successful registration.
@@ -53,8 +58,8 @@ response does not prove wallet ownership or successful registration.
 
 After operator review, isolation tests, backup and explicit low-value testnet funding:
 
-1. Enable testnet signing in the **signer service**, not in Hermes's environment.
-2. For a **new identity only**, ask Hermes to call `nayori_execute` with `{"action":"register"}`. Confirm the saved txid
+1. Enable testnet signing in the **signer service**, not in the agent's environment.
+2. For a **new identity only**, ask your agent to call `nayori_execute` with `{"action":"register"}`. Confirm the saved txid
    and agent ID. Do not repeat registration under a new permit because a response is slow.
 3. Define a real small task and objective acceptance criteria in the operator permit.
    `nayori_prepare_job` previews the commitment; it does not create or authorize a job.

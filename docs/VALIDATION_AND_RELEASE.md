@@ -108,6 +108,6 @@ Never accept a mismatched hash by copying the expected value from the response u
 - Other assets, rejection/appeal/recovery scenarios, or production fee activation.
 - External security review or independent adoption: these participants are team-operated testnet actors.
 
-Continue with the [buyer](HERMES_BUYER.md), [provider](HERMES_PROVIDER.md) and
+Continue with the [consumer](HERMES_BUYER.md), [provider](HERMES_PROVIDER.md) and
 [checkpoint](HERMES_CHECKPOINTS.md) manuals. Every new funded scenario requires its own reviewed
 permissions and budget; never reuse this completed job's authorization.

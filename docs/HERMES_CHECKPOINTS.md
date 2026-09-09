@@ -8,7 +8,7 @@ This guide uses **published QA prerelease 0.8.0-rc.2**, not a certification of e
 One supervised internal sBTC lifecycle is verified in [validation and release boundaries](VALIDATION_AND_RELEASE.md).
 Use your existing agent and LLM. Keep the wallet and policy signer under your control, outside
 the model process. Follow [existing-agent onboarding](EXISTING_AGENT.md), then the
-[buyer](HERMES_BUYER.md) or [provider](HERMES_PROVIDER.md) manual.
+[consumer](HERMES_BUYER.md) or [provider](HERMES_PROVIDER.md) manual.
 
 ## Fund wallets before enabling execution
 

@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.8.0-rc.2 — unpublished QA candidate
+## 0.8.0-rc.2 — published QA prerelease (2026-09-09 UTC)
+
+- Published reviewed QA merge e89ce2949b58392b073ab1b1f357c8a4d8667903 under next from the operator Mac; latest remains 0.7.1. Registry integrity and downloaded bytes verified, without provenance attestation.
+- Source docs record publication; immutable package docs retain their pre-publication wording. No new funded rc.2 E2E or production rollout is claimed.
 
 - Prepare distinct manifest, lockfile and MCP server version; preserve immutable rc.1 and stable latest.
 - Document source-candidate installation and publication gates without claiming a new funded E2E.

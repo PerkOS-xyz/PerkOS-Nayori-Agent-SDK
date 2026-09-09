@@ -25,8 +25,9 @@ complete Git history, releases, issues, and pull requests are preserved.
 
 ## Connect an existing agent
 
-**0.8.0-rc.1 is published on npm under `next` for QA testing.** Stable `latest` remains 0.7.1.
-See [candidate release notes and exact installation](docs/RELEASE_0.8.0_RC1.md).
+**0.8.0-rc.2 is published on npm under `next` for QA testing.** Stable `latest` remains 0.7.1.
+See [release notes and exact installation](docs/RELEASE_0.8.0_RC2.md).
+The [rc.1 release record](docs/RELEASE_0.8.0_RC1.md) remains available for historical reproduction.
 The candidate preserves default v5/v4 contracts; its Hermes signer pilot is testnet-only.
 
 Your agent is already installed and working with your own LLM. Keep that setup: Nayori does not
@@ -40,20 +41,20 @@ certification of external onboarding. See [validation and release boundaries](do
 
 Use the [QA checkpoints and confirmation guide](docs/HERMES_CHECKPOINTS.md) to distinguish
 wallet funding, registration, funded escrow, submitted work and final settlement. The custody
-pilot requires six subsequent Bitcoin burn blocks before advancing an operation; a txid or
+pilot defaults to six subsequent Bitcoin burn blocks before advancing an operation; a txid or
 explorer success alone does not clear that gate. Preserve the journal rather than re-signing.
 
 ## Requirements
 
-### Configurable timing source candidate
+### Configurable timing QA prerelease
 
-[0.8.0-rc.2 release preparation](docs/RELEASE_0.8.0_RC2.md) assigns a distinct version to
-these changes. It is not published; do not overwrite or reinstall rc.1 expecting new behavior.
+[0.8.0-rc.2 release evidence](docs/RELEASE_0.8.0_RC2.md) records the published artifact and
+exact installation. Do not overwrite or reinstall rc.1 expecting new behavior.
 
 [Confirmation policy and timing](docs/CONFIRMATION_POLICY.md) separates transaction depth,
 evaluation feedback and contractual appeal windows. The post-0.8.0-rc.1 source adds operator-bound
-version-2 QA permits and read-only progress, with conservative mainnet helpers. This is **not yet
-published or deployed**; existing version-1 permits and npm 0.8.0-rc.1 retain six burn blocks.
+version-2 QA permits and read-only progress, with conservative mainnet helpers. It is published
+in rc.2; existing version-1 permits and npm 0.8.0-rc.1 retain six burn blocks.
 The Hermes signer remains testnet-only; contract deadlines and x402/MPP are unchanged.
 
 ### Published QA Hermes MCP prerelease

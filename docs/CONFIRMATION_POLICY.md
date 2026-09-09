@@ -1,6 +1,7 @@
 # Confirmation policy and workflow timing
 
-Source candidate after 0.8.0-rc.1; **not yet published or deployed**. The immutable npm
+Available in **published SDK 0.8.0-rc.2** under `next`; stable `latest` remains 0.7.1.
+See [release evidence and exact installation](RELEASE_0.8.0_RC2.md). The immutable npm
 0.8.0-rc.1 package and every version-1 custody permit retain six additional Bitcoin burn blocks.
 Do not edit an installed package, an active permit or its journal to accelerate an existing run.
 
@@ -69,7 +70,8 @@ Finalization/timeout requires current burn height **strictly greater** than the 
 plus role, state, asset and escrow verification. A passed deadline is not a settlement receipt.
 Current contract windows are not user-editable per job; this change deploys no contracts.
 
-The companion Web candidate exposes `GET /api/v1/workflow-timing?asset=sbtc&jobId=15` on the
-selected environment. Its operator baseline is disclosure only; the bound signer permit wins.
+The companion Web exposes `GET /api/v1/workflow-timing?asset=sbtc&jobId=15` in QA, verified in
+release `0233183efb3e32d09ca0f5bf6c1ac2188921c88d`. Production promotion is separate.
+Its operator baseline is disclosure only; the bound signer permit wins.
 An unavailable clock is not zero waiting time. New source availability is not evidence of a
 completed funded E2E or external adoption.

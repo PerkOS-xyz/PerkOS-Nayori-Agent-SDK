@@ -19,9 +19,9 @@ describe("QA release candidate metadata", () => {
     });
   });
 
-  it("separates the unpublished rc.2 from the immutable published rc.1", () => {
+  it("records rc.2 publication without promoting stable or claiming a funded E2E", () => {
     const notes = read("docs/RELEASE_0.8.0_RC2.md");
-    for (const phrase of ["Not published", "0.8.0-rc.2.tgz", "next", "latest",
+    for (const phrase of ["Published on npm", "0.8.0-rc.2.tgz", "next", "latest",
       "version-1", "fresh reviewed budget", "not a funded E2E of rc.2"])
       expect(notes).toContain(phrase);
     expect(read("README.md")).toContain("RELEASE_0.8.0_RC2.md");

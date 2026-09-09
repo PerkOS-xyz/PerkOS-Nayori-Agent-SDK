@@ -1,5 +1,8 @@
 # Hermes MCP — QA adapter
 
+The Node stdio adapter is not restricted to Hermes. See [MCP client setup](MCP_CLIENTS.md)
+for Hermes, OpenClaw, Codex and Claude Code, with client-specific validation boundaries.
+
 **Published QA prerelease 0.8.0-rc.2, not a turnkey production wallet integration.**
 By default this packages read/prepare tools using the actual SDK.
 Optional [custody delegation](HERMES_CUSTODY.md) adds bounded register/create/fund/assign/submit/finalize

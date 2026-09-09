@@ -8,8 +8,18 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const read = (name: string) => readFileSync(resolve(root, name), "utf8");
 
 describe("existing-agent onboarding contract", () => {
+  it("documents multiple MCP clients without promoting their untested custody workflows", () => {
+    const guide = read("docs/MCP_CLIENTS.md");
+    for (const value of ["Hermes", "OpenClaw", "Codex", "Claude Code",
+      "Nayori client E2E pending", "read/prepare mode only", "Same-user processes",
+      "codex mcp add", "claude mcp add --transport stdio", "openclaw mcp set"])
+      expect(guide).toContain(value);
+    expect(read("docs/HERMES_PROVIDER.md")).toContain("# Agent provider manual");
+    for (const file of ["README.md", "docs/HERMES_BUYER.md", "docs/HERMES_PROVIDER.md"])
+      expect(read(file)).toContain("MCP_CLIENTS.md");
+  });
   it("keeps current role guides on rc.2 and the standalone diagnostic outside the immutable package", () => {
-    expect(read("docs/HERMES_BUYER.md")).toContain("# Hermes consumer manual");
+    expect(read("docs/HERMES_BUYER.md")).toContain("# Agent consumer manual");
     expect(read("docs/HERMES_BUYER.md")).toContain("SDK role remains `client`");
     for (const file of ["HERMES_BUYER.md", "HERMES_PROVIDER.md", "HERMES_MCP.md", "EXISTING_AGENT.md"]) {
       const guide = read("docs/" + file);

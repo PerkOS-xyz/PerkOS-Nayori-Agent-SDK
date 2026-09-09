@@ -1,4 +1,8 @@
-# Hermes provider — controlled QA walkthrough
+# Agent provider manual — controlled QA walkthrough
+
+Choose [Hermes, OpenClaw, Codex or Claude Code](MCP_CLIENTS.md). The SDK role stays `provider`.
+Hermes is the verified internal example; other client-specific E2Es remain pending.
+The existing filename is retained for link compatibility, not a Hermes-only requirement.
 
 See [validation and release boundaries](VALIDATION_AND_RELEASE.md) for the verified internal
 scenario and remaining distribution/video gates. An existing active registration is reused
@@ -10,21 +14,21 @@ your wallet with sBTC merely to receive a payout or reuse an example job ID.
 
 **Published QA prerelease 0.8.0-rc.2; job16 npm lifecycle verified, fresh registration/video separate.**
 Use the same job as the [consumer walkthrough](HERMES_BUYER.md), with a different wallet, signer,
-Hermes instance and journal. The candidate MCP is not the npm 0.7.1 release.
+agent instance and journal. The candidate MCP is not the npm 0.7.1 release.
 
 ## 1. Install and prepare your wallet externally
 
-Your Hermes is already installed and working with your own LLM. Keep that setup; this guide
+Your agent is already installed and working with your own LLM. Keep that setup; this guide
 adds Nayori tools without configuring or replacing your model. No PerkOS-LLM account or model
 API key shared with Nayori is required. Hermes is an example, not a platform requirement.
 Start with [existing-agent onboarding](EXISTING_AGENT.md) and the separate
 [operator wallet/signer checklist](WALLET_SIGNER_SETUP.md). Never put model credentials in
 tool arguments or recordings. Your agent's model is separate from Nayori's evaluator.
 
-Follow [MCP installation](HERMES_MCP.md) with pinned npm 0.8.0-rc.2 and its registry integrity. Create,
-back up and restore-check your own testnet wallet outside the SDK and Hermes. Fund only
+Follow [MCP client setup](MCP_CLIENTS.md) with pinned npm 0.8.0-rc.2 and its registry integrity. Create,
+back up and restore-check your own testnet wallet outside the SDK and the agent. Fund only
 authorized STX network fees; a provider does not need to send sBTC to receive a job payment.
-Never give Hermes your key or the buyer/evaluator/treasury keys. Follow the separate-UID,
+Never give the agent your key or the buyer/evaluator/treasury keys. Follow the separate-UID,
 filesystem, socket and capability restrictions in [custody setup](HERMES_CUSTODY.md).
 
 Configure `role: provider`. The operator permit must reference the buyer's confirmed job ID,
@@ -45,7 +49,7 @@ onboarding dependency, not permission to access PerkOS infrastructure.
 2. Read the job using `nayori_get_job`. Confirm provider equals your address, status is funded,
    escrow equals the agreed gross amount and client/evaluator/treasury/criteria are correct.
 3. Do not self-assign or work against missing escrow. Ask the buyer to resolve mismatches.
-4. Have the real Hermes perform the agreed task. Preserve its actual output, including errors;
+4. Have the real agent perform the agreed task. Preserve its actual output, including errors;
    do not substitute a canned result and call it autonomous execution.
 5. Publish the small evidence artifact through the operator-approved QA evidence workflow.
    This MCP does not include an upload tool. The pilot accepts evidence only from the fixed
@@ -73,7 +77,7 @@ checking the actual job and deadline. Transport/service errors require status re
 the request may already have been persisted. No automatic retries or budget increases occur.
 
 Append `--enable-qa-evaluation` to provider MCP arguments after the custody socket/permit
-configuration. If Hermes uses tool filtering, add the exact names `nayori_request_evaluation`
+configuration. If your client uses tool filtering, add the exact names `nayori_request_evaluation`
 and `nayori_evaluation_status`. Without this operator flag the tools are absent.
 
 Call `nayori_request_evaluation` with the same asset, jobId, description, acceptanceCriteria

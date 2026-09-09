@@ -73,6 +73,9 @@ Provider operators may additionally enable public QA evaluation admission for th
 confirmed submission; this does not enable x402 purchases or expose evaluator credentials. See
 [MCP setup](docs/HERMES_MCP.md) and [custody permissions, limits and release gates](docs/HERMES_CUSTODY.md).
 Role-specific recording/QA guides: [consumer](docs/HERMES_BUYER.md) and [provider](docs/HERMES_PROVIDER.md).
+
+Connect your existing Hermes, OpenClaw, Codex or Claude Code through [MCP client setup](docs/MCP_CLIENTS.md).
+Hermes has a verified internal lifecycle; other client-specific E2Es remain pending.
 Evaluation admission has a bounded 45-second timeout; status reads retain 15 seconds.
 Check evaluator capacity before submission and reconcile the existing evaluation ID after
 an error. Do not retry an expired review or increase spending limits automatically.

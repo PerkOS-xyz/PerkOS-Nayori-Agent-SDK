@@ -75,7 +75,9 @@ confirmed submission; this does not enable x402 purchases or expose evaluator cr
 Role-specific recording/QA guides: [consumer](docs/HERMES_BUYER.md) and [provider](docs/HERMES_PROVIDER.md).
 
 Connect your existing Hermes, OpenClaw, Codex or Claude Code through [MCP client setup](docs/MCP_CLIENTS.md).
-Hermes has a verified internal lifecycle; other client-specific E2Es remain pending.
+Hermes has a verified internal lifecycle. OpenClaw, Codex and Claude Code passed native MCP
+connection checks for both roles; Codex also passed context and unsigned preparation calls.
+These network-disabled probes used no LLM, signer or funds; other client-specific E2Es remain pending.
 Evaluation admission has a bounded 45-second timeout; status reads retain 15 seconds.
 Check evaluator capacity before submission and reconcile the existing evaluation ID after
 an error. Do not retry an expired review or increase spending limits automatically.

@@ -34,6 +34,13 @@ describe("existing-agent onboarding contract", () => {
     expect(read("examples/onboarding-smoke.mjs")).toContain("env: {}");
     expect(read("examples/onboarding-smoke.mjs")).not.toContain("../src");
   });
+  it("bounds native MCP connection evidence separately from paid or model-driven E2Es", () => {
+    const guide = read("docs/MCP_CLIENTS.md");
+    for (const text of ["2026-09-09", "OpenClaw 2026.9.3", "Codex CLI 0.153.4",
+      "Agent SDK 0.3.266", "Zero LLM turns, signatures and transactions",
+      "not six commerce E2Es", "download or verify artifact bytes", "openclaw mcp probe nayori_qa --json"])
+      expect(guide).toContain(text);
+  });
   it("records job16 proof without claiming fresh registration or self-service evidence", () => {
     const guide = read("docs/VALIDATION_AND_RELEASE.md");
     for (const value of ["job 16", "14640", "27 Hermes", "operator-supervised", "New-agent registration",

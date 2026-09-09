@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased — configurable confirmation policy
+## 0.8.0-rc.2 — unpublished QA candidate
+
+- Prepare distinct manifest, lockfile and MCP server version; preserve immutable rc.1 and stable latest.
+- Document source-candidate installation and publication gates without claiming a new funded E2E.
 
 - Add network-validated operator workflow/settlement confirmation policy and progress helpers.
 - Add version-2 QA permits binding the policy to their immutable hash; preserve version-1 hashes and six-block defaults.

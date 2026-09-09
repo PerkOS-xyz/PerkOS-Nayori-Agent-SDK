@@ -112,7 +112,7 @@ export function createHermesMcp(profileInput: unknown, reader: Reader = qaReader
       inputSchema: schema({ asset: assetSchema, jobId: uintSchema, description: string, acceptanceCriteria: criteriaSchema, evidence: evidenceSchema }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true } },
     tool("nayori_evaluation_status", "Read the deterministic evaluation ID of the permitted QA job. Queued/confirmed evaluation is not proof of payout.", schema({ asset: assetSchema, jobId: uintSchema })));
-  const server = new Server({ name: "nayori-qa", version: "0.8.0-rc.1" }, { capabilities: { tools: {} } });
+  const server = new Server({ name: "nayori-qa", version: "0.8.0-rc.2" }, { capabilities: { tools: {} } });
   server.setRequestHandler(ListToolsRequestSchema, () => ({ tools }));
   server.setRequestHandler(CallToolRequestSchema, async request => {
     try {

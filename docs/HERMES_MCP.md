@@ -1,4 +1,7 @@
-# Hermes MCP — QA adapter
+# Nayori MCP — framework-independent QA adapter
+
+Optional [job discovery](MCP_JOB_DISCOVERY.md) is an unreleased source-only extension;
+the npm rc.2 defaults and installation instructions below remain unchanged.
 
 The Node stdio adapter is not restricted to Hermes. See [MCP client setup](MCP_CLIENTS.md)
 for Hermes, OpenClaw, Codex and Claude Code, with client-specific validation boundaries.

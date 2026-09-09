@@ -61,7 +61,12 @@ version-2 QA permits and read-only progress, with conservative mainnet helpers. 
 in rc.2; existing version-1 permits and npm 0.8.0-rc.1 retain six burn blocks.
 The Hermes signer remains testnet-only; contract deadlines and x402/MPP are unchanged.
 
-### Published QA Hermes MCP prerelease
+### Published QA Nayori MCP prerelease
+
+Unreleased source extension: [bounded job discovery](docs/MCP_JOB_DISCOVERY.md) adds optional
+`nayori_list_jobs` for either role. It is not in npm rc.2, does not claim jobs or sign, and leaves
+the existing six-tool default unchanged. Source constructor `createNayoriMcp` retains the old
+Hermes names as compatibility aliases; use your existing agent and its own configured LLM.
 
 The QA candidate includes the Node-only `nayori-mcp` stdio binary for public testnet
 reads and offline buyer/provider commitments. It has **no signer, broadcast, x402 purchase

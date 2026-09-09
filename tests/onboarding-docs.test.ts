@@ -8,6 +8,30 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const read = (name: string) => readFileSync(resolve(root, name), "utf8");
 
 describe("existing-agent onboarding contract", () => {
+  it("keeps current role guides on rc.2 and the standalone diagnostic outside the immutable package", () => {
+    for (const file of ["HERMES_BUYER.md", "HERMES_PROVIDER.md", "HERMES_MCP.md", "EXISTING_AGENT.md"]) {
+      const guide = read("docs/" + file);
+      expect(guide).toContain("0.8.0-rc.2");
+      expect(guide).not.toContain("npm install --save-exact @perkos/agent-sdk@0.8.0-rc.1");
+      expect(guide).toContain("CLEAN_INSTALL.md");
+    }
+    const clean = read("docs/CLEAN_INSTALL.md");
+    for (const value of ["not a Hermes conversation", "not\nincluded in the immutable npm rc.2",
+      "@modelcontextprotocol/sdk@1.30.0", "node onboarding-smoke.mjs", "never fund", "No wallet"])
+      expect(clean).toContain(value);
+    expect(read("examples/onboarding-smoke.mjs")).toContain("env: {}");
+    expect(read("examples/onboarding-smoke.mjs")).not.toContain("../src");
+  });
+  it("records job16 proof without claiming fresh registration or self-service evidence", () => {
+    const guide = read("docs/VALIDATION_AND_RELEASE.md");
+    for (const value of ["job 16", "14640", "27 Hermes", "operator-supervised", "New-agent registration",
+      "0x5b4b36234631c8430c3b7540cd1495e6b7a0e9157f2dfd79fa9e58602b0ba6d5"])
+      expect(guide).toContain(value);
+    expect(read("docs/HERMES_PROVIDER.md")).toContain("no self-service upload");
+    expect(read("docs/HERMES_CHECKPOINTS.md")).toContain("workflow0/settlement6");
+    expect(read("docs/HERMES_CUSTODY.md")).toContain('"version": 2');
+    expect(read("docs/HERMES_CUSTODY.md")).not.toContain("It is not yet published/deployed");
+  });
   it("distinguishes verified QA evidence, distribution and independent outcome checks", () => {
     const guide = read("docs/VALIDATION_AND_RELEASE.md");
     for (const text of ["fc0537477fda819fa9cce8e74e543be0d49ea3a4", "job 14",
@@ -37,7 +61,7 @@ describe("existing-agent onboarding contract", () => {
     expect(guide).toContain("after your agent is installed and working with your own LLM");
     expect(guide).toContain("No PerkOS-LLM account or credentials are required");
     expect(guide).toContain("Hermes is an example integration, not a requirement");
-expect(guide).toMatch(/published QA prerelease 0\.8\.0-rc\.1/i);
+expect(guide).toMatch(/published QA prerelease 0\.8\.0-rc\.2/i);
     expect(guide).toContain("different");
   });
 

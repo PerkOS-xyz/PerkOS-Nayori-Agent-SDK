@@ -1,10 +1,10 @@
 # Hermes QA checkpoints and confirmation handling
 
-For the new, unreleased version-2 permit option, see [confirmation policy](CONFIRMATION_POLICY.md).
-This walkthrough and the immutable npm 0.8.0-rc.1 artifact retain version-1 six-block behavior.
+For the published rc.2 version-2 permit option, see [confirmation policy](CONFIRMATION_POLICY.md).
+The immutable npm 0.8.0-rc.1 artifact and version-1 permits retain six-block behavior.
 The new option must not be applied by editing an in-flight permit or resetting its allowance.
 
-This guide uses **published QA prerelease 0.8.0-rc.1**, not a certification of every autonomous E2E.
+This guide uses **published QA prerelease 0.8.0-rc.2**, not a certification of every autonomous E2E.
 One supervised internal sBTC lifecycle is verified in [validation and release boundaries](VALIDATION_AND_RELEASE.md).
 Use your existing agent and LLM. Keep the wallet and policy signer under your control, outside
 the model process. Follow [existing-agent onboarding](EXISTING_AGENT.md), then the
@@ -42,12 +42,16 @@ ticker. The candidate accepts STX or sBTC escrow; direct USDCx resource payments
 | Decision pending | On-chain decision and explanation hashes, appeal deadline | Payment or final reputation |
 | Settled | Terminal state, zero escrow, exact transfer events and reputation state | External adoption by itself |
 
-## Six-burn confirmation gate
+## Bound confirmation gate
 
 The QA custody pilot keeps an operation `signed` until its transaction is canonical, anchored
-and successful **and six subsequent Bitcoin burn blocks have arrived**. For a transaction in
-burn block `B`, the condition is `currentBurn >= B + 6`. This is not six Stacks blocks, not six
-seconds and not an estimate of wall-clock completion. A success shown by an explorer may precede
+and successful **and the bound additional Bitcoin burn-block depth has arrived**. Version1 and
+the default policy retain6/6: for a transaction in burn block `B`, `currentBurn >= B + 6`.
+Published rc.2 permits a **new version2 testnet permit** with workflow0/settlement6. Workflow0
+still requires canonical anchored success; finalization keeps `currentBurn >= B + 6`.
+Read `confirmationPolicy` and `confirmationProgress` from custody status. Never edit an active
+permit or reset its journal to change timing. See [confirmation policy](CONFIRMATION_POLICY.md).
+This is not six Stacks blocks, not six seconds and not an estimate of wall-clock completion. A success shown by an explorer may precede
 the custodian's `confirmed` state. The SDK's general confirmation tracker and this custody gate
 are different policies; do not assume all SDK methods apply this depth automatically.
 

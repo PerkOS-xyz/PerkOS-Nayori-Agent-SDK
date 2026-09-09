@@ -33,7 +33,7 @@ for (const phrase of ["Published", "npm init -y", "--save-exact",
       "not this versioned artifact", "default v5/v4 contracts are unchanged",
 "publication approval", "next", "latest", "fresh reviewed budget"])
       expect(notes).toContain(phrase);
-    expect(read("docs/HERMES_MCP.md")).toContain("perkos-agent-sdk-0.8.0-rc.1.tgz");
+    expect(read("docs/HERMES_MCP.md")).toContain("perkos-agent-sdk-0.8.0-rc.2.tgz");
     expect(read("README.md")).toContain("RELEASE_0.8.0_RC1.md");
   });
 });

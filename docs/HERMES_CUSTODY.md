@@ -1,10 +1,11 @@
 # Hermes custody — bounded QA execution candidate
 
-The post-0.8.0-rc.1 source adds [operator-bound confirmation policy](CONFIRMATION_POLICY.md)
-for new version-2 permits. It is not yet published/deployed. Version-1 permits below keep their
-original hashes and six-block behavior; never mutate an active run or reset its journal.
+Published rc.2 includes [operator-bound confirmation policy](CONFIRMATION_POLICY.md)
+for new version-2 permits. Version-1 permits keep their original hashes and six-block behavior;
+never mutate an active run or reset its journal. The example below is version2 with workflow0
+and settlement6 for a **new** low-value, explicitly authorized testnet run.
 
-**Published in npm 0.8.0-rc.1; deployment remains a controlled QA pilot. Do not enable funded wallets before your Linux isolation gate.**
+**Published in npm 0.8.0-rc.2; deployment remains a controlled QA pilot. Do not enable funded wallets before your Linux isolation gate.**
 This candidate adds `nayori-custody`, a separate Node service, and optional delegation from
 `nayori-mcp`. It is not in published npm 0.7.1. No mainnet mode exists.
 
@@ -50,7 +51,8 @@ is UTC wall-clock authorization expiry; `expiredAt` is the job's **Stacks block*
 
 ```json
 {
-  "version": 1,
+  "version": 2,
+  "confirmationPolicy": { "workflowBurnBlocks": 0, "settlementBurnBlocks": 6 },
   "id": "qa-buyer-001",
   "profile": {
     "network": "testnet",
@@ -90,7 +92,7 @@ match the buyer's job. A provider never gets create/fund/assign/finalize authori
 
 ## Start and connect
 
-Install the exact npm 0.8.0-rc.1 package on each side using [MCP setup](HERMES_MCP.md).
+Install the exact npm 0.8.0-rc.2 package on each side using [MCP setup](HERMES_MCP.md).
 Preserve the lockfile and verify registry integrity against the release notes.
 First start with **signing disabled**, without a funded key:
 
@@ -144,8 +146,9 @@ this pilot does not expose appeal, refund, review-timeout or administrative acti
   submit is rejected. Signing/broadcast timeouts, aborted transactions, partial journal writes and
   unknown outcomes block additional spending. Errors never claim that no signature was made.
 - Reconciliation requires the saved txid, canonical anchored success, expected contract result,
-  and **six subsequent burn blocks**. Create binds its returned job ID for subsequent actions.
-  Six confirmations reduce reorg risk; they do not eliminate it. Public RPC is a trust dependency.
+  and the **bound confirmation policy**. Version1/default is6/6; new version2 can use
+  workflow0/settlement6 on testnet. Create binds its returned job ID for subsequent actions.
+  Settlement6 reduces reorg risk; it does not eliminate it. Public RPC is a trust dependency.
 - A crash leaves a lock. **Never delete/replace a ledger, approve a new permit for the same wallet,
   or remove a lock blindly to retry.** Stop all signer processes; inspect chain nonce, saved txid,
   mempool and events. Preserve evidence and obtain explicit operator recovery authorization.

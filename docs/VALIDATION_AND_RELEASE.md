@@ -1,6 +1,34 @@
 # Hermes validation and release boundary
 
-## What was verified
+## Latest public npm lifecycle — job 16, 2026-09-09 UTC
+
+The **published npm0.8.0-rc.2** completed a real, operator-supervised Hermes buyer/provider
+testnet sBTC lifecycle: create → budget → fund → assign → actual work → submit → evaluate →
+finalize. Both participants reused existing registered identities. New version2 permits used
+workflow0/settlement6; no installed SDK modification or contract change was made.
+
+- Contract: `ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.sbtc-commerce-v5`, job16.
+- Actual work:29+23, result52 and explanation. Public evidence bytes and commitments verified.
+- [Submission](https://explorer.hiro.so/txid/0x20d98e4c492c448cf837c778772039275ed4011e46d0afb65c0e6597ba3167c7?chain=testnet).
+- [Evaluator approve](https://explorer.hiro.so/txid/0x796b671236332398130a6bc9d200ec90839cc6ac8fc15daea1b7786619985476?chain=testnet).
+- [Settlement](https://explorer.hiro.so/txid/0x5b4b36234631c8430c3b7540cd1495e6b7a0e9157f2dfd79fa9e58602b0ba6d5?chain=testnet): success `(ok true)`, Stacks block298365/burn14634.
+- Exactly980 atomic sBTC to provider and20 to treasury; completed/u3, escrow0, final approve,
+  no appeal, completed reputation2→3, no pending synchronization. Prior balance preserved.
+- Final confirmation: burn14640 and custody `confirmed`; all six additional burn blocks passed.
+- Observed27 Hermes attempts; evaluator maximum4, exact usage/cost not established. Gas50000
+  micro-STX including incoming funding transactions. Budget closed; never reuse this permit.
+
+The npm package came from the public registry, but orchestration and artifact publication were
+operator-supervised. This is a **funded npm-only SDK artifact test**, not a promise of turnkey
+external onboarding or single-prompt autonomy. One fund conversation completed without executing;
+independent readback caught it before a bounded continuation. Submit/evaluate hit conversation
+limits despite successful operations. Never repeat economic actions to improve a conversation label.
+
+New-agent registration, HTTPx402/MPP purchases, public self-service evidence upload and developer
+video are not demonstrated by job16. The older source proof below remains separate historical
+evidence. Start a fresh installation with [the offline checkpoint](CLEAN_INSTALL.md).
+
+## Historical source lifecycle — job 14
 
 On 2026-09-08 UTC, one **internal, operator-supervised Stacks testnet** sBTC job completed
 using real Hermes participants, the SDK/MCP tools, isolated policy signers and Nayori's evaluator.
@@ -35,7 +63,8 @@ Do not send funds to the addresses in this historical evidence.
 | npm `@perkos/agent-sdk@0.7.1` | Published v5/v4 baseline; does not include the local QA Hermes/custody/fee additions |
 | Reviewed QA source above | Tested v6/v5 opt-in fee path, local Hermes MCP, custody and evaluation admission |
 | Historical QA tarball used in the lifecycle | Reports version 0.7.1; source commit and artifact integrity distinguish it from npm |
-| Published QA prerelease | npm 0.8.0-rc.1 under `next`; clean registry installation and offline role checks passed; see [release notes](RELEASE_0.8.0_RC1.md) |
+| Historical QA prerelease | npm 0.8.0-rc.1, formerly under `next`; see [release notes](RELEASE_0.8.0_RC1.md) |
+| Current pinned QA walkthrough | npm 0.8.0-rc.2, published under `next`; job16 above and [release notes](RELEASE_0.8.0_RC2.md) |
 
 Do not describe the earlier funded lifecycle as an npm-only E2E. The separate 0.8.0-rc.1 registry
 installation verified imports, CLI, version, buyer/provider MCP and offline preparation without
@@ -73,7 +102,7 @@ Never accept a mismatched hash by copying the expected value from the response u
 
 ## Still outside this proof
 
-- A new funded npm-only lifecycle, new-agent registration in this cycle, and the developer video.
+- New-agent registration in these cycles and the developer video. The funded npmrc.2 lifecycle is now verified above.
 - Autonomous operation from one instruction without the operator's staged gates.
 - The separate x402/MPP resource-purchase workflow; local QA MCP does not purchase x402.
 - Other assets, rejection/appeal/recovery scenarios, or production fee activation.

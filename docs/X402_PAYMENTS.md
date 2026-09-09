@@ -4,10 +4,12 @@ Nayori's payer flow prepares a standard, non-sponsored Stacks transaction for di
 or USDCx payment. It binds the payment to the exact HTTP request and returns a body suitable for the
 hosted facilitator. The SDK does not broadcast the transaction.
 
-The public Nayori Platform deployment is currently quote-only. Payment verification, settlement,
-reconciliation, and delivery remain runtime-disabled until the testnet release gates and external
-review are complete. The APIs below are developer foundations, not a claim that production
-settlement is live.
+SDK installation does not establish the selected resource server's live network, enabled assets
+or settlement policy. Verify the deployment and advertised capabilities before authorizing a
+payment; do not infer availability from this source guide or reuse a mainnet endpoint in QA.
+See [the product x402 guide](https://docs.nayori.ai/commerce/x402) for the documented public path.
+The local QA Hermes MCP has no x402 purchase tool. Its escrow/evaluation walkthrough is not a
+paid-resource test; a new HTTP payment needs a separate signer permission, budget and receipt.
 
 ## Safe offline quickstart
 

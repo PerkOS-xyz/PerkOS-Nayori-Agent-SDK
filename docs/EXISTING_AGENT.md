@@ -14,7 +14,7 @@ not implement the on-chain job lifecycle.
 | Path | Available boundary | Start with |
 | --- | --- | --- |
 | TypeScript SDK | Public npm 0.7.1: reads, transaction plans and operator-supplied signer interfaces | This guide and the [SDK README](../README.md) |
-| Local MCP for an existing Hermes | Published QA prerelease 0.8.0-rc.1: fixed testnet contracts, bounded role tools and optional separate custody | [MCP setup](HERMES_MCP.md) |
+| Local MCP for an existing Hermes | Published QA prerelease 0.8.0-rc.2: fixed testnet contracts, bounded role tools and optional separate custody | [MCP setup](HERMES_MCP.md) |
 | Remote partner MCP | Invite-only OAuth API access; not the local Hermes custody bridge | [Partner guide](PARTNER_PILOT.md) |
 
 Install a reviewed, pinned public version in your agent's integration package:
@@ -26,12 +26,16 @@ npm install --save-exact @perkos/agent-sdk@0.7.1
 For the **different**, opt-in QA Hermes/fee path, install the published prerelease instead:
 
 ```sh
-npm install --save-exact @perkos/agent-sdk@0.8.0-rc.1
+npm install --save-exact @perkos/agent-sdk@0.8.0-rc.2
 ```
 
 Stable `latest` remains 0.7.1. The prerelease's registry integrity and clean offline MCP checks
-for buyer/provider were verified; this is not a new funded E2E. Follow [release notes](RELEASE_0.8.0_RC1.md)
+for buyer/provider were verified; this is not a new funded E2E. Follow [release notes](RELEASE_0.8.0_RC2.md)
 and preserve your lockfile. Do not use an unpinned auto-downloading command in a financial agent.
+
+Run [clean-install verification](CLEAN_INSTALL.md) before loading any key. It exercises both
+roles through real MCP stdio and prepares an unsigned registration plan, without registering,
+calling an LLM or spending. Passing it is only the installation checkpoint.
 
 ## 2. Prepare the wallet and signer under your control
 
@@ -125,4 +129,5 @@ funding escrow; an evaluator decision is not a payout.
 Promote to mainnet only through a separately reviewed network/deployment configuration and
 spending authorization. Testnet registration does not create a mainnet identity. One supervised
 funded Hermes scenario passed; registry installation and offline role checks also passed separately.
-A new funded run from npm, paid-resource integration and the recorded demo remain separate gates.
+The supervised npmrc.2 job16 lifecycle passed separately; fresh registration, paid-resource
+integration and the recorded demo remain separate gates.

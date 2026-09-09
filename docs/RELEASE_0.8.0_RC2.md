@@ -56,6 +56,13 @@ policy checks or CLI help. A source-built artifact is not registry publication e
 
 ## Validation and release gates
 
+Update2026-09-09: the real supervised npmrc.2 job16 passed exact98/2settlement, zero escrow,
+reputation and final six-burn confirmation at14640, using new v2 workflow0/settlement6 permits.
+See [public transaction evidence and limits](VALIDATION_AND_RELEASE.md). This does not prove new
+registration, self-service uploads, HTTPx402, external adoption or every E2E scenario.
+The [clean-install diagnostic](CLEAN_INSTALL.md) is a separate reviewed source file, not a file
+retroactively added to the immutable rc.2 package.
+
 The earlier internal job15 used the immutable npm0.8.0-rc.1 and version-1 permits; it passed
 approval,98/2settlement, escrow0 and reputation reconciliation. That is **not a funded E2E of rc.2**,
 new registration, external adoption, an external security review or production certification.

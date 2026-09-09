@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — reproducible QA onboarding
+
+- Align buyer/provider, MCP, custody and checkpoint manuals with published rc.2 and new v2 policy0/6; preserve v1/default6/6 and immutable release boundaries.
+- Add a standalone clean-consumer diagnostic for actual npm SDK/MCP stdio, with no signer, keys, registration, LLM or business-network calls. It is not retroactively in npmrc.2.
+- Record the supervised job16 npmrc.2 settlement and six confirmations, distinguish fresh registration/evidence upload/x402/video gates, and add documentation regressions.
+- Clarify operator-owned signers and QA artifact publication; no product runtime, contract, npm version or production change.
+
 ## 0.8.0-rc.2 — published QA prerelease (2026-09-09 UTC)
 
 - Published reviewed QA merge e89ce2949b58392b073ab1b1f357c8a4d8667903 under next from the operator Mac; latest remains 0.7.1. Registry integrity and downloaded bytes verified, without provenance attestation.

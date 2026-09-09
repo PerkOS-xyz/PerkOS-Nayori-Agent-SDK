@@ -44,6 +44,10 @@ wallet funding, registration, funded escrow, submitted work and final settlement
 pilot defaults to six subsequent Bitcoin burn blocks before advancing an operation; a txid or
 explorer success alone does not clear that gate. Preserve the journal rather than re-signing.
 
+Start with [the reproducible clean-install checkpoint](docs/CLEAN_INSTALL.md): installed npm
+SDK, real MCP stdio for both roles and unsigned registration, without keys or LLM calls. This
+probe is a reviewed standalone source file, not retroactively included in immutable npmrc.2.
+
 ## Requirements
 
 ### Configurable timing QA prerelease
@@ -63,8 +67,8 @@ The QA candidate includes the Node-only `nayori-mcp` stdio binary for public tes
 reads and offline buyer/provider commitments. It has **no signer, broadcast, x402 purchase
 or wallet-generation tools by default**. Optional operator-configured delegation to the separate
 `nayori-custody` pilot enables bounded QA actions without putting a key in MCP. Both are included
-in npm 0.8.0-rc.1. A clean registry install passed offline checks for both roles. The earlier QA
-source passed one funded, operator-supervised lifecycle; broader autonomy and x402 remain separate gates.
+in npm 0.8.0-rc.2. A clean registry install passed offline checks for both roles. The actual
+npmrc.2 job16 also passed a supervised funded lifecycle; broader autonomy and x402 remain separate gates.
 Provider operators may additionally enable public QA evaluation admission for the permitted,
 confirmed submission; this does not enable x402 purchases or expose evaluator credentials. See
 [MCP setup](docs/HERMES_MCP.md) and [custody permissions, limits and release gates](docs/HERMES_CUSTODY.md).
@@ -147,9 +151,9 @@ Use the [role-separated QA guide](docs/TESTNET_QUICKSTART.md) and
 [`examples/testnet.env.example`](examples/testnet.env.example). Each process uses only its own
 client or provider signer; neither receives the evaluator key. One action runs per invocation.
 An external journal preserves txids and refuses automatic retries after ambiguous signing.
-The bridge and quickstart ship in **0.8.0-rc.1 for QA**. Registry installation and offline role
-checks passed; this is not a new funded E2E. The historical supervised lifecycle used earlier
-QA source. See [the separate evidence scopes](docs/VALIDATION_AND_RELEASE.md).
+The bridge and quickstart ship in **0.8.0-rc.2 for QA**. Registry installation and offline role
+checks passed; job16 separately verified the funded npm SDK lifecycle with policy0/6.
+See [the separate evidence scopes](docs/VALIDATION_AND_RELEASE.md).
 
 ## Read on-chain state
 

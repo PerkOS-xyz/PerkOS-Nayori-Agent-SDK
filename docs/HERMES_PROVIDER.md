@@ -8,7 +8,7 @@ See [QA checkpoints and confirmation handling](HERMES_CHECKPOINTS.md) for the jo
 STX gas budget, six-burn gate and the difference between a decision and payment. Do not fund
 your wallet with sBTC merely to receive a payout or reuse an example job ID.
 
-**Published QA prerelease 0.8.0-rc.1; new funded onboarding and recording still require validation.**
+**Published QA prerelease 0.8.0-rc.2; job16 npm lifecycle verified, fresh registration/video separate.**
 Use the same job as the [buyer walkthrough](HERMES_BUYER.md), with a different wallet, signer,
 Hermes instance and journal. The candidate MCP is not the npm 0.7.1 release.
 
@@ -21,7 +21,7 @@ Start with [existing-agent onboarding](EXISTING_AGENT.md) and the separate
 [operator wallet/signer checklist](WALLET_SIGNER_SETUP.md). Never put model credentials in
 tool arguments or recordings. Your agent's model is separate from Nayori's evaluator.
 
-Follow [MCP installation](HERMES_MCP.md) with pinned npm 0.8.0-rc.1 and its registry integrity. Create,
+Follow [MCP installation](HERMES_MCP.md) with pinned npm 0.8.0-rc.2 and its registry integrity. Create,
 back up and restore-check your own testnet wallet outside the SDK and Hermes. Fund only
 authorized STX network fees; a provider does not need to send sBTC to receive a job payment.
 Never give Hermes your key or the buyer/evaluator/treasury keys. Follow the separate-UID,
@@ -32,9 +32,15 @@ same criteria, identities, amount and expiry, with only `register` and `submit`.
 signing disabled and confirm tool context and custody status. Allow evaluation separately only
 if this operator consents to enqueueing review of this job.
 
+Complete [clean-install verification](CLEAN_INSTALL.md) without a key before signer setup.
+Coordinate artifact publication **before accepting work**: this pilot has no self-service upload
+endpoint. Your operator must provision the approved QA publication route; do not reuse a historical
+artifact URL, fabricate a hash or submit bytes that were never made available. This is an explicit
+onboarding dependency, not permission to access PerkOS infrastructure.
+
 ## 2. Confirm assignment and perform the work
 
-1. With explicit low-value testnet permission, enable the isolated signer and request `register`.
+1. For a **new identity only**, with explicit low-value testnet permission, enable the isolated signer and request `register`.
    Confirm the transaction and agent record. Wallet creation is not registration.
 2. Read the job using `nayori_get_job`. Confirm provider equals your address, status is funded,
    escrow equals the agreed gross amount and client/evaluator/treasury/criteria are correct.
@@ -47,7 +53,9 @@ if this operator consents to enqueueing review of this job.
 6. Compute the actual artifact's SHA-256, MIME and byte count. Prepare its manifest with
    `nayori_prepare_submission`. Preparation hashes the manifest and does not verify remote bytes.
 7. Request `nayori_execute` with `action: submit` and the exact evidence manifest. Confirm the
-   saved transaction and job submission, including the configured six subsequent burn blocks.
+   saved transaction and job submission using the bound permit's workflow policy. New v2
+   workflow0 still requires canonical anchored success; version-1/default remains6/6.
+   Final settlement still uses settlement6 in the documented controlled walkthrough.
 
 ## 3. Request public evaluation, without internal credentials
 

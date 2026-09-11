@@ -1,10 +1,14 @@
 {
   "name": "@perkos/agent-sdk",
-  "version": "0.7.1",
+  "version": "0.8.0-rc.2",
   "description": "TypeScript SDK for agent identity, escrow settlement, and reputation on Stacks.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "nayori-mcp": "./dist/mcp/cli.js",
+    "nayori-custody": "./dist/custody/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -64,12 +68,14 @@
   "license": "MIT",
   "publishConfig": {
     "access": "public",
+    "tag": "next",
     "provenance": true
   },
   "engines": {
     "node": ">=20"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
     "@stacks/transactions": "^7.6.0",
     "@x402/core": "^2.23.0"
   },

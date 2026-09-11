@@ -3,9 +3,24 @@
 ## Scope
 
 The SDK is a typed boundary between agent frameworks and the existing PerkOS contracts. The core
-package contains no LLM, HTTP-paywall, MCP server, wallet extension, or private-key store. Those
+browser entry point contains no LLM, HTTP-paywall, MCP server, wallet extension, or private-key store. Those
 systems integrate through explicit interfaces so that transaction policy remains reusable and
 auditable.
+
+The Node-only `nayori-mcp` binary in QA prerelease 0.8.0-rc.1 is a separate stdio adapter built on the official
+MCP SDK. It exposes fixed-testnet public reads and offline commitments, not signing or payment
+tools. There is no private-key store or custody service in that adapter. See
+[Hermes MCP](HERMES_MCP.md) for role-specific tools and remaining integration gates.
+The optional [QA custody candidate](HERMES_CUSTODY.md) runs separately: operator permit,
+wallet-scoped lock, durable reservation/txid ledger and fixed testnet SDK backend. MCP delegates
+bounded requests over a filesystem Unix socket; it never receives a key. Distinct Linux identity
+and access-control verification are deployment gates, not claims established by a same-UID test.
+
+The provider-only evaluation opt-in connects MCP to the fixed public QA evaluator origin.
+It binds admission to the configured custody job and its confirmed submission, validates SDK
+commitments against on-chain state, then reuses the deterministic evaluation ID. Evaluator
+credentials, signing and byte verification stay outside MCP. x402 purchases remain a separate
+integration gate; evaluation admission does not add another payment.
 
 ## Flow
 
@@ -163,5 +178,6 @@ available through explicit same-network overrides.
 
 - Durable replay-store and hosted HTTP adapters for the x402 Stacks facilitator.
 - Hosted MPP challenge consumption, settlement reconciliation and confirmed receipt delivery.
-- MCP tools with typed inputs, allowlists, and the same spending policy.
+- Deployment/isolation validation of the candidate wallet-enabled MCP delegation and durable operator-approved limits;
+  the read/prepare QA foundation already exists separately.
 - Optional framework-specific integrations and higher-confirmation settlement policies.

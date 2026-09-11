@@ -1,8 +1,93 @@
 # Changelog
 
+## Unreleased — reproducible QA onboarding
+
+- Add opt-in `--enable-job-discovery` and bounded read-only `nayori_list_jobs`, with fixed-upper-ID pagination, status filters, wallet relation and sanitized errors. No claiming or authority expansion.
+- Add neutral Nayori MCP source naming while retaining Hermes compatibility aliases and six default tools. Document source-only availability separately from immutable npm rc.2 and native-client proof.
+
+- Align buyer/provider, MCP, custody and checkpoint manuals with published rc.2 and new v2 policy0/6; preserve v1/default6/6 and immutable release boundaries.
+- Add a standalone clean-consumer diagnostic for actual npm SDK/MCP stdio, with no signer, keys, registration, LLM or business-network calls. It is not retroactively in npmrc.2.
+- Record the supervised job16 npmrc.2 settlement and six confirmations, distinguish fresh registration/evidence upload/x402/video gates, and add documentation regressions.
+- Clarify operator-owned signers and QA artifact publication; no product runtime, contract, npm version or production change.
+
+## 0.8.0-rc.2 — published QA prerelease (2026-09-09 UTC)
+
+- Published reviewed QA merge e89ce2949b58392b073ab1b1f357c8a4d8667903 under next from the operator Mac; latest remains 0.7.1. Registry integrity and downloaded bytes verified, without provenance attestation.
+- Source docs record publication; immutable package docs retain their pre-publication wording. No new funded rc.2 E2E or production rollout is claimed.
+
+- Prepare distinct manifest, lockfile and MCP server version; preserve immutable rc.1 and stable latest.
+- Document source-candidate installation and publication gates without claiming a new funded E2E.
+
+- Add network-validated operator workflow/settlement confirmation policy and progress helpers.
+- Add version-2 QA permits binding the policy to their immutable hash; preserve version-1 hashes and six-block defaults.
+- Expose policy/progress in custody status and recheck prior confirmations before the next signature.
+- Keep mainnet helper minimums, testnet-only pilot signing, contract windows, journals and published packages unchanged.
+
 All notable changes to `@perkos/agent-sdk` are documented here.
 
 ## Unreleased
+
+- Make the MCP context warning independent of package distribution status: identify the
+  integration as Stacks testnet QA without incorrectly claiming that npm is unpublished.
+  Preserve preparation/authorization, separate-custodian and untrusted-tool-data warnings,
+  and add protocol-level regression assertions. No package publication, capability,
+  contract, signing-policy or runtime deployment change.
+
+- Align installation and buyer/provider documentation with published npm 0.8.0-rc.1 under
+  next, including registry integrity and verified offline role checks. Preserve stable 0.7.1,
+  QA-only custody limits and the distinction from an earlier funded lifecycle. Documentation
+  changes do not republish the immutable package or certify a new funded E2E.
+
+## 0.8.0-rc.1 — 2026-09-08 — published QA prerelease
+
+This candidate packages the QA additions below without changing the default v5/v4 contracts.
+Published with explicit approval under `next`, leaving `latest` at 0.7.1. Clean registry
+installation and offline MCP checks for both roles passed. No provenance attestation was generated.
+See [candidate release notes](docs/RELEASE_0.8.0_RC1.md) for installation and validation gates.
+
+- Record the verified internal Hermes sBTC lifecycle and its public settlement evidence.
+  Separate published npm 0.7.1 from the reviewed QA artifact, conversation completion from
+  on-chain outcomes, and manifest hashes from versioned commitments. Preserve all release,
+  signing and production boundaries; no npm publication or default changes.
+
+- Return `null` for absent reputation-sync records on autonomous STX/sBTC contracts
+  (`u823`/`u923`), preserving earlier `u623`/`u723` handling. Keep unrelated contract
+  errors visible; add regression coverage and readable error descriptions. No changes
+  to signing, settlement, contract defaults or npm publication.
+
+- Allow 45 seconds for public QA evaluation admission (15 seconds for status reads)
+  to accommodate paced eligibility checks. Return sanitized, actionable quota,
+  eligibility and transport errors without automatic retries or budget changes.
+  Preserve deterministic-ID reconciliation after an ambiguous response.
+
+- Document wallet funding versus escrow, per-role QA budgets, six-burn custody confirmation,
+  job-bound provider handoff and ambiguous-operation recovery. Align README and buyer/provider
+  manuals without changing SDK runtime, production defaults or npm publication.
+
+- Start external onboarding with an already running agent and its own LLM; no PerkOS-LLM
+  account or model migration required. Add separate operator-owned wallet/signer preparation,
+  registration confirmation/read-back, role handoffs and release boundaries. Align the Hermes
+  examples and README; no wallet-generation tool, runtime behavior or npm release changes.
+
+- Add explicit provider-only QA MCP evaluation admission/status, bound to a custody-authorized
+  job and confirmed submission. Validate on-chain identity, budget and commitments; query the
+  deterministic evaluation ID before admission. Fixed public endpoint, bounded/sanitized replies,
+  no evaluator credentials, new signing, automatic retry, extra fee or x402 purchase. Off by default.
+
+- Add opt-in QA custody delegation: Linux signer service, immutable per-job/role permits, fixed gas and escrow caps, durable pre-sign reservation/pre-broadcast txid, nonce/chain guards and fail-closed replay/recovery. Signing stays off by default. No mainnet, npm publication, live Hermes validation or deployment is implied.
+- Add real Unix-socket/MCP protocol tests, offline fixture signing and actual SDK lifecycle planning against mocked testnet reads. Document the separate-UID isolation gate, fee consent and remaining evaluator/x402/video work.
+
+- Package a Node-only QA MCP stdio binary with six read/prepare tools per role, fixed testnet contracts, strict inputs and sanitized failures. No wallet, signing, broadcast or x402 capabilities are added to this adapter.
+- Add official MCP protocol/stdio tests and an honest candidate installation guide. Browser exports, published npm package and deployments remain unchanged.
+
+- Add QA commitment helpers for client criteria and provider evidence using existing contract fields.
+- Replace the old centralized lifecycle example with role-separated, journaled actions and appeal-aware finalization; offline preview remains default.
+- Document candidate-only onboarding, isolated custody, fee consent and deployment/E2E limitations; npm and deployment defaults are unchanged.
+
+- Add explicit opt-in STX v6/sBTC v5 earned-service-fee reads, initialization, waiver and treasury-funded refund methods. Published 0.7.1 and deployed defaults remain unchanged.
+- Require client/provider acceptance of gross budget, 200 bps, treasury and net rejection refund before candidate funding/submission; fail closed on inconsistent live state.
+- Preserve aggregate gross deny-mode settlement constraints and job-pinned sBTC tokens; account for treasury refunds in spending limits.
+- Add a signer-free fee inspection example, candidate integration guide, accounting/consent/role regression tests. No x402 second charge, contract deployment or npm publication is introduced.
 
 ## 0.7.1 - 2026-09-02
 

@@ -1,4 +1,22 @@
 export { PerkOSClient } from "./client.js";
+export { prepareEvaluationJob, prepareEvaluationSubmission, parseEvaluationDescription, evaluationJobId } from "./evaluation-commitments.js";
+export type { EvaluationCriterion, EvaluationEvidence, CriteriaCommitmentInput, EvidenceCommitmentInput } from "./evaluation-commitments.js";
+export {
+  SERVICE_FEE_BASIS_POINTS,
+  quoteServiceFee,
+  supportsServiceFees,
+} from "./service-fees.js";
+export type {
+  ServiceFeeAcceptance,
+  ServiceFeeSplit,
+  ServiceFeePolicy,
+  ServiceFeeSettlement,
+  JobServiceFeeRecord,
+  InitializeServiceFeeProtocolInput,
+  WaiveServiceFeeInput,
+  WaiveServiceFeePlanInput,
+  RefundServiceFeePlanInput,
+} from "./types.js";
 export { PerkOSTransactionBuilder } from "./builders.js";
 export { SpendingPolicy } from "./policy.js";
 export { HeadlessSigner, StacksConnectSigner } from "./signers.js";
@@ -10,7 +28,11 @@ export {
   NayoriPartnerClient,
   createStacksConnectPartnerSigner,
 } from "./partner.js";
-export { DEFAULT_DEPLOYMENTS, JOB_STATUS, CLARITY_ERROR_MESSAGES } from "./constants.js";
+export {
+  DEFAULT_DEPLOYMENTS,
+  JOB_STATUS,
+  CLARITY_ERROR_MESSAGES,
+} from "./constants.js";
 export { resolveConfig, toHash32, toUint } from "./validation.js";
 export { normalizeTxid } from "./txid.js";
 export {
@@ -103,10 +125,14 @@ export type {
   StacksConnectRequest,
   StacksConnectSignerOptions,
 } from "./signers.js";
+export type { TrackerFetch, TransactionTrackerOptions } from "./tracker.js";
+export { NayoriPrivateEvidenceClient, NayoriPrivateEvidenceError } from "./private-evidence.js";
 export type {
-  TrackerFetch,
-  TransactionTrackerOptions,
-} from "./tracker.js";
+  NayoriPrivateEvidenceClientOptions,
+  NayoriPrivateEvidenceContext,
+  NayoriPrivateEvidenceMediaType,
+  NayoriPrivateEvidenceReference,
+} from "./private-evidence.js";
 
 export type {
   AgentEndpoint,
@@ -238,3 +264,5 @@ export type {
   PolicySignerOptions,
   PolicySignerRequest,
 } from "./x402-paying.js";
+export { DEFAULT_CONFIRMATION_POLICY, parseConfirmationPolicy, confirmationProgress } from "./confirmation-policy.js";
+export type { ConfirmationPolicy, ConfirmationObservation } from "./confirmation-policy.js";

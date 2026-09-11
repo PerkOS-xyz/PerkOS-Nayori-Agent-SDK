@@ -217,13 +217,30 @@ describe("PerkOSClient", () => {
     });
   });
 
-  it("returns null when no durable reputation synchronization record exists", async () => {
+  it.each([
+    ["stx", 623n],
+    ["sbtc", 723n],
+    ["stx", 823n],
+    ["sbtc", 923n],
+  ] as const)("returns null for absent %s reputation synchronization code %s", async (asset, code) => {
     const client = new PerkOSClient({
-      network: "mainnet",
-      readOnlyTransport: async () => Cl.error(Cl.uint(623n)),
+      network: "testnet",
+      readOnlyTransport: async () => Cl.error(Cl.uint(code)),
     });
 
-    await expect(client.getReputationSync("stx", 7n)).resolves.toBeNull();
+    await expect(client.getReputationSync(asset, 7n)).resolves.toBeNull();
+  });
+
+  it.each([801n, 901n, 802n, 902n, 924n])("does not hide unrelated reputation read error %s", async (code) => {
+    const client = new PerkOSClient({
+      network: "testnet",
+      readOnlyTransport: async () => Cl.error(Cl.uint(code)),
+    });
+
+    await expect(client.getReputationSync("sbtc", 7n)).rejects.toMatchObject({
+      code: "CONTRACT_ERROR",
+      details: { clarityCode: code },
+    });
   });
 
   it("returns null for missing on-chain records", async () => {

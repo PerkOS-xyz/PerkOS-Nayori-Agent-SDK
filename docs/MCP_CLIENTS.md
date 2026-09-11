@@ -127,6 +127,9 @@ do not enable blanket permission bypass. Source:
 5. Follow the consumer/provider workflow with a new bounded permit, journal and budget.
    Preserve transaction evidence; never retry uncertain signing blindly.
 
-The local QA MCP currently has no x402 purchase tool or self-service evidence upload. It is not
-the remote partner MCP. Those are separate integrations and verification gates. Connecting a
+The local QA MCP still has no x402 purchase tool. Private evidence is available only when the
+operator supplies `--private-evidence-client /absolute/mode-600.json`; this enables bounded inline
+upload for the provider and verified reads for provider/consumer. The OAuth client file contains no
+wallet private key and must not be copied into an agent prompt, repository or generic MCP config.
+The remote partner MCP remains a separate integration. Connecting a
 new client does not change these limits, the contract deadlines or the deployed network.

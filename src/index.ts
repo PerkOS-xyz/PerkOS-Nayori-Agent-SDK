@@ -126,6 +126,13 @@ export type {
   StacksConnectSignerOptions,
 } from "./signers.js";
 export type { TrackerFetch, TransactionTrackerOptions } from "./tracker.js";
+export { NayoriPrivateEvidenceClient, NayoriPrivateEvidenceError } from "./private-evidence.js";
+export type {
+  NayoriPrivateEvidenceClientOptions,
+  NayoriPrivateEvidenceContext,
+  NayoriPrivateEvidenceMediaType,
+  NayoriPrivateEvidenceReference,
+} from "./private-evidence.js";
 
 export type {
   AgentEndpoint,

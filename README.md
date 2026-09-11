@@ -639,6 +639,24 @@ or facilitator-submitted signed transaction.
 - Read and retry durable reputation synchronization.
 - Rate a provider and read reputation.
 
+## Private QA evidence
+
+`NayoriPrivateEvidenceClient` implements the bounded private-evidence workflow used by the QA MCP:
+provider bytes are hashed locally, uploaded directly to Nayori's private versioned S3 bucket, and
+completed as an immutable evidence reference. OAuth is sent only to `api.qa.nayori.ai`, never S3.
+Consumers and the evaluator exchange the stable reference for a fresh, at-most-60-second download
+capability and verify the exact byte count and SHA-256 again.
+
+The MCP flag `--private-evidence-client /absolute/mode-600.json` enables
+`nayori_private_evidence_upload` for the provider and `nayori_private_evidence_read` for both job
+roles. The file is the wallet-linked OAuth client returned during the one-time enrollment; it must
+have exactly the role's evidence scopes. It contains no wallet private key. Upload accepts only
+inline `text/plain` or `application/json` up to 8192 bytes, never filesystem paths. A temporary
+`503` is surfaced with bounded retry guidance; `prepare` is not automatically replayed.
+
+This capability is QA/testnet-only until the independent production storage and operational gates
+are completed. Internal QA activity is not external M2 adoption.
+
 ## Security model
 
 - Mainnet or testnet must be selected explicitly.

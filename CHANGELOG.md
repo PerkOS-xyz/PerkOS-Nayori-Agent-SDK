@@ -1,6 +1,13 @@
 # Changelog
 
-## Unreleased — reproducible QA onboarding
+## Unreleased
+
+- No changes yet.
+
+## 0.8.0 — stable SDK (2026-09-11 UTC)
+
+- Promote the QA-verified SDK tree to the stable distribution line without changing default
+  v5/v4 contracts, enabling mainnet custody, or widening signer authority.
 
 - Add opt-in `--enable-job-discovery` and bounded read-only `nayori_list_jobs`, with fixed-upper-ID pagination, status filters, wallet relation and sanitized errors. No claiming or authority expansion.
 - Add neutral Nayori MCP source naming while retaining Hermes compatibility aliases and six default tools. Document source-only availability separately from immutable npm rc.2 and native-client proof.

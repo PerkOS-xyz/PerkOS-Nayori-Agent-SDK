@@ -7,7 +7,7 @@ browser entry point contains no LLM, HTTP-paywall, MCP server, wallet extension,
 systems integrate through explicit interfaces so that transaction policy remains reusable and
 auditable.
 
-The Node-only `nayori-mcp` binary in QA prerelease 0.8.0-rc.1 is a separate stdio adapter built on the official
+The Node-only `nayori-mcp` binary in stable 0.8.0 is a separate stdio adapter built on the official
 MCP SDK. It exposes fixed-testnet public reads and offline commitments, not signing or payment
 tools. There is no private-key store or custody service in that adapter. See
 [Hermes MCP](HERMES_MCP.md) for role-specific tools and remaining integration gates.

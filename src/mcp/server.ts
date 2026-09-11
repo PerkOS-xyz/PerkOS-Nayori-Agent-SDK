@@ -140,7 +140,7 @@ export function createNayoriMcp(profileInput: unknown, reader: Reader = qaReader
         mediaType: { type: "string", enum: ["text/plain", "application/json"] },
         sizeBytes: { type: "integer", minimum: 1, maximum: 8192 } })));
   }
-  const server = new Server({ name: "nayori-qa", version: "0.8.0-rc.2" }, { capabilities: { tools: {} } });
+  const server = new Server({ name: "nayori-qa", version: "0.8.0" }, { capabilities: { tools: {} } });
   server.setRequestHandler(ListToolsRequestSchema, () => ({ tools }));
   server.setRequestHandler(CallToolRequestSchema, async request => {
     try {

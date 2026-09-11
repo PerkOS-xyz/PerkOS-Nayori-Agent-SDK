@@ -1,13 +1,13 @@
 # Hermes custody — bounded QA execution candidate
 
-Published rc.2 includes [operator-bound confirmation policy](CONFIRMATION_POLICY.md)
+Stable 0.8.0 includes [operator-bound confirmation policy](CONFIRMATION_POLICY.md)
 for new version-2 permits. Version-1 permits keep their original hashes and six-block behavior;
-never mutate an active run or reset its journal. The example below is version2 with workflow0
+never mutate an active run or reset its journal. The example below is version 2 with workflow0
 and settlement6 for a **new** low-value, explicitly authorized testnet run.
 
-**Published in npm 0.8.0-rc.2; deployment remains a controlled QA pilot. Do not enable funded wallets before your Linux isolation gate.**
-This candidate adds `nayori-custody`, a separate Node service, and optional delegation from
-`nayori-mcp`. It is not in published npm 0.7.1. No mainnet mode exists.
+**Available in npm 0.8.0; deployment remains a controlled QA pilot. Do not enable funded wallets before your Linux isolation gate.**
+The package includes `nayori-custody`, a separate Node service, and optional delegation from
+`nayori-mcp`. No mainnet custody mode exists.
 
 [One supervised internal lifecycle](VALIDATION_AND_RELEASE.md) passed with isolated signers.
 That historical evidence does not authorize your deployment, wallet or spending limits.
@@ -92,7 +92,7 @@ match the buyer's job. A provider never gets create/fund/assign/finalize authori
 
 ## Start and connect
 
-Install the exact npm 0.8.0-rc.2 package on each side using [MCP setup](HERMES_MCP.md).
+Install the exact npm 0.8.0 package on each side using [MCP setup](HERMES_MCP.md).
 Preserve the lockfile and verify registry integrity against the release notes.
 First start with **signing disabled**, without a funded key:
 
@@ -146,7 +146,7 @@ this pilot does not expose appeal, refund, review-timeout or administrative acti
   submit is rejected. Signing/broadcast timeouts, aborted transactions, partial journal writes and
   unknown outcomes block additional spending. Errors never claim that no signature was made.
 - Reconciliation requires the saved txid, canonical anchored success, expected contract result,
-  and the **bound confirmation policy**. Version1/default is6/6; new version2 can use
+  and the **bound confirmation policy**. Version 1/default is 6/6; new version 2 can use
   workflow0/settlement6 on testnet. Create binds its returned job ID for subsequent actions.
   Settlement6 reduces reorg risk; it does not eliminate it. Public RPC is a trust dependency.
 - A crash leaves a lock. **Never delete/replace a ledger, approve a new permit for the same wallet,
@@ -168,5 +168,5 @@ this pilot does not expose appeal, refund, review-timeout or administrative acti
 3. Crash/restart and concurrency tests across those OS identities, first with unfunded fixtures.
 4. Explicitly approved low-value testnet buyer/provider run using **actual Hermes**, including
    evaluator admission, exact payout events and recovery. Internal actors are not M2 adoption.
-5. The prerelease is distributed on npm and both role manuals are available. Complete the
+5. The stable SDK is distributed on npm and both role manuals are available. Complete the
    separate x402 walkthrough and developer video. Production/mainnet require separate approval.

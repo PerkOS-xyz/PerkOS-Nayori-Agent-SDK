@@ -30,6 +30,15 @@ async function connect(role = "client", reader = mockReader()) {
   cleanup.push(async () => { await client.close(); await server.close(); });
   return { client, reader };
 }
+async function connectPrivate(role: "client" | "provider") {
+  const privateEvidence = { upload: vi.fn().mockResolvedValue(evidence[0]),
+    download: vi.fn().mockResolvedValue(new TextEncoder().encode('{"answer":12}')) };
+  const server = createHermesMcp({ ...profile, role }, mockReader(), undefined, false, false, privateEvidence);
+  const client = new Client({ name: "qa-private-test", version: "1" });
+  const [s, c] = InMemoryTransport.createLinkedPair(); await server.connect(s); await client.connect(c);
+  cleanup.push(async () => { await client.close(); await server.close(); });
+  return { client, privateEvidence };
+}
 function parsed(result: Awaited<ReturnType<Client["callTool"]>>) {
   const content = result.content as { text: string }[];
   return JSON.parse(content[0]!.text);
@@ -135,5 +144,29 @@ describe("real MCP initialize/list/call protocol, mocked chain", () => {
       { ...evidence[0], mediaType: "text/html" }, { ...evidence[0], extra: true }]) {
       expect((await client.callTool({ name: "nayori_prepare_submission", arguments: { ...input, jobId: "12", evidence: [e] } })).isError).toBe(true);
     }
+  });
+});
+
+describe("private evidence MCP boundary", () => {
+  it("lets the provider upload bounded inline JSON without signing", async () => {
+    const { client, privateEvidence } = await connectPrivate("provider");
+    const result = parsed(await client.callTool({ name: "nayori_private_evidence_upload", arguments: {
+      asset: "sbtc", jobId: "17", evidenceId: "result", mediaType: "application/json", content: '{"answer":12}',
+    } }));
+    expect(result).toEqual(evidence[0]);
+    expect(privateEvidence.upload).toHaveBeenCalledWith({ asset: "sbtc", jobId: "17", evidenceId: "result",
+      mediaType: "application/json", content: '{"answer":12}' });
+  });
+  it("lets both job roles read verified UTF-8 and never accepts filesystem paths", async () => {
+    for (const role of ["client", "provider"] as const) {
+      const { client, privateEvidence } = await connectPrivate(role);
+      const result = parsed(await client.callTool({ name: "nayori_private_evidence_read", arguments: evidence[0] }));
+      expect(result.content).toBe('{"answer":12}'); expect(privateEvidence.download).toHaveBeenCalledOnce();
+      expect((await client.callTool({ name: "nayori_private_evidence_read", arguments: { path: "/etc/passwd" } })).isError).toBe(true);
+    }
+  });
+  it("does not give the consumer an upload tool", async () => {
+    const { client } = await connectPrivate("client");
+    expect((await client.listTools()).tools.some(item => item.name === "nayori_private_evidence_upload")).toBe(false);
   });
 });

@@ -18,17 +18,17 @@ describe("existing-agent onboarding contract", () => {
     for (const file of ["README.md", "docs/HERMES_BUYER.md", "docs/HERMES_PROVIDER.md"])
       expect(read(file)).toContain("MCP_CLIENTS.md");
   });
-  it("keeps current role guides on rc.2 and the standalone diagnostic outside the immutable package", () => {
+  it("keeps current role guides on stable 0.8.0 and the diagnostic key-free", () => {
     expect(read("docs/HERMES_BUYER.md")).toContain("# Agent consumer manual");
     expect(read("docs/HERMES_BUYER.md")).toContain("SDK role remains `client`");
     for (const file of ["HERMES_BUYER.md", "HERMES_PROVIDER.md", "HERMES_MCP.md", "EXISTING_AGENT.md"]) {
       const guide = read("docs/" + file);
-      expect(guide).toContain("0.8.0-rc.2");
+      expect(guide).toContain("0.8.0");
       expect(guide).not.toContain("npm install --save-exact @perkos/agent-sdk@0.8.0-rc.1");
       expect(guide).toContain("CLEAN_INSTALL.md");
     }
     const clean = read("docs/CLEAN_INSTALL.md");
-    for (const value of ["not a Hermes conversation", "not\nincluded in the immutable npm rc.2",
+    for (const value of ["not a Hermes conversation", "ships inside the published package",
       "@modelcontextprotocol/sdk@1.30.0", "node onboarding-smoke.mjs", "never fund", "No wallet"])
       expect(clean).toContain(value);
     expect(read("examples/onboarding-smoke.mjs")).toContain("env: {}");
@@ -80,7 +80,7 @@ describe("existing-agent onboarding contract", () => {
     expect(guide).toContain("after your agent is installed and working with your own LLM");
     expect(guide).toContain("No PerkOS-LLM account or credentials are required");
     expect(guide).toContain("Hermes is an example integration, not a requirement");
-expect(guide).toMatch(/published QA prerelease 0\.8\.0-rc\.2/i);
+    expect(guide).toContain("Public npm 0.8.0");
     expect(guide).toContain("different");
   });
 

@@ -8,9 +8,9 @@ See [client versions and measured limits](MCP_CLIENTS.md#measured-connection-sco
 No LLM turns, signatures, payments, registration or evidence publication occurred in those probes.
 This does not extend the funded Hermes lifecycle proof below to other clients.
 
-## Latest public npm lifecycle — job 16, 2026-09-09 UTC
+## Latest public prerelease lifecycle — job 16, 2026-09-09 UTC
 
-The **published npm0.8.0-rc.2** completed a real, operator-supervised Hermes buyer/provider
+The **published npm 0.8.0-rc.2** completed a real, operator-supervised Hermes consumer/provider
 testnet sBTC lifecycle: create → budget → fund → assign → actual work → submit → evaluate →
 finalize. Both participants reused existing registered identities. New version2 permits used
 workflow0/settlement6; no installed SDK modification or contract change was made.
@@ -68,18 +68,19 @@ Do not send funds to the addresses in this historical evidence.
 
 | Distribution | Boundary |
 | --- | --- |
-| npm `@perkos/agent-sdk@0.7.1` | Published v5/v4 baseline; does not include the local QA Hermes/custody/fee additions |
+| npm `@perkos/agent-sdk@0.8.0` | Stable line: v5/v4 defaults, MCP, optional QA custody, job discovery, confirmation policy and private-evidence client |
+| Historical npm `@perkos/agent-sdk@0.7.1` | Published v5/v4 baseline without later MCP/custody additions |
 | Reviewed QA source above | Tested v6/v5 opt-in fee path, local Hermes MCP, custody and evaluation admission |
 | Historical QA tarball used in the lifecycle | Reports version 0.7.1; source commit and artifact integrity distinguish it from npm |
 | Historical QA prerelease | npm 0.8.0-rc.1, formerly under `next`; see [release notes](RELEASE_0.8.0_RC1.md) |
-| Current pinned QA walkthrough | npm 0.8.0-rc.2, published under `next`; job16 above and [release notes](RELEASE_0.8.0_RC2.md) |
+| Historical pinned QA walkthrough | npm 0.8.0-rc.2 under `next`; job16 above and [release notes](RELEASE_0.8.0_RC2.md) |
 
 Do not describe the earlier funded lifecycle as an npm-only E2E. The separate 0.8.0-rc.1 registry
 installation verified imports, CLI, version, buyer/provider MCP and offline preparation without
 keys, signing or evaluator/LLM requests. Use the [pinned installation procedure](HERMES_MCP.md),
 never an unpinned financial `npx`.
 
-Before external distribution: review and merge the release changes, assign a new package version,
+Before each external distribution: review and merge the release changes, assign a new package version,
 run the SDK gate, pack and inspect its allowlisted contents, then install that exact artifact in
 a clean consumer. Verify imports, binaries and both role guides. Publish only after separate
 release approval; verify registry integrity and repeat clean installation from the published
@@ -110,7 +111,7 @@ Never accept a mismatched hash by copying the expected value from the response u
 
 ## Still outside this proof
 
-- New-agent registration in these cycles and the developer video. The funded npmrc.2 lifecycle is now verified above.
+- New-agent registration in these cycles and the developer video. The funded rc.2 lifecycle is verified above.
 - Autonomous operation from one instruction without the operator's staged gates.
 - The separate x402/MPP resource-purchase workflow; local QA MCP does not purchase x402.
 - Other assets, rejection/appeal/recovery scenarios, or production fee activation.

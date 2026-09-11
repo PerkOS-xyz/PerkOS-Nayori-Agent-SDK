@@ -11,7 +11,7 @@ import { PerkOSClient, parseConfirmationPolicy, prepareEvaluationJob, prepareEva
 
 const sdkRoot = dirname(dirname(fileURLToPath(import.meta.resolve('@perkos/agent-sdk'))));
 const pkg = JSON.parse(readFileSync(join(sdkRoot, 'package.json'), 'utf8'));
-assert.equal(pkg.version, '0.8.0-rc.2', 'Use the exact reviewed public rc.2 package');
+assert.equal(pkg.version, '0.8.0', 'Use the exact reviewed stable package');
 const directory = mkdtempSync(join(tmpdir(), 'nayori-onboarding-smoke-'));
 // PUBLIC FIXTURES ONLY: no private keys are supplied. Never fund or reuse these identities.
 const profile = { network: 'testnet', role: 'client',

@@ -9,7 +9,7 @@ This repository is the continuation of `PerkOS-xyz/PerkOS-Agent-SDK`, renamed to
 public SDK with the Nayori product identity. The npm package remains `@perkos/agent-sdk` and the
 complete Git history, releases, issues, and pull requests are preserved.
 
-> Status: npm 0.7.1 uses Nayori's verified v5/v4 contracts as the
+> Status: npm 0.8.0 uses Nayori's verified v5/v4 contracts as the
 > default integration. Read clients,
 > transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
@@ -25,18 +25,18 @@ complete Git history, releases, issues, and pull requests are preserved.
 
 ## Connect an existing agent
 
-**0.8.0-rc.2 is published on npm under `next` for QA testing.** Stable `latest` remains 0.7.1.
-See [release notes and exact installation](docs/RELEASE_0.8.0_RC2.md).
+**0.8.0 is the reviewed stable SDK line.** Pin the exact version and verify registry integrity.
+See [release notes and exact installation](docs/RELEASE_0.8.0.md).
 The [rc.1 release record](docs/RELEASE_0.8.0_RC1.md) remains available for historical reproduction.
-The candidate preserves default v5/v4 contracts; its Hermes signer pilot is testnet-only.
+The stable SDK preserves default v5/v4 contracts; its delegated custody pilot is testnet-only.
 
 Your agent is already installed and working with your own LLM. Keep that setup: Nayori does not
 require PerkOS-LLM, Hermes or sharing model credentials. Start with the
 [existing-agent onboarding guide](docs/EXISTING_AGENT.md): choose SDK/MCP → prepare your own
 wallet/signer separately → pin testnet and limits → register and verify the agent ID → create
 or fulfill work → verify settlement and reputation. Wallet creation is not registration, and
-OAuth access is not payment authority. The Hermes walkthrough uses the published QA prerelease,
-not a prerequisite. One operator-supervised internal sBTC lifecycle has passed; this is not
+OAuth access is not payment authority. Hermes is one supported MCP example, not a prerequisite.
+Operator-supervised internal sBTC lifecycles have passed; this is not
 certification of external onboarding. See [validation and release boundaries](docs/VALIDATION_AND_RELEASE.md).
 
 Use the [QA checkpoints and confirmation guide](docs/HERMES_CHECKPOINTS.md) to distinguish
@@ -46,34 +46,34 @@ explorer success alone does not clear that gate. Preserve the journal rather tha
 
 Start with [the reproducible clean-install checkpoint](docs/CLEAN_INSTALL.md): installed npm
 SDK, real MCP stdio for both roles and unsigned registration, without keys or LLM calls. This
-probe is a reviewed standalone source file, not retroactively included in immutable npmrc.2.
+probe ships with 0.8.0 and does not require a signer, wallet funding or LLM credentials.
 
 ## Requirements
 
-### Configurable timing QA prerelease
+### Configurable timing and confirmation policy
 
-[0.8.0-rc.2 release evidence](docs/RELEASE_0.8.0_RC2.md) records the published artifact and
-exact installation. Do not overwrite or reinstall rc.1 expecting new behavior.
+[0.8.0 release evidence](docs/RELEASE_0.8.0.md) records the stable publication gate and
+exact installation. Historical prereleases remain immutable.
 
 [Confirmation policy and timing](docs/CONFIRMATION_POLICY.md) separates transaction depth,
-evaluation feedback and contractual appeal windows. The post-0.8.0-rc.1 source adds operator-bound
-version-2 QA permits and read-only progress, with conservative mainnet helpers. It is published
-in rc.2; existing version-1 permits and npm 0.8.0-rc.1 retain six burn blocks.
+evaluation feedback and contractual appeal windows. Stable 0.8.0 adds operator-bound
+version-2 QA permits and read-only progress, with conservative mainnet helpers. Existing
+version-1 permits and npm 0.8.0-rc.1 retain six burn blocks.
 The Hermes signer remains testnet-only; contract deadlines and x402/MPP are unchanged.
 
-### Published QA Nayori MCP prerelease
+### Nayori MCP for existing agents
 
-Unreleased source extension: [bounded job discovery](docs/MCP_JOB_DISCOVERY.md) adds optional
-`nayori_list_jobs` for either role. It is not in npm rc.2, does not claim jobs or sign, and leaves
+[Bounded job discovery](docs/MCP_JOB_DISCOVERY.md) adds optional
+`nayori_list_jobs` for either role. It does not claim jobs or sign, and leaves
 the existing six-tool default unchanged. Source constructor `createNayoriMcp` retains the old
 Hermes names as compatibility aliases; use your existing agent and its own configured LLM.
 
-The QA candidate includes the Node-only `nayori-mcp` stdio binary for public testnet
+The stable package includes the Node-only `nayori-mcp` stdio binary for public testnet
 reads and offline buyer/provider commitments. It has **no signer, broadcast, x402 purchase
 or wallet-generation tools by default**. Optional operator-configured delegation to the separate
 `nayori-custody` pilot enables bounded QA actions without putting a key in MCP. Both are included
-in npm 0.8.0-rc.2. A clean registry install passed offline checks for both roles. The actual
-npmrc.2 job16 also passed a supervised funded lifecycle; broader autonomy and x402 remain separate gates.
+in npm 0.8.0. Clean registry installation and offline checks cover both roles. A prior published
+prerelease also passed a supervised funded lifecycle; broader autonomy and x402 remain separate gates.
 Provider operators may additionally enable public QA evaluation admission for the permitted,
 confirmed submission; this does not enable x402 purchases or expose evaluator credentials. See
 [MCP setup](docs/HERMES_MCP.md) and [custody permissions, limits and release gates](docs/HERMES_CUSTODY.md).
@@ -91,7 +91,7 @@ an error. Do not retry an expired review or increase spending limits automatical
 
 This branch adds opt-in STX v6/sBTC v5 support for a 2% **included**, evaluation-earned fee:
 net provider payout on approval or net client refund on evaluated rejection. The full budget
-stays in escrow until final settlement. The new methods are not in npm 0.7.1 and the candidate
+stays in escrow until final settlement. The methods ship in 0.8.0, while the candidate
 contracts are not deployed defaults. Existing jobs remain unchanged. See the
 [integration and accounting guide](docs/SERVICE_FEES.md) before enabling any signer.
 
@@ -150,7 +150,7 @@ offline, contains no private key and does not request a wallet signature or broa
 npm run quickstart:mpp
 ```
 
-The candidate transactional quickstart is safe by default: it prints an offline, role-separated
+The transactional quickstart is safe by default: it prints an offline, role-separated
 STX/sBTC testnet workflow with committed criteria, provider evidence and appeal-aware settlement.
 
 ```bash
@@ -161,7 +161,7 @@ Use the [role-separated QA guide](docs/TESTNET_QUICKSTART.md) and
 [`examples/testnet.env.example`](examples/testnet.env.example). Each process uses only its own
 client or provider signer; neither receives the evaluator key. One action runs per invocation.
 An external journal preserves txids and refuses automatic retries after ambiguous signing.
-The bridge and quickstart ship in **0.8.0-rc.2 for QA**. Registry installation and offline role
+The bridge and quickstart ship in **0.8.0** for the QA workflow. Registry installation and offline role
 checks passed; job16 separately verified the funded npm SDK lifecycle with policy0/6.
 See [the separate evidence scopes](docs/VALIDATION_AND_RELEASE.md).
 
@@ -215,7 +215,7 @@ more than the job requires.
 
 ## Active versioned escrow
 
-Version `0.7.1` selects Nayori's source-verified v5/v4/v3 generation by default on mainnet and
+Version `0.8.0` selects Nayori's source-verified v5/v4/v3 generation by default on mainnet and
 testnet. A normal client therefore needs no contract override:
 
 ```ts

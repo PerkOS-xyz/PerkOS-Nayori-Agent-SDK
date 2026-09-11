@@ -1,8 +1,7 @@
-# Earned service fee integration (opt-in QA prerelease)
+# Earned service fee integration (opt-in QA contracts)
 
-SDK 0.8.0-rc.1 adds opt-in support for `agentic-commerce-v6` (STX) and
+SDK 0.8.0 includes opt-in support for `agentic-commerce-v6` (STX) and
 `sbtc-commerce-v5` (sBTC). These are **selected in isolated QA/testnet, not production defaults**.
-The published `@perkos/agent-sdk@0.7.1` does not contain these new methods.
 Do not point a production client at candidate names or treat a successful build as a deployment.
 Existing v5/v4 jobs retain their full-budget, no-service-fee terms.
 
@@ -26,7 +25,7 @@ configure their explicit same-network contract IDs in `PerkOSClient`. Do not gue
 read `getServiceFeePolicy(asset)` and `getJobServiceFee(asset, jobId)`.
 
 ```ts
-// Uses published QA prerelease 0.8.0-rc.1, not stable npm 0.7.1.
+// Uses stable SDK 0.8.0 with explicit QA contract IDs; production defaults stay v5/v4.
 // nayori is a client configured with reviewed contracts and a policy-limited signer.
 const job = await nayori.getJob("sbtc", jobId);
 if (!job) throw new Error("Job not found");

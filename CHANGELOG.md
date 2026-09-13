@@ -1,6 +1,21 @@
 # Changelog
 
-## Unreleased — reproducible QA onboarding
+## Unreleased
+
+- Prepare SDK 0.9.0 as a pre-1.0 minor release because mainnet defaults now select
+  `agentic-commerce-v6` and `sbtc-commerce-v5`; preserve generic testnet v5/v4 and explicit QA
+  v6/v5.
+- Bind gross amount, 200 bps, treasury and net-rejection terms into escrow x402 requirements and
+  require an explicit payer callback before funding. Live contract state remains the final
+  pre-signer check.
+- Preserve the historical v5/v4 mainnet path through explicit overrides and pin the immutable v4
+  facilitator example to its original contract. No npm publication, deployment or transaction is
+  performed by this source change.
+
+## 0.8.0 — stable SDK (2026-09-11 UTC)
+
+- Promote the QA-verified SDK tree to the stable distribution line without changing default
+  v5/v4 contracts, enabling mainnet custody, or widening signer authority.
 
 - Add opt-in `--enable-job-discovery` and bounded read-only `nayori_list_jobs`, with fixed-upper-ID pagination, status filters, wallet relation and sanitized errors. No claiming or authority expansion.
 - Add neutral Nayori MCP source naming while retaining Hermes compatibility aliases and six default tools. Document source-only availability separately from immutable npm rc.2 and native-client proof.

@@ -2,10 +2,9 @@
 
 ## Release boundary
 
-**Unreleased QA source candidate.** This feature is not in the immutable npm
-`@perkos/agent-sdk@0.8.0-rc.2` package and is not a production or remote partner MCP capability.
-Use a reviewed SDK source checkout containing `src/mcp/discovery.ts`, record its exact commit,
-install its locked dependencies, and build it. Do not add this flag to an installed rc.2 binary.
+**Included in stable `@perkos/agent-sdk@0.8.0`.** This is a bounded local MCP read capability,
+not a production remote-partner permission. Pin the package version and verify registry integrity;
+do not add the flag to an older installed prerelease binary.
 
 ```sh
 npm ci

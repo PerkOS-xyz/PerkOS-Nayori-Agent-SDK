@@ -1,12 +1,12 @@
 # Nayori MCP — framework-independent QA adapter
 
-Optional [job discovery](MCP_JOB_DISCOVERY.md) is an unreleased source-only extension;
-the npm rc.2 defaults and installation instructions below remain unchanged.
+Optional [job discovery](MCP_JOB_DISCOVERY.md) ships in stable 0.8.0 and leaves the default
+six-tool surface unchanged until explicitly enabled.
 
 The Node stdio adapter is not restricted to Hermes. See [MCP client setup](MCP_CLIENTS.md)
 for Hermes, OpenClaw, Codex and Claude Code, with client-specific validation boundaries.
 
-**Published QA prerelease 0.8.0-rc.2, not a turnkey production wallet integration.**
+**Stable SDK 0.8.0, not a turnkey production wallet integration.**
 By default this packages read/prepare tools using the actual SDK.
 Optional [custody delegation](HERMES_CUSTODY.md) adds bounded register/create/fund/assign/submit/finalize
 requests to a separate operator-controlled signer. This is not deployed or funded by default.
@@ -19,18 +19,18 @@ Hermes → local MCP stdio → Nayori SDK → fixed public Stacks testnet reads.
 Preparation tools are offline. There is no signer in the process or tool arguments.
 The browser SDK entry point does not import this Node-only adapter.
 
-Use Node 20+ and npm 10+. In a separate integration directory, install the exact published
-prerelease; initialize a package.json only if the directory does not already have one:
+Use Node 20+ and npm 10+. In a separate integration directory, install the exact stable
+version; initialize a package.json only if the directory does not already have one:
 
 ```sh
 npm init -y
-npm install --save-exact @perkos/agent-sdk@0.8.0-rc.2
+npm install --save-exact @perkos/agent-sdk@0.8.0
 ./node_modules/.bin/nayori-mcp --help
 ./node_modules/.bin/nayori-custody --help
 ```
 
-Keep the lockfile. `latest` is still 0.7.1; an unpinned install does not select this QA bridge.
-The [release notes](RELEASE_0.8.0_RC2.md) contain the verified registry integrity. Installation
+Keep the lockfile and verify that `latest` resolves to 0.8.0 before using an unqualified install.
+The [release notes](RELEASE_0.8.0.md) define the registry-integrity gate. Installation
 and offline checks for both roles passed; no funded wallet or LLM is needed for those checks.
 
 For source development only, build and verify the reviewed QA source, then pack outside the checkout:
@@ -45,21 +45,20 @@ In a clean consumer directory, install that exact reviewed tarball:
 
 ```sh
 npm init -y
-npm install --save-exact /absolute/private-artifacts/perkos-agent-sdk-0.8.0-rc.2.tgz
+npm install --save-exact /absolute/private-artifacts/perkos-agent-sdk-0.8.0.tgz
 ./node_modules/.bin/nayori-mcp --help
 ```
 
-The current candidate is 0.8.0-rc.2, separate from published 0.7.1. Historical QA tests used
-a source tarball still numbered 0.7.1; do not confuse it with either distribution.
+The current stable package is 0.8.0. Historical QA tests used
+older source tarballs and prereleases; do not confuse them with this distribution.
 Record the tarball SHA-256 and exact commit. Initializing the consumer's own package.json
 prevents npm from inheriting an unrelated parent project. See the
-[release checklist](RELEASE_0.8.0_RC2.md); do not overwrite or republish the existing npm version.
+[release checklist](RELEASE_0.8.0.md); do not overwrite or republish an existing npm version.
 Do not run an unpinned `npx -y` command for a financial agent.
 
 Follow [clean-install verification](CLEAN_INSTALL.md) for a reproducible key-free test of both
-roles using the **installed** SDK, not this checkout's source. The immutable rc.2 MCP still prints
-the old distribution warning; source PR47 fixes that text for a future release. Never patch the
-installed package or infer permission to spend from a context message.
+roles using the **installed** SDK, not this checkout's source. Never patch the installed package
+or infer permission to spend from a context message.
 
 ## Public role profile
 
@@ -154,7 +153,7 @@ on-chain commitment. Status responses expose only bounded identity/state/txid fi
 arbitrary public explanations or raw errors. `confirmed` here describes the evaluator, not a
 verified escrow payout. Buyer custody still finalizes after the actual appeal deadline.
 
-This is a published QA prerelease. In addition to mocked HTTP/chain tests, one earlier internal
+This is a stable SDK with QA-only custody. In addition to mocked HTTP/chain tests, internal
 funded Hermes lifecycle passed; see [the exact validation scope](VALIDATION_AND_RELEASE.md).
 It is not a security audit or production promotion. Without the flag, tool availability is unchanged.
 
@@ -174,7 +173,7 @@ It is not a security audit or production promotion. Without the flag, tool avail
 Automated tests cover official MCP client/server handshake, schemas, role separation,
 BigInt serialization, offline commitments, sanitized failures and real subprocess stdio.
 Those automated tests are distinct from the [verified internal testnet lifecycle](VALIDATION_AND_RELEASE.md).
-Clean registry installation and offline role checks passed. The supervised npmrc.2 job16
+Clean registry installation and offline role checks are required. The supervised prerelease job16
 lifecycle also passed; new registration, the separate x402 walkthrough and video remain pending.
 Repeat isolation and permission checks for each new operator deployment; this single supervised
 scenario does not certify general autonomous onboarding. No server deployment is needed to test stdio.

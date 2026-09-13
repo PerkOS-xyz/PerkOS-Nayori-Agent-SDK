@@ -5,9 +5,9 @@ The consumer requests and funds work; its SDK role remains `client` (the buyer).
 Choose [Hermes, OpenClaw, Codex or Claude Code](MCP_CLIENTS.md). Hermes is the verified internal
 example; other client-specific E2Es remain pending. This filename is retained for link compatibility.
 
-**Published QA prerelease 0.8.0-rc.2; supervised npm lifecycle verified (job 16).** Follow this with a
-separate provider operator. Do not substitute mainnet URLs or assume the published npm 0.7.1
-contains these tools. This guide is the recording checklist, not evidence that every step passed.
+**Stable SDK 0.8.0; supervised npm lifecycle verified (job 16).** Follow this with a
+separate provider operator. Do not substitute mainnet URLs for this QA walkthrough.
+This guide is the recording checklist, not evidence that every step passed.
 
 See [validation and release boundaries](VALIDATION_AND_RELEASE.md) for the exact tested source,
 public transactions and remaining gates. Reuse an already registered, verified identity; omit
@@ -31,8 +31,8 @@ prompts, MCP arguments and recordings. Your agent's model is separate from Nayor
   recovery material, environment contents or authorization headers in a recording.
 - Keep the buyer key only inside its signer boundary. The agent must not share that UID,
   key mount, writable policy, Docker socket, sudo or access to the provider's socket.
-- Install `@perkos/agent-sdk@0.8.0-rc.2` with `--save-exact` as described in [MCP client setup](MCP_CLIENTS.md).
-  Preserve the lockfile and registry integrity. Stable 0.7.1 does not include this bridge.
+- Install `@perkos/agent-sdk@0.8.0` with `--save-exact` as described in [MCP client setup](MCP_CLIENTS.md).
+  Preserve the lockfile and registry integrity.
   Do not use unpinned `npx` or mistake installation for permission to sign.
 
 First complete [clean-install verification](CLEAN_INSTALL.md). It uses public fixtures and no

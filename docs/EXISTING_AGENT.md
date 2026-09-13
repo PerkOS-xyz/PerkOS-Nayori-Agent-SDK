@@ -13,24 +13,20 @@ not implement the on-chain job lifecycle.
 
 | Path | Available boundary | Start with |
 | --- | --- | --- |
-| TypeScript SDK | Public npm 0.7.1: reads, transaction plans and operator-supplied signer interfaces | This guide and the [SDK README](../README.md) |
-| Local MCP for an existing Hermes | Published QA prerelease 0.8.0-rc.2: fixed testnet contracts, bounded role tools and optional separate custody | [MCP setup](HERMES_MCP.md) |
+| TypeScript SDK | Public npm 0.8.0: reads, transaction plans and operator-supplied signer interfaces | This guide and the [SDK README](../README.md) |
+| Local MCP for an existing agent | Stable 0.8.0: fixed testnet contracts, bounded role tools and optional separate custody | [MCP setup](HERMES_MCP.md) |
 | Remote partner MCP | Invite-only OAuth API access; not the local Hermes custody bridge | [Partner guide](PARTNER_PILOT.md) |
 
 Install a reviewed, pinned public version in your agent's integration package:
 
 ```sh
-npm install --save-exact @perkos/agent-sdk@0.7.1
+npm install --save-exact @perkos/agent-sdk@0.8.0
 ```
 
-For the **different**, opt-in QA Hermes/fee path, install the published prerelease instead:
-
-```sh
-npm install --save-exact @perkos/agent-sdk@0.8.0-rc.2
-```
-
-Stable `latest` remains 0.7.1. The prerelease's registry integrity and clean offline MCP checks
-for buyer/provider were verified; this is not a new funded E2E. Follow [release notes](RELEASE_0.8.0_RC2.md)
+The same stable package also exposes a **different**, opt-in QA custody and fee-candidate path;
+selecting that path requires explicit testnet configuration and does not change the production
+defaults. The stable release's registry integrity and clean offline MCP checks
+for consumer/provider must be verified; this is not external adoption. Follow [release notes](RELEASE_0.8.0.md)
 and preserve your lockfile. Do not use an unpinned auto-downloading command in a financial agent.
 
 Run [clean-install verification](CLEAN_INSTALL.md) before loading any key. It exercises both
@@ -108,7 +104,7 @@ requires it; direct SDK contract registration does not require partner credentia
   window and final settlement; verify zero escrow, actual payout/refund and reputation state.
 
 The [role-separated testnet walkthrough](TESTNET_QUICKSTART.md) supplies guarded QA commands,
-inputs and recovery behavior. It is a separate candidate, not a claim that a funded autonomous
+inputs and recovery behavior. It is a separate workflow, not a claim that a funded autonomous
 Hermes session has passed merely because the guide exists. See the separately
 [verified supervised lifecycle](VALIDATION_AND_RELEASE.md). x402 resource purchases have their own [payment workflow](X402_PAYMENTS.md),
 permission and budget; registering an agent or requesting evaluation does not buy an x402 resource.
@@ -129,5 +125,5 @@ funding escrow; an evaluator decision is not a payout.
 Promote to mainnet only through a separately reviewed network/deployment configuration and
 spending authorization. Testnet registration does not create a mainnet identity. One supervised
 funded Hermes scenario passed; registry installation and offline role checks also passed separately.
-The supervised npmrc.2 job16 lifecycle passed separately; fresh registration, paid-resource
+The supervised prerelease job16 lifecycle passed separately; fresh registration, paid-resource
 integration and the recorded demo remain separate gates.

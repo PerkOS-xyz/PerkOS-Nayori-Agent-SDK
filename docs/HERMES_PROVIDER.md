@@ -12,9 +12,9 @@ See [QA checkpoints and confirmation handling](HERMES_CHECKPOINTS.md) for the jo
 STX gas budget, six-burn gate and the difference between a decision and payment. Do not fund
 your wallet with sBTC merely to receive a payout or reuse an example job ID.
 
-**Published QA prerelease 0.8.0-rc.2; job16 npm lifecycle verified, fresh registration/video separate.**
+**Stable SDK 0.8.0; job16 npm lifecycle verified, fresh registration/video separate.**
 Use the same job as the [consumer walkthrough](HERMES_BUYER.md), with a different wallet, signer,
-agent instance and journal. The candidate MCP is not the npm 0.7.1 release.
+agent instance and journal.
 
 ## 1. Install and prepare your wallet externally
 
@@ -25,7 +25,7 @@ Start with [existing-agent onboarding](EXISTING_AGENT.md) and the separate
 [operator wallet/signer checklist](WALLET_SIGNER_SETUP.md). Never put model credentials in
 tool arguments or recordings. Your agent's model is separate from Nayori's evaluator.
 
-Follow [MCP client setup](MCP_CLIENTS.md) with pinned npm 0.8.0-rc.2 and its registry integrity. Create,
+Follow [MCP client setup](MCP_CLIENTS.md) with pinned npm 0.8.0 and its registry integrity. Create,
 back up and restore-check your own testnet wallet outside the SDK and the agent. Fund only
 authorized STX network fees; a provider does not need to send sBTC to receive a job payment.
 Never give the agent your key or the buyer/evaluator/treasury keys. Follow the separate-UID,

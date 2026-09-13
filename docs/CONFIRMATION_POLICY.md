@@ -1,7 +1,7 @@
 # Confirmation policy and workflow timing
 
-Available in **published SDK 0.8.0-rc.2** under `next`; stable `latest` remains 0.7.1.
-See [release evidence and exact installation](RELEASE_0.8.0_RC2.md). The immutable npm
+Available in stable **SDK 0.8.0**. Pin the exact version and verify the registry artifact.
+See [release evidence and exact installation](RELEASE_0.8.0.md). The immutable npm
 0.8.0-rc.1 package and every version-1 custody permit retain six additional Bitcoin burn blocks.
 Do not edit an installed package, an active permit or its journal to accelerate an existing run.
 

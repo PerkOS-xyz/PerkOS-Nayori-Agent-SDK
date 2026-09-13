@@ -6,9 +6,9 @@ Shared prerequisites: [installation and public profile](HERMES_MCP.md), [clean i
 
 ## Choose your MCP client
 
-For the **unreleased QA source candidate**, optional [read-only job discovery](MCP_JOB_DISCOVERY.md)
-adds paginated on-chain reads for both roles. It is not part of npm rc.2 or the six-tool
-connection evidence below, and does not authorize a provider to claim or execute a job.
+Optional [read-only job discovery](MCP_JOB_DISCOVERY.md) in stable 0.8.0
+adds paginated on-chain reads for both roles. It is disabled by default, is separate from the
+historical six-tool connection evidence below, and does not authorize a provider to claim or execute a job.
 
 Nayori's role workflow is independent of the agent application. Use an existing agent and your
 own configured model; no PerkOS-LLM account is required. Consumer maps to SDK `client`; provider
@@ -30,7 +30,7 @@ means Claude Code; hosted web connectors are not interchangeable with a local st
 
 ### Measured connection scope — 2026-09-09
 
-The actual clients connected to the public `@perkos/agent-sdk@0.8.0-rc.2` package, not a
+The historical clients connected to the public `@perkos/agent-sdk@0.8.0-rc.2` package, not a
 mock server or a source checkout. Each client was tested separately as consumer (`client`)
 and provider, with exactly six read/prepare tools and no opposite-role preparation tool:
 
@@ -50,7 +50,7 @@ Future conversations and funded workflows require separate verification and boun
 
 ### Prepare your own configuration
 
-Install the exact public `@perkos/agent-sdk@0.8.0-rc.2` in a dedicated consumer directory and keep
+Install the exact public `@perkos/agent-sdk@0.8.0` in a dedicated consumer directory and keep
 its lockfile. Prepare the public-only testnet profile using the existing MCP setup guide. Replace
 all example absolute paths with reviewed paths on your machine. Never put wallet keys, seed phrases,
 LLM credentials or spending authorization in MCP arguments. Keep signing disabled for connection tests.

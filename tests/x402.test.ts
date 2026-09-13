@@ -1,8 +1,10 @@
 import { x402Client } from "@x402/core/client";
+import { Cl } from "@stacks/transactions";
 import { describe, expect, it, vi } from "vitest";
 import {
   PERKOS_X402_ASSET_TRANSFER_METHOD,
   PerkOSError,
+  PerkOSClient,
   PerkOSX402SchemeClient,
   STACKS_X402_NETWORKS,
   createPerkOSX402PaymentRequired,
@@ -18,6 +20,7 @@ import {
   resolveConfig,
   toStacksX402Network,
   type FundJobInput,
+  type ContractCallPlan,
   type JobRecord,
   type PaymentAsset,
   type PaymentRequired,
@@ -28,8 +31,15 @@ import {
 
 const CLIENT = "SP1VY24ADP27HERH4XMQTK44XB9QX4ZASPMPJKPVF";
 const EVALUATOR = "SP3DQCVZ26XCDGZFYB4TXJC6TMMZAVXZTER1DP8HV";
+const TREASURY = "SP1NT1V4X6GQR6T32Z8MSMNECZ6GSWX9HZ81SM1Y8";
 const TXID = `0x${"42".repeat(32)}`;
 const config = resolveConfig({ network: "mainnet" });
+const feeTerms = {
+  gross: 25_000n,
+  basisPoints: 200 as const,
+  treasury: TREASURY,
+  rejectionRefund: "net-after-evaluation" as const,
+};
 
 function resource() {
   return {
@@ -47,6 +57,7 @@ function paymentRequired(asset: PaymentAsset = "sbtc"): PaymentRequired {
     asset,
     jobId: 7n,
     amount: 25_000n,
+    serviceFeeTerms: feeTerms,
   });
 }
 
@@ -98,6 +109,81 @@ class FakeX402Client implements PerkOSX402ClientLike {
   }
 }
 
+function feeAwareClient() {
+  const plans: ContractCallPlan[] = [];
+  const getAddress = vi.fn(async () => CLIENT);
+  const signAndBroadcast = vi.fn(async (plan: ContractCallPlan) => {
+    plans.push(plan);
+    return { txid: TXID };
+  });
+  const confirmation = async () => ({
+    txid: TXID,
+    network: "mainnet" as const,
+    status: "success" as const,
+    observedAt: "2026-09-13T00:00:00.000Z",
+    blockHeight: 5_000,
+    blockHash: "0xblock",
+  });
+  const client = new PerkOSClient({
+    network: "mainnet",
+    signer: { getAddress, signAndBroadcast },
+    spendingPolicy: {
+      maxPerTransaction: { sbtc: 25_000n },
+      maxPerSession: { sbtc: 25_000n },
+    },
+    transactionTracker: {
+      getStatus: confirmation,
+      waitForConfirmation: confirmation,
+    },
+    readOnlyTransport: async (call) => {
+      if (call.functionName === "get-job") {
+        return Cl.ok(
+          Cl.tuple({
+            client: Cl.principal(CLIENT),
+            provider: Cl.none(),
+            evaluator: Cl.principal(EVALUATOR),
+            "appeal-authority": Cl.principal(EVALUATOR),
+            treasury: Cl.principal(TREASURY),
+            description: Cl.stringAscii("x402 integration test"),
+            budget: Cl.uint(25_000),
+            "expired-at": Cl.uint(99_999),
+            status: Cl.uint(0),
+            deliverable: Cl.none(),
+            "submitted-at-burn": Cl.none(),
+            "review-deadline": Cl.none(),
+          })
+        );
+      }
+      if (call.functionName === "get-protocol-config") {
+        return Cl.ok(
+          Cl.tuple({
+            configured: Cl.bool(true),
+            "service-fee-bps": Cl.uint(200),
+            treasury: Cl.principal(TREASURY),
+            "review-window": Cl.uint(12),
+            "appeal-window": Cl.uint(144),
+            "appeal-authority": Cl.principal(EVALUATOR),
+          })
+        );
+      }
+      if (call.functionName === "get-job-service-fee") {
+        return Cl.ok(
+          Cl.tuple({
+            "basis-points": Cl.uint(200),
+            treasury: Cl.principal(TREASURY),
+            "fee-amount": Cl.uint(500),
+            "service-recorded": Cl.bool(false),
+            waiver: Cl.none(),
+            settlement: Cl.none(),
+          })
+        );
+      }
+      throw new Error(`Unexpected read ${call.functionName}`);
+    },
+  });
+  return { client, plans, getAddress, signAndBroadcast };
+}
+
 describe("Stacks x402 v2 foundation", () => {
   it("maps the canonical Stacks CAIP-2 network identifiers", () => {
     expect(toStacksX402Network("mainnet")).toBe("stacks:1");
@@ -133,6 +219,10 @@ describe("Stacks x402 v2 foundation", () => {
         paymentFlow: "upfront",
         paymentAsset: asset,
         jobId: "7",
+        serviceFeeGross: "25000",
+        serviceFeeBasisPoints: "200",
+        serviceFeeTreasury: TREASURY,
+        serviceFeeRejectionRefund: "net-after-evaluation",
       },
     });
     expect(parsePerkOSX402Requirement(config, accepted)).toMatchObject({
@@ -140,6 +230,7 @@ describe("Stacks x402 v2 foundation", () => {
       asset,
       jobId: 7n,
       amount: 25_000n,
+      serviceFeeTerms: feeTerms,
     });
   });
 
@@ -161,9 +252,67 @@ describe("Stacks x402 v2 foundation", () => {
     );
   });
 
+  it("keeps historical v5/v4 requirements fee-free through explicit overrides", () => {
+    const legacy = resolveConfig({
+      network: "mainnet",
+      contracts: {
+        stxCommerce:
+          "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.agentic-commerce-v5",
+        sbtcCommerce:
+          "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.sbtc-commerce-v4",
+      },
+    });
+    const required = createPerkOSX402PaymentRequired(legacy, {
+      resource: resource(),
+      asset: "sbtc",
+      jobId: 7n,
+      amount: 25_000n,
+    });
+
+    expect(required.accepts[0]!.extra.serviceFeeGross).toBeUndefined();
+    expect(
+      parsePerkOSX402Requirement(legacy, required.accepts[0]!).serviceFeeTerms
+    ).toBeUndefined();
+    expect(() =>
+      createPerkOSX402PaymentRequired(legacy, {
+        resource: resource(),
+        asset: "sbtc",
+        jobId: 7n,
+        amount: 25_000n,
+        serviceFeeTerms: feeTerms,
+      })
+    ).toThrow("not valid for this escrow generation");
+  });
+
+  it("requires complete fee terms for the promoted mainnet defaults", () => {
+    expect(() =>
+      createPerkOSX402PaymentRequired(config, {
+        resource: resource(),
+        asset: "sbtc",
+        jobId: 7n,
+        amount: 25_000n,
+      })
+    ).toThrow("requires explicit earned-service-fee terms");
+
+    const required = paymentRequired();
+    for (const field of [
+      "serviceFeeGross",
+      "serviceFeeBasisPoints",
+      "serviceFeeTreasury",
+      "serviceFeeRejectionRefund",
+    ]) {
+      const incomplete = structuredClone(required);
+      delete incomplete.accepts[0]!.extra[field];
+      expect(() =>
+        parsePerkOSX402Requirement(config, incomplete.accepts[0]!)
+      ).toThrow(PerkOSError);
+    }
+  });
+
   it("creates a confirmed funding proof through the official x402 client", async () => {
     const fake = new FakeX402Client();
-    const scheme = new PerkOSX402SchemeClient({ client: fake });
+    const acceptServiceFee = vi.fn(() => true);
+    const scheme = new PerkOSX402SchemeClient({ client: fake, acceptServiceFee });
     const client = new x402Client()
       .setSpendControls(false)
       .register(STACKS_X402_NETWORKS.mainnet, scheme);
@@ -188,8 +337,66 @@ describe("Stacks x402 v2 foundation", () => {
       jobId: 7n,
       amount: 25_000n,
       sender: CLIENT,
+      serviceFeeAcceptance: feeTerms,
     });
+    expect(acceptServiceFee).toHaveBeenCalledWith(
+      feeTerms,
+      expect.objectContaining({
+        asset: "sbtc",
+        jobId: 7n,
+        amount: 25_000n,
+        commerceContract: config.contracts.sbtcCommerce,
+      })
+    );
     expect(fake.confirm).toHaveBeenCalledTimes(1);
+  });
+
+  it("rechecks accepted fee terms against live contract state before signing", async () => {
+    const live = feeAwareClient();
+    const scheme = new PerkOSX402SchemeClient({
+      client: live.client,
+      acceptServiceFee: () => true,
+    });
+
+    await expect(
+      scheme.createPaymentPayload(2, paymentRequired().accepts[0]!)
+    ).resolves.toMatchObject({ payload: { transaction: TXID } });
+    expect(live.plans[0]?.intent.serviceFee).toMatchObject({
+      gross: 25_000n,
+      fee: 500n,
+      net: 24_500n,
+      treasury: TREASURY,
+    });
+
+    const tampered = paymentRequired();
+    tampered.accepts[0]!.extra.serviceFeeTreasury = CLIENT;
+    const rejected = feeAwareClient();
+    const rejectedScheme = new PerkOSX402SchemeClient({
+      client: rejected.client,
+      acceptServiceFee: () => true,
+    });
+    await expect(
+      rejectedScheme.createPaymentPayload(2, tampered.accepts[0]!)
+    ).rejects.toThrow("matching live job budget, treasury");
+    expect(rejected.getAddress).not.toHaveBeenCalled();
+    expect(rejected.signAndBroadcast).not.toHaveBeenCalled();
+  });
+
+  it("passes an immutable parsed requirement to the fee-acceptance boundary", async () => {
+    const fake = new FakeX402Client();
+    const scheme = new PerkOSX402SchemeClient({
+      client: fake,
+      acceptServiceFee: (terms, requirement) => {
+        expect(Object.isFrozen(terms)).toBe(true);
+        expect(Object.isFrozen(requirement)).toBe(true);
+        return true;
+      },
+    });
+
+    await scheme.createPaymentPayload(2, paymentRequired().accepts[0]!);
+    expect(fake.fundJob).toHaveBeenCalledWith(
+      expect.objectContaining({ jobId: 7n, amount: 25_000n })
+    );
   });
 
   it("rejects requirements for another network", () => {
@@ -253,10 +460,57 @@ describe("Stacks x402 v2 foundation", () => {
     expect(fake.fundJob).not.toHaveBeenCalled();
   });
 
+  it.each([undefined, () => false] as const)(
+    "fails closed before funding when fee acceptance is %s",
+    async (acceptServiceFee) => {
+      const fake = new FakeX402Client();
+      const scheme = new PerkOSX402SchemeClient({
+        client: fake,
+        ...(acceptServiceFee ? { acceptServiceFee } : {}),
+      });
+
+      await expect(
+        scheme.createPaymentPayload(2, paymentRequired().accepts[0]!)
+      ).rejects.toThrow("Explicit earned-service-fee acceptance");
+      expect(fake.fundJob).not.toHaveBeenCalled();
+    }
+  );
+
+  it("fails closed when the fee-acceptance callback throws", async () => {
+    const fake = new FakeX402Client();
+    const scheme = new PerkOSX402SchemeClient({
+      client: fake,
+      acceptServiceFee: () => {
+        throw new Error("operator UI unavailable");
+      },
+    });
+
+    await expect(
+      scheme.createPaymentPayload(2, paymentRequired().accepts[0]!)
+    ).rejects.toThrow("acceptance callback failed");
+    expect(fake.fundJob).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["serviceFeeGross", "24999"],
+    ["serviceFeeBasisPoints", "201"],
+    ["serviceFeeTreasury", "ST000000000000000000002AMW42H"],
+    ["serviceFeeRejectionRefund", "gross"],
+  ] as const)("rejects altered %s terms", (field, value) => {
+    const required = paymentRequired();
+    required.accepts[0]!.extra[field] = value;
+    expect(() => parsePerkOSX402Requirement(config, required.accepts[0]!)).toThrow(
+      PerkOSError
+    );
+  });
+
   it("does not issue a payment proof for a non-success confirmation", async () => {
     const fake = new FakeX402Client();
     fake.confirmationStatus = "abort";
-    const scheme = new PerkOSX402SchemeClient({ client: fake });
+    const scheme = new PerkOSX402SchemeClient({
+      client: fake,
+      acceptServiceFee: () => true,
+    });
 
     await expect(
       scheme.createPaymentPayload(2, paymentRequired().accepts[0]!)
@@ -265,7 +519,10 @@ describe("Stacks x402 v2 foundation", () => {
 
   it("rejects a payment proof that no longer matches its accepted requirement", async () => {
     const fake = new FakeX402Client();
-    const scheme = new PerkOSX402SchemeClient({ client: fake });
+    const scheme = new PerkOSX402SchemeClient({
+      client: fake,
+      acceptServiceFee: () => true,
+    });
     const result = await scheme.createPaymentPayload(2, paymentRequired().accepts[0]!);
     const payload = {
       ...result,

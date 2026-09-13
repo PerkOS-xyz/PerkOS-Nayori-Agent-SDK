@@ -6,8 +6,8 @@ const TESTNET_DEPLOYER = "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5";
 export const DEFAULT_DEPLOYMENTS: Readonly<Record<PerkOSNetwork, PerkOSContracts>> = {
   mainnet: {
     agentRegistry: `${MAINNET_DEPLOYER}.agent-registry`,
-    stxCommerce: `${MAINNET_DEPLOYER}.agentic-commerce-v5`,
-    sbtcCommerce: `${MAINNET_DEPLOYER}.sbtc-commerce-v4`,
+    stxCommerce: `${MAINNET_DEPLOYER}.agentic-commerce-v6`,
+    sbtcCommerce: `${MAINNET_DEPLOYER}.sbtc-commerce-v5`,
     reputationRegistry: `${MAINNET_DEPLOYER}.reputation-registry-v3`,
     sbtcToken: "SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token",
     sbtcAssetName: "sbtc-token",

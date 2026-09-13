@@ -4,16 +4,29 @@ import {
   DEFAULT_DEPLOYMENTS,
   PerkOSError,
   PerkOSTransactionBuilder,
+  quoteServiceFee,
   resolveConfig,
 } from "../src/index.js";
 
 const CLIENT = "SP1VY24ADP27HERH4XMQTK44XB9QX4ZASPMPJKPVF";
 const PROVIDER = "SP3DQCVZ26XCDGZFYB4TXJC6TMMZAVXZTER1DP8HV";
 const EVALUATOR = "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE";
+const TREASURY = "SP1NT1V4X6GQR6T32Z8MSMNECZ6GSWX9HZ81SM1Y8";
 const PINNED_SBTC =
   "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.historical-sbtc" as const;
 const config = resolveConfig({ network: "mainnet" });
 const builder = new PerkOSTransactionBuilder(config);
+const feeAcceptance = (gross: bigint) => ({
+  gross,
+  basisPoints: 200 as const,
+  treasury: TREASURY,
+  rejectionRefund: "net-after-evaluation" as const,
+});
+const feeSplit = (gross: bigint) => ({
+  ...quoteServiceFee(gross),
+  treasury: TREASURY,
+  waived: false,
+});
 const candidateBuilder = new PerkOSTransactionBuilder(
   resolveConfig({
     network: "mainnet",
@@ -49,6 +62,7 @@ describe("transaction builders", () => {
       jobId: 7n,
       amount: 25_000n,
       sender: CLIENT,
+      serviceFeeAcceptance: feeAcceptance(25_000n),
     });
 
     expect(plan.contract).toBe(DEFAULT_DEPLOYMENTS.mainnet.sbtcCommerce);
@@ -72,6 +86,7 @@ describe("transaction builders", () => {
       jobId: 9n,
       amount: 1_500_000n,
       sender: CLIENT,
+      serviceFeeAcceptance: feeAcceptance(1_500_000n),
     });
 
     expect(plan.contract).toBe(DEFAULT_DEPLOYMENTS.mainnet.stxCommerce);
@@ -87,11 +102,13 @@ describe("transaction builders", () => {
   });
 
   it("guards settlement with the escrow contract principal", () => {
-    const plan = builder.completeJob({
+    const plan = builder.finalizeDecision({
       asset: "sbtc",
       jobId: 7n,
       amount: "25000",
       recipient: PROVIDER,
+      sbtcToken: DEFAULT_DEPLOYMENTS.mainnet.sbtcToken,
+      serviceFee: feeSplit(25_000n),
     });
 
     expect(plan.intent.recipient).toBe(PROVIDER);
@@ -255,12 +272,22 @@ describe("transaction builders", () => {
       asset: "sbtc",
       jobId: 1n,
       deliverable: "ipfs:bafybeigdyr",
+      serviceFeeAcceptance: feeAcceptance(50_000n),
     });
-    const reject = builder.rejectJob({
+    const decision = builder.recordDecision({
+      asset: "sbtc",
+      jobId: 1n,
+      decision: "reject",
+      evidenceHash: "11".repeat(32),
+      explanationHash: "22".repeat(32),
+    });
+    const finalize = builder.finalizeDecision({
       asset: "sbtc",
       jobId: 1n,
       amount: 50_000n,
       recipient: CLIENT,
+      sbtcToken: DEFAULT_DEPLOYMENTS.mainnet.sbtcToken,
+      serviceFee: feeSplit(50_000n),
     });
     const rate = builder.rateProvider({
       asset: "sbtc",
@@ -274,14 +301,16 @@ describe("transaction builders", () => {
       setBudget.functionName,
       assign.functionName,
       submit.functionName,
-      reject.functionName,
+      decision.functionName,
+      finalize.functionName,
       rate.functionName,
     ]).toEqual([
       "create-job",
       "set-budget",
       "assign-provider",
       "submit-work",
-      "reject-job",
+      "record-decision",
+      "finalize-decision",
       "rate-provider",
     ]);
   });
@@ -302,6 +331,7 @@ describe("transaction builders", () => {
         asset: "stx",
         jobId: 1n,
         deliverable: new Uint8Array(65),
+        serviceFeeAcceptance: feeAcceptance(1n),
       })
     ).toThrowError(PerkOSError);
   });

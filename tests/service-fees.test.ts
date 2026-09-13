@@ -182,10 +182,13 @@ describe("earned fee accounting", () => {
     "rejects invalid gross %s",
     (gross) => expect(() => quoteServiceFee(gross)).toThrow()
   );
-  it("leaves default deployments fee-free", () => {
+  it("enables fees only for the promoted mainnet defaults", () => {
     const sdk = new PerkOSClient({ network: "mainnet" });
-    expect(sdk.supportsServiceFees("stx")).toBe(false);
-    expect(sdk.supportsServiceFees("sbtc")).toBe(false);
+    const testnet = new PerkOSClient({ network: "testnet" });
+    expect(sdk.supportsServiceFees("stx")).toBe(true);
+    expect(sdk.supportsServiceFees("sbtc")).toBe(true);
+    expect(testnet.supportsServiceFees("stx")).toBe(false);
+    expect(testnet.supportsServiceFees("sbtc")).toBe(false);
     expect(supportsServiceFees(contracts.stxCommerce, "sbtc")).toBe(false);
   });
   it("distinguishes quote, charged fee, waiver and real refund", () => {

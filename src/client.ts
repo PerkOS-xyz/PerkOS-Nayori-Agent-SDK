@@ -381,7 +381,7 @@ export class PerkOSClient {
     return expectUint(value, "get-escrow-balance");
   }
 
-  /** Explicit opt-in capability; deployed defaults remain the no-fee generation. */
+  /** Contract-generation capability; mainnet defaults support fees while generic testnet remains v5/v4. */
   supportsServiceFees(asset: PaymentAsset): boolean {
     return supportsServiceFees(
       contractForAsset(this.config.contracts, asset),

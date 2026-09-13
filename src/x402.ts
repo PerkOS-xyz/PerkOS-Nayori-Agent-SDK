@@ -21,6 +21,7 @@ import type {
   SettleResponse,
 } from "@x402/core/types";
 import { PerkOSError } from "./errors.js";
+import { supportsServiceFees } from "./service-fees.js";
 import { normalizeTxid } from "./txid.js";
 import type {
   AmountLike,
@@ -31,6 +32,7 @@ import type {
   PaymentAsset,
   PerkOSNetwork,
   ResolvedPerkOSConfig,
+  ServiceFeeAcceptance,
   TransactionConfirmation,
   TransactionReceipt,
 } from "./types.js";
@@ -67,6 +69,7 @@ export interface PerkOSX402PaymentRequiredInput {
   readonly asset: PaymentAsset;
   readonly jobId: AmountLike;
   readonly amount: AmountLike;
+  readonly serviceFeeTerms?: ServiceFeeAcceptance;
   readonly maxTimeoutSeconds?: number;
   readonly error?: string;
 }
@@ -78,6 +81,7 @@ export interface ParsedPerkOSX402Requirement {
   readonly amount: bigint;
   readonly commerceContract: ContractId;
   readonly assetIdentifier: string;
+  readonly serviceFeeTerms?: ServiceFeeAcceptance;
   readonly maxTimeoutSeconds: number;
 }
 
@@ -91,7 +95,18 @@ export interface PerkOSX402PaymentProof extends ParsedPerkOSX402Requirement {
 export interface PerkOSX402SchemeClientOptions {
   readonly client: PerkOSX402ClientLike;
   readonly confirmation?: ConfirmationOptions;
+  readonly acceptServiceFee?: (
+    terms: ServiceFeeAcceptance,
+    requirement: ParsedPerkOSX402Requirement
+  ) => boolean | Promise<boolean>;
 }
+
+const SERVICE_FEE_EXTRA_FIELDS = [
+  "serviceFeeGross",
+  "serviceFeeBasisPoints",
+  "serviceFeeTreasury",
+  "serviceFeeRejectionRefund",
+] as const;
 
 function x402Error(message: string, details?: Record<string, unknown>): PerkOSError {
   return new PerkOSError("X402_INVALID", message, details);
@@ -105,6 +120,39 @@ function assetIdentifier(config: ResolvedPerkOSConfig, asset: PaymentAsset): str
   return asset === "sbtc"
     ? `${config.contracts.sbtcToken}::${config.contracts.sbtcAssetName}`
     : "STX";
+}
+
+function validateServiceFeeTerms(
+  config: ResolvedPerkOSConfig,
+  contract: ContractId,
+  asset: PaymentAsset,
+  amount: bigint,
+  terms: ServiceFeeAcceptance | undefined
+): ServiceFeeAcceptance | undefined {
+  const supported = supportsServiceFees(contract, asset);
+  if (!supported && terms) {
+    throw x402Error("Service-fee terms are not valid for this escrow generation.");
+  }
+  if (supported && !terms) {
+    throw x402Error(
+      "This escrow generation requires explicit earned-service-fee terms."
+    );
+  }
+  if (!terms) return undefined;
+  if (
+    terms.gross !== amount ||
+    terms.basisPoints !== 200 ||
+    terms.rejectionRefund !== "net-after-evaluation"
+  ) {
+    throw x402Error("The earned-service-fee terms do not match the x402 amount or policy.");
+  }
+  assertPrincipal(terms.treasury, "serviceFeeTerms.treasury", config.network);
+  return Object.freeze({
+    gross: amount,
+    basisPoints: 200,
+    treasury: terms.treasury,
+    rejectionRefund: "net-after-evaluation",
+  });
 }
 
 function parseProtocolObject<T>(label: string, parser: () => T): T {
@@ -171,6 +219,13 @@ export function createPerkOSX402PaymentRequired(
   const jobId = toUint(input.jobId, "jobId");
   const amount = toUint(input.amount, "amount");
   const contract = commerceContract(config, input.asset);
+  const serviceFeeTerms = validateServiceFeeTerms(
+    config,
+    contract,
+    input.asset,
+    amount,
+    input.serviceFeeTerms
+  );
   const timeout = parseTimeout(input.maxTimeoutSeconds ?? DEFAULT_TIMEOUT_SECONDS);
   const paymentRequired: PaymentRequired = {
     x402Version: X402_VERSION,
@@ -190,6 +245,14 @@ export function createPerkOSX402PaymentRequired(
           paymentAsset: input.asset,
           jobId: jobId.toString(),
           commerceContract: contract,
+          ...(serviceFeeTerms
+            ? {
+                serviceFeeGross: serviceFeeTerms.gross.toString(),
+                serviceFeeBasisPoints: serviceFeeTerms.basisPoints.toString(),
+                serviceFeeTreasury: serviceFeeTerms.treasury,
+                serviceFeeRejectionRefund: serviceFeeTerms.rejectionRefund,
+              }
+            : {}),
         },
       },
     ],
@@ -253,15 +316,43 @@ export function parsePerkOSX402Requirement(
   }
   const jobId = toUint(requireExtraString(extra, "jobId"), "jobId");
   const amount = toUint(requirements.amount, "amount");
-  return {
+  const hasServiceFeeFields = SERVICE_FEE_EXTRA_FIELDS.some((field) =>
+    Object.hasOwn(extra, field)
+  );
+  let serviceFeeTerms: ServiceFeeAcceptance | undefined;
+  if (supportsServiceFees(expectedContract, asset)) {
+    const serviceFeeBasisPoints = requireExtraString(extra, "serviceFeeBasisPoints");
+    if (serviceFeeBasisPoints !== "200") {
+      throw x402Error("serviceFeeBasisPoints must be 200.");
+    }
+    const serviceFeeRejectionRefund = requireExtraString(
+      extra,
+      "serviceFeeRejectionRefund"
+    );
+    if (serviceFeeRejectionRefund !== "net-after-evaluation") {
+      throw x402Error(
+        "serviceFeeRejectionRefund must be net-after-evaluation."
+      );
+    }
+    serviceFeeTerms = validateServiceFeeTerms(config, expectedContract, asset, amount, {
+      gross: toUint(requireExtraString(extra, "serviceFeeGross"), "serviceFeeGross"),
+      basisPoints: 200,
+      treasury: requireExtraString(extra, "serviceFeeTreasury"),
+      rejectionRefund: "net-after-evaluation",
+    });
+  } else if (hasServiceFeeFields) {
+    throw x402Error("Unexpected earned-service-fee terms for a no-fee escrow generation.");
+  }
+  return Object.freeze({
     network,
     asset,
     jobId,
     amount,
     commerceContract: expectedContract,
     assetIdentifier: expectedAsset,
+    ...(serviceFeeTerms ? { serviceFeeTerms } : {}),
     maxTimeoutSeconds: parseTimeout(requirements.maxTimeoutSeconds),
-  };
+  });
 }
 
 export function parsePerkOSX402PaymentPayload(
@@ -336,10 +427,17 @@ export class PerkOSX402SchemeClient implements SchemeNetworkClient {
   readonly scheme = PERKOS_X402_SCHEME;
   private readonly client: PerkOSX402ClientLike;
   private readonly confirmation: ConfirmationOptions;
+  private readonly acceptServiceFee:
+    | ((
+        terms: ServiceFeeAcceptance,
+        requirement: ParsedPerkOSX402Requirement
+      ) => boolean | Promise<boolean>)
+    | undefined;
 
   constructor(options: PerkOSX402SchemeClientOptions) {
     this.client = options.client;
     this.confirmation = options.confirmation ?? {};
+    this.acceptServiceFee = options.acceptServiceFee;
   }
 
   async createPaymentPayload(
@@ -372,11 +470,32 @@ export class PerkOSX402SchemeClient implements SchemeNetworkClient {
       });
     }
 
+    if (requirement.serviceFeeTerms) {
+      let accepted = false;
+      try {
+        accepted =
+          (await this.acceptServiceFee?.(
+            requirement.serviceFeeTerms,
+            requirement
+          )) === true;
+      } catch (cause) {
+        throw x402Error("The earned-service-fee acceptance callback failed.", { cause });
+      }
+      if (!accepted) {
+        throw x402Error(
+          "Explicit earned-service-fee acceptance is required before x402 funding."
+        );
+      }
+    }
+
     const receipt = await this.client.fundJob({
       asset: requirement.asset,
       jobId: requirement.jobId,
       amount: requirement.amount,
       sender: job.client,
+      ...(requirement.serviceFeeTerms
+        ? { serviceFeeAcceptance: requirement.serviceFeeTerms }
+        : {}),
     });
     this.assertReceipt(receipt, requirement);
     const confirmation = await this.client.confirm(receipt, this.confirmation);

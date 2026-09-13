@@ -6,12 +6,32 @@ describe("configuration", () => {
     const config = resolveConfig({ network: "mainnet" });
 
     expect(config.contracts).toEqual(DEFAULT_DEPLOYMENTS.mainnet);
-    expect(config.contracts.stxCommerce).toContain(".agentic-commerce-v5");
-    expect(config.contracts.sbtcCommerce).toContain(".sbtc-commerce-v4");
+    expect(config.contracts.stxCommerce).toBe(
+      "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.agentic-commerce-v6"
+    );
+    expect(config.contracts.sbtcCommerce).toBe(
+      "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.sbtc-commerce-v5"
+    );
     expect(config.contracts.reputationRegistry).toContain(".reputation-registry-v3");
     expect(config.contracts.sbtcToken).toBe(
       "SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token"
     );
+  });
+
+  it("keeps generic testnet defaults on v5/v4", () => {
+    expect(DEFAULT_DEPLOYMENTS.testnet).toEqual({
+      agentRegistry:
+        "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.agent-registry",
+      stxCommerce:
+        "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.agentic-commerce-v5",
+      sbtcCommerce:
+        "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.sbtc-commerce-v4",
+      reputationRegistry:
+        "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.reputation-registry-v3",
+      sbtcToken:
+        "SN3VMHXEN64ZZF71JQ5VESXDWTR301XTTXGF4J8F1.sbtc-token",
+      sbtcAssetName: "sbtc-token",
+    });
   });
 
   it("rejects a contract override from the wrong network", () => {

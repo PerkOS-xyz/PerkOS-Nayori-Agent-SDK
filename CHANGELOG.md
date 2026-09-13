@@ -2,7 +2,15 @@
 
 ## Unreleased
 
-- No changes yet.
+- Prepare SDK 0.9.0 as a pre-1.0 minor release because mainnet defaults now select
+  `agentic-commerce-v6` and `sbtc-commerce-v5`; preserve generic testnet v5/v4 and explicit QA
+  v6/v5.
+- Bind gross amount, 200 bps, treasury and net-rejection terms into escrow x402 requirements and
+  require an explicit payer callback before funding. Live contract state remains the final
+  pre-signer check.
+- Preserve the historical v5/v4 mainnet path through explicit overrides and pin the immutable v4
+  facilitator example to its original contract. No npm publication, deployment or transaction is
+  performed by this source change.
 
 ## 0.8.0 — stable SDK (2026-09-11 UTC)
 

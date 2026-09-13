@@ -1,10 +1,12 @@
 # Role-separated agent onboarding — testnet
 
-This guide describes the QA walkthrough shipped in npm 0.8.0. The role-separated
+This guide describes the QA walkthrough retained in the 0.9.0 source candidate. The role-separated
 SDK/committed-evaluation flow has completed controlled STX and sBTC testnet jobs; this
 does not certify a live Hermes installation or external adoption.
 Use Node.js 22 and the reviewed stable package. Do not point this walkthrough at mainnet.
-The package's default v5/v4 production contracts remain unchanged.
+The package's generic testnet defaults remain v5/v4. This QA walkthrough continues to select
+testnet v6/v5 explicitly; the mainnet default promotion does not alter these QA principals,
+confirmation rules or evidence.
 
 ## Roles and custody
 

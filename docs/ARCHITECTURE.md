@@ -164,15 +164,18 @@ the escrow contract principal and the exact amount expected to leave it. For `sb
 in both the contract argument and exact fungible-token post-condition; a later default-token
 rotation cannot redirect or strand an existing escrow.
 
-The active v5/v4 generation records a fixed 12 Bitcoin burn-block review deadline at submission.
+The promoted mainnet v6/v5 generation records a fixed 12 Bitcoin burn-block review deadline at
+submission and pins the accepted 200-bps earned-fee treasury per job. The same autonomous decision
+and liveness boundaries remain in force.
 The evaluator records a hashed decision without moving escrow, after which the affected client or
 provider receives the configured appeal window. A separately pinned human authority resolves an
 appeal; permissionless finalizers preserve liveness after either deadline without choosing a new
 recipient. Reputation synchronization has its own durable read record and deny-mode retry plan so
 registry unavailability never expands payment authority or rolls back settlement.
 
-Versioned v5/v4/v3 contract IDs are the defaults on both networks. Historical generations remain
-available through explicit same-network overrides.
+Mainnet defaults to v6/v5/v3. Generic testnet remains v5/v4/v3, while the isolated QA adapter pins
+testnet v6/v5 explicitly. Historical generations remain available through exact same-network
+overrides; changing a default never migrates an existing job.
 
 ## Future adapters
 

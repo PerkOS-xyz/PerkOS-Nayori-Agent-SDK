@@ -44,6 +44,15 @@ function parsed(result: Awaited<ReturnType<Client["callTool"]>>) {
   return JSON.parse(content[0]!.text);
 }
 describe("QA MCP profile", () => {
+  it("keeps the QA adapter pinned explicitly to testnet v6/v5", () => {
+    expect(QA_CONTRACTS).toMatchObject({
+      stxCommerce:
+        "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.agentic-commerce-v6",
+      sbtcCommerce:
+        "ST16EWRC01S1SFWGBP63MW47VY8P3AYFA8VGEBGE5.sbtc-commerce-v5",
+    });
+  });
+
   it("copies and freezes the public profile", () => {
     const value = { ...profile }; const p = parseProfile(value); value.role = "provider";
     expect(p.role).toBe("client"); expect(Object.isFrozen(p)).toBe(true);

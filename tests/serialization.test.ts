@@ -6,12 +6,14 @@ import {
 import { describe, expect, it } from "vitest";
 import {
   PerkOSTransactionBuilder,
+  quoteServiceFee,
   resolveConfig,
   type ContractCallPlan,
 } from "../src/index.js";
 
 const CLIENT = "SP1VY24ADP27HERH4XMQTK44XB9QX4ZASPMPJKPVF";
 const PROVIDER = "SP3DQCVZ26XCDGZFYB4TXJC6TMMZAVXZTER1DP8HV";
+const TREASURY = "SP1NT1V4X6GQR6T32Z8MSMNECZ6GSWX9HZ81SM1Y8";
 const PUBLIC_KEY = privateKeyToPublic(
   "000000000000000000000000000000000000000000000000000000000000000101"
 );
@@ -42,17 +44,29 @@ describe("Stacks transaction serialization", () => {
       jobId: 7n,
       amount: 25_000n,
       sender: CLIENT,
+      serviceFeeAcceptance: {
+        gross: 25_000n,
+        basisPoints: 200,
+        treasury: TREASURY,
+        rejectionRefund: "net-after-evaluation",
+      },
     });
 
     await expect(serialize(plan)).resolves.toMatch(/^[0-9a-f]+$/);
   });
 
   it("serializes a contract-principal settlement post-condition", async () => {
-    const plan = builder.completeJob({
+    const plan = builder.finalizeDecision({
       asset: "sbtc",
       jobId: 7n,
       amount: 25_000n,
       recipient: PROVIDER,
+      sbtcToken: builder.config.contracts.sbtcToken,
+      serviceFee: {
+        ...quoteServiceFee(25_000n),
+        treasury: TREASURY,
+        waived: false,
+      },
     });
 
     await expect(serialize(plan)).resolves.toMatch(/^[0-9a-f]+$/);

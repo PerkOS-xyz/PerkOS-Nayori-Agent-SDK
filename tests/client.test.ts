@@ -12,6 +12,7 @@ const CLIENT = "SP1VY24ADP27HERH4XMQTK44XB9QX4ZASPMPJKPVF";
 const PROVIDER = "SP3DQCVZ26XCDGZFYB4TXJC6TMMZAVXZTER1DP8HV";
 const EVALUATOR = "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE";
 const APPEAL_AUTHORITY = "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH";
+const TREASURY = "SP1NT1V4X6GQR6T32Z8MSMNECZ6GSWX9HZ81SM1Y8";
 const PINNED_SBTC =
   "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.historical-sbtc";
 const BROADCAST_TXID = `0x${"ab".repeat(32)}`;
@@ -24,6 +25,7 @@ function jobResponse(status = 2n) {
       provider: Cl.some(Cl.principal(PROVIDER)),
       evaluator: Cl.principal(EVALUATOR),
       "appeal-authority": Cl.principal(APPEAL_AUTHORITY),
+      treasury: Cl.principal(TREASURY),
       description: Cl.stringAscii("Research job"),
       budget: Cl.uint(25_000n),
       "expired-at": Cl.uint(5_000_000n),
@@ -31,6 +33,32 @@ function jobResponse(status = 2n) {
       deliverable: Cl.some(Cl.bufferFromAscii("ipfs:bafy")),
       "submitted-at-burn": Cl.some(Cl.uint(900_000n)),
       "review-deadline": Cl.some(Cl.uint(900_144n)),
+    })
+  );
+}
+
+function serviceFeePolicyResponse() {
+  return Cl.ok(
+    Cl.tuple({
+      configured: Cl.bool(true),
+      "service-fee-bps": Cl.uint(200),
+      treasury: Cl.principal(TREASURY),
+      "review-window": Cl.uint(12),
+      "appeal-window": Cl.uint(144),
+      "appeal-authority": Cl.principal(APPEAL_AUTHORITY),
+    })
+  );
+}
+
+function jobServiceFeeResponse() {
+  return Cl.ok(
+    Cl.tuple({
+      "basis-points": Cl.uint(200),
+      treasury: Cl.principal(TREASURY),
+      "fee-amount": Cl.uint(500),
+      "service-recorded": Cl.bool(false),
+      waiver: Cl.none(),
+      settlement: Cl.none(),
     })
   );
 }
@@ -282,6 +310,16 @@ describe("PerkOSClient", () => {
     const client = new PerkOSClient({
       network: "mainnet",
       signer,
+      readOnlyTransport: async (call) => {
+        if (call.functionName === "get-job") return jobResponse(0n);
+        if (call.functionName === "get-protocol-config") {
+          return serviceFeePolicyResponse();
+        }
+        if (call.functionName === "get-job-service-fee") {
+          return jobServiceFeeResponse();
+        }
+        throw new Error(`Unexpected function ${call.functionName}`);
+      },
       spendingPolicy: {
         allowedAssets: ["sbtc"],
         maxPerTransaction: { sbtc: 50_000n },
@@ -293,6 +331,12 @@ describe("PerkOSClient", () => {
       asset: "sbtc",
       jobId: 7n,
       amount: "25000",
+      serviceFeeAcceptance: {
+        gross: 25_000n,
+        basisPoints: 200,
+        treasury: TREASURY,
+        rejectionRefund: "net-after-evaluation",
+      },
     });
 
     expect(seen[0]?.intent.sender).toBe(CLIENT);
@@ -311,7 +355,7 @@ describe("PerkOSClient", () => {
     expect(client.policy.spentThisSession("sbtc")).toBe(25_000n);
   });
 
-  it("reads current escrow before signing settlement", async () => {
+  it("reads current escrow before signing a legacy settlement", async () => {
     const transport: ReadOnlyTransport = async (call) => {
       if (call.functionName === "get-job") return jobResponse();
       if (call.functionName === "get-escrow-balance") return Cl.ok(Cl.uint(25_000n));
@@ -337,6 +381,12 @@ describe("PerkOSClient", () => {
       network: "mainnet",
       signer,
       readOnlyTransport: transport,
+      contracts: {
+        stxCommerce:
+          "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.agentic-commerce-v5",
+        sbtcCommerce:
+          "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.sbtc-commerce-v4",
+      },
     });
 
     await client.completeJob("sbtc", 7n);

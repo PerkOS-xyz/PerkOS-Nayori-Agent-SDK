@@ -1,8 +1,10 @@
-# Earned service fee integration (opt-in QA contracts)
+# Earned service fee integration
 
-SDK 0.8.0 includes opt-in support for `agentic-commerce-v6` (STX) and
-`sbtc-commerce-v5` (sBTC). These are **selected in isolated QA/testnet, not production defaults**.
-Do not point a production client at candidate names or treat a successful build as a deployment.
+The SDK 0.9.0 source candidate selects `agentic-commerce-v6` (STX) and
+`sbtc-commerce-v5` (sBTC) as mainnet defaults. Generic testnet remains v5/v4; the isolated QA
+adapter continues to pin testnet v6/v5 explicitly. Do not treat a source default, successful build
+or QA result as proof of mainnet deployment: require the separate immutable-source and configuration
+postflight before enabling a production signer.
 Existing v5/v4 jobs retain their full-budget, no-service-fee terms.
 
 ## Payment lifecycle
@@ -20,17 +22,20 @@ and there is no automatic second 2% or payment prerequisite for filing an appeal
 
 ## Read first, accept explicitly
 
-After the exact candidate sources have been deployed and verified in isolated testnet,
-configure their explicit same-network contract IDs in `PerkOSClient`. Do not guess a treasury:
-read `getServiceFeePolicy(asset)` and `getJobServiceFee(asset, jobId)`.
+After verifying the selected deployment, create a normal mainnet client without a commerce
+override. Do not guess a treasury: read `getServiceFeePolicy(asset)` and
+`getJobServiceFee(asset, jobId)`. Historical jobs must instead use explicit v5/v4 overrides.
 
 ```ts
-// Uses stable SDK 0.8.0 with explicit QA contract IDs; production defaults stay v5/v4.
-// nayori is a client configured with reviewed contracts and a policy-limited signer.
+// SDK 0.9.0 source candidate; run only after the mainnet postflight and publication gates.
+// nayori is a default mainnet client with a policy-limited signer.
 const job = await nayori.getJob("sbtc", jobId);
 if (!job) throw new Error("Job not found");
 const policy = await nayori.getServiceFeePolicy("sbtc");
 const fees = await nayori.getJobServiceFee("sbtc", jobId);
+if (!policy.configured || policy.treasury !== fees.treasury) {
+  throw new Error("Service-fee policy mismatch");
+}
 
 // Present gross, potential fee, net approval/net rejection, treasury and gas
 // to the operator (or an approved deterministic agent spending policy).
@@ -102,6 +107,9 @@ Prefer high-level client methods. Neither `execute` nor a custom RPC can establi
 of an arbitrary caller-selected contract. Custody allowlists and source verification remain required.
 Funding/refund session limits count broadcasts conservatively, not final revenue.
 
-Direct x402/MPP single-transfer verification is unchanged and must not be relaxed for escrow splits.
+Direct x402/MPP single-transfer verification is unchanged and must not be relaxed for escrow
+splits. The separate escrow x402 flow must include `serviceFeeTerms` in the requirement and an
+explicit payer-side `acceptServiceFee` callback; the high-level client still verifies the live
+treasury and job before signer access.
 
 Reference: [Stacks post-conditions](https://docs.stacks.co/post-conditions/examples).

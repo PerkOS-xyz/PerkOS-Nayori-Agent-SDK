@@ -18,6 +18,7 @@ import {
 } from "../src/index.js";
 
 const PAYER = "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH";
+const TREASURY = "SP1NT1V4X6GQR6T32Z8MSMNECZ6GSWX9HZ81SM1Y8";
 const TXID = `0x${"42".repeat(32)}`;
 const BLOCK_HASH = `0x${"ab".repeat(32)}`;
 const BLOCK_HEIGHT = 8_650_821;
@@ -86,6 +87,12 @@ function required(asset: PaymentAsset = "sbtc"): PaymentRequired {
     asset,
     jobId: 7n,
     amount: 25_000n,
+    serviceFeeTerms: {
+      gross: 25_000n,
+      basisPoints: 200,
+      treasury: TREASURY,
+      rejectionRefund: "net-after-evaluation",
+    },
     maxTimeoutSeconds: 600,
   });
 }

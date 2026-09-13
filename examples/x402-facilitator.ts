@@ -13,7 +13,15 @@ const payer = "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH";
 const blockHeight = 8_886_273;
 const blockHash =
   "0x9c19ca3e008b3b645f155b74c70d525978dbda41caec92b93b60b6b61185c51c";
-const config = resolveConfig({ network: "mainnet" });
+// This immutable transaction predates the v6/v5 defaults, so reproduce it against
+// the exact historical escrow contract instead of relabeling the evidence.
+const config = resolveConfig({
+  network: "mainnet",
+  contracts: {
+    sbtcCommerce:
+      "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.sbtc-commerce-v4",
+  },
+});
 const paymentRequired = createPerkOSX402PaymentRequired(config, {
   resource: {
     url: "https://nayori.example/evidence/m1-job-1",

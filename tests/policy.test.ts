@@ -7,6 +7,7 @@ import {
 } from "../src/index.js";
 
 const CLIENT = "SP1VY24ADP27HERH4XMQTK44XB9QX4ZASPMPJKPVF";
+const TREASURY = "SP1NT1V4X6GQR6T32Z8MSMNECZ6GSWX9HZ81SM1Y8";
 const config = resolveConfig({ network: "mainnet" });
 const builder = new PerkOSTransactionBuilder(config);
 
@@ -16,6 +17,12 @@ function funding(amount: bigint) {
     jobId: 7n,
     amount,
     sender: CLIENT,
+    serviceFeeAcceptance: {
+      gross: amount,
+      basisPoints: 200,
+      treasury: TREASURY,
+      rejectionRefund: "net-after-evaluation",
+    },
   });
 }
 

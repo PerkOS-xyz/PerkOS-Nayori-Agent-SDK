@@ -3,11 +3,11 @@ import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-describe("stable release metadata", () => {
-  it("keeps manifest, lockfile and stable distribution policy aligned", () => {
+describe("release metadata", () => {
+  it("keeps manifest, lockfile and candidate distribution policy aligned", () => {
     const pkg = JSON.parse(read("package.json"));
     const lock = JSON.parse(read("package-lock.json"));
-    expect(pkg.version).toBe("0.8.0");
+    expect(pkg.version).toBe("0.9.0");
     expect(lock.version).toBe(pkg.version);
     expect(lock.packages[""].version).toBe(pkg.version);
     expect(pkg.publishConfig.tag).toBe("latest");
@@ -19,7 +19,22 @@ describe("stable release metadata", () => {
     });
   });
 
-  it("records the stable publication boundary without claiming a registry E2E", () => {
+  it("records the mainnet v6/v5 source boundary without claiming publication", () => {
+    const notes = read("docs/RELEASE_0.9.0.md");
+    for (const phrase of [
+      "0.9.0",
+      "agentic-commerce-v6",
+      "sbtc-commerce-v5",
+      "generic",
+      "acceptServiceFee",
+      "does **not** claim that npm 0.9.0 is already published",
+    ]) {
+      expect(notes).toContain(phrase);
+    }
+    expect(read("README.md")).toContain("RELEASE_0.9.0.md");
+  });
+
+  it("preserves the immutable 0.8.0 publication record", () => {
     const notes = read("docs/RELEASE_0.8.0.md");
     for (const phrase of ["0.8.0", "--save-exact", "latest", "415 tests",
       "must not be described as a `0.8.0` registry E2E",

@@ -6,6 +6,7 @@ import {
 } from "@perkos/agent-sdk";
 
 const config = resolveConfig({ network: "mainnet" });
+const gross = 25_000n;
 const paymentRequired = createPerkOSX402PaymentRequired(config, {
   resource: {
     url: "https://agent.example/jobs/7/fund",
@@ -16,7 +17,13 @@ const paymentRequired = createPerkOSX402PaymentRequired(config, {
   },
   asset: "sbtc",
   jobId: 7n,
-  amount: 25_000n,
+  amount: gross,
+  serviceFeeTerms: {
+    gross,
+    basisPoints: 200,
+    treasury: "SP1NT1V4X6GQR6T32Z8MSMNECZ6GSWX9HZ81SM1Y8",
+    rejectionRefund: "net-after-evaluation",
+  },
 });
 
 const header = encodePaymentRequiredHeader(paymentRequired);

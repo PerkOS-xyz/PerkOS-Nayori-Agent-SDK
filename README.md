@@ -9,9 +9,10 @@ This repository is the continuation of `PerkOS-xyz/PerkOS-Agent-SDK`, renamed to
 public SDK with the Nayori product identity. The npm package remains `@perkos/agent-sdk` and the
 complete Git history, releases, issues, and pull requests are preserved.
 
-> Source status: the 0.9.0 release candidate promotes Nayori's earned-fee v6/v5 contracts as the
-> mainnet defaults while preserving generic testnet v5/v4 and explicit QA v6/v5. Public npm
-> `latest` remains 0.8.0 until the separate publication gate completes. Read clients,
+> Release status: `@perkos/agent-sdk@0.9.0` is the published stable public line (npm `latest`
+> since 2026-09-13). It promotes Nayori's earned-fee `agentic-commerce-v6` / `sbtc-commerce-v5`
+> contracts as the mainnet defaults while preserving generic testnet v5/v4 and explicit QA v6/v5;
+> the agent registry and `reputation-registry-v3` are unchanged. Read clients,
 > transaction builders, browser and headless signer
 > adapters, confirmation receipts, safety policies, and a transactional testnet quickstart are
 > implemented. The x402 v2 client and Stacks facilitator foundations are implemented, with
@@ -26,12 +27,22 @@ complete Git history, releases, issues, and pull requests are preserved.
 
 ## Connect an existing agent
 
-**0.8.0 remains the reviewed public npm line; 0.9.0 is the reviewed source candidate for the
-mainnet v6/v5 promotion.** Do not request 0.9.0 from npm until its separate publication is verified.
-See [0.9.0 release and migration notes](docs/RELEASE_0.9.0.md) and the immutable
-[0.8.0 release record](docs/RELEASE_0.8.0.md).
+**0.9.0 is the reviewed and published public npm line (`latest`, published 2026-09-13) with
+mainnet defaults `agentic-commerce-v6` / `sbtc-commerce-v5`.** Pin it exactly:
+
+```sh
+npm install --save-exact @perkos/agent-sdk@0.9.0
+```
+
+See [0.9.0 release and migration notes](docs/RELEASE_0.9.0.md), including its publication
+record, and the immutable [0.8.0 release record](docs/RELEASE_0.8.0.md).
 The [rc.1 release record](docs/RELEASE_0.8.0_RC1.md) remains available for historical reproduction.
 The custody pilot remains testnet-only and does not inherit the mainnet default change.
+
+Historical note (superseded 2026-09-13): earlier revisions of this README, including the copy
+bundled inside the published 0.9.0 tarball, described 0.8.0 as the public npm line and asked
+readers not to request 0.9.0 from npm until its publication gate completed. That gate has
+completed; the npm-hosted README can only be refreshed by a separate docs-only republish.
 
 Your agent is already installed and working with your own LLM. Keep that setup: Nayori does not
 require PerkOS-LLM, Hermes or sharing model credentials. Start with the
@@ -49,17 +60,18 @@ explorer success alone does not clear that gate. Preserve the journal rather tha
 
 Start with [the reproducible clean-install checkpoint](docs/CLEAN_INSTALL.md): installed npm
 SDK, real MCP stdio for both roles and unsigned registration, without keys or LLM calls. This
-probe ships with 0.8.0 and does not require a signer, wallet funding or LLM credentials.
+probe ships in 0.9.0 (first added in 0.8.0) and does not require a signer, wallet funding or LLM credentials.
 
 ## Requirements
 
 ### Configurable timing and confirmation policy
 
-[0.8.0 release evidence](docs/RELEASE_0.8.0.md) records the stable publication gate and
-exact installation. Historical prereleases remain immutable.
+[0.9.0 release notes](docs/RELEASE_0.9.0.md) record the current publication and exact
+installation; [0.8.0 release evidence](docs/RELEASE_0.8.0.md) records the previous stable gate.
+Historical prereleases remain immutable.
 
 [Confirmation policy and timing](docs/CONFIRMATION_POLICY.md) separates transaction depth,
-evaluation feedback and contractual appeal windows. Stable 0.8.0 adds operator-bound
+evaluation feedback and contractual appeal windows. Stable 0.8.0 added operator-bound
 version-2 QA permits and read-only progress, with conservative mainnet helpers. Existing
 version-1 permits and npm 0.8.0-rc.1 retain six burn blocks.
 The Hermes signer remains testnet-only; contract deadlines and x402/MPP are unchanged.
@@ -75,7 +87,7 @@ The stable package includes the Node-only `nayori-mcp` stdio binary for public t
 reads and offline buyer/provider commitments. It has **no signer, broadcast, x402 purchase
 or wallet-generation tools by default**. Optional operator-configured delegation to the separate
 `nayori-custody` pilot enables bounded QA actions without putting a key in MCP. Both are included
-in npm 0.8.0. Clean registry installation and offline checks cover both roles. A prior published
+in npm 0.9.0 (since 0.8.0). Clean registry installation and offline checks cover both roles. A prior published
 prerelease also passed a supervised funded lifecycle; broader autonomy and x402 remain separate gates.
 Provider operators may additionally enable public QA evaluation admission for the permitted,
 confirmed submission; this does not enable x402 purchases or expose evaluator credentials. See
@@ -106,8 +118,12 @@ to select v6/v5 explicitly. Existing jobs remain bound to their original contrac
 ## Install
 
 ```bash
-npm install @perkos/agent-sdk
+npm install --save-exact @perkos/agent-sdk@0.9.0
 ```
+
+npm `latest` resolves to 0.9.0 (published 2026-09-13); dist-tag `next` still points at the
+historical `0.8.0-rc.2` prerelease. Pin the exact version and keep the lockfile in any financial
+agent rather than relying on an unqualified install.
 
 To develop from source:
 
@@ -164,8 +180,9 @@ Use the [role-separated QA guide](docs/TESTNET_QUICKSTART.md) and
 [`examples/testnet.env.example`](examples/testnet.env.example). Each process uses only its own
 client or provider signer; neither receives the evaluator key. One action runs per invocation.
 An external journal preserves txids and refuses automatic retries after ambiguous signing.
-The bridge and quickstart ship in **0.8.0** for the QA workflow. Registry installation and offline role
-checks passed; job16 separately verified the funded npm SDK lifecycle with policy0/6.
+The bridge and quickstart ship in **0.9.0** (first included in 0.8.0) for the QA workflow. Registry
+installation and offline role checks passed on the 0.8.0 line; job16 separately verified the funded
+npm SDK lifecycle with policy0/6 on the historical 0.8.0-rc.2 prerelease.
 See [the separate evidence scopes](docs/VALIDATION_AND_RELEASE.md).
 
 ## Read on-chain state
@@ -224,10 +241,10 @@ more than the job requires.
 
 ## Active versioned escrow
 
-Source version `0.9.0` selects `agentic-commerce-v6`, `sbtc-commerce-v5` and
+Published version `0.9.0` selects `agentic-commerce-v6`, `sbtc-commerce-v5` and
 `reputation-registry-v3` by default on mainnet. Generic testnet defaults deliberately remain
 v5/v4/v3; the QA adapter pins its reviewed v6/v5 contracts explicitly. A new mainnet job therefore
-needs no contract override after the production postflight and package-publication gates complete:
+needs no contract override:
 
 ```ts
 import { PerkOSClient } from "@perkos/agent-sdk";
@@ -262,7 +279,7 @@ failed reputation write never rolls back economic settlement and can be retried 
 
 ## Autonomous evaluation and appeals
 
-The 0.9.0 source candidate uses `agentic-commerce-v6` and `sbtc-commerce-v5` by default on
+Published 0.9.0 uses `agentic-commerce-v6` and `sbtc-commerce-v5` by default on
 mainnet:
 
 ```ts

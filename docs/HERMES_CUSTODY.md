@@ -92,7 +92,7 @@ match the buyer's job. A provider never gets create/fund/assign/finalize authori
 
 ## Start and connect
 
-Install the exact npm 0.8.0 package on each side using [MCP setup](HERMES_MCP.md).
+Install the exact npm 0.9.0 package on each side using [MCP setup](HERMES_MCP.md).
 Preserve the lockfile and verify registry integrity against the release notes.
 First start with **signing disabled**, without a funded key:
 

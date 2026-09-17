@@ -68,8 +68,8 @@ Do not send funds to the addresses in this historical evidence.
 
 | Distribution | Boundary |
 | --- | --- |
-| Source `@perkos/agent-sdk@0.9.0` candidate | Mainnet v6/v5 defaults, explicit earned-fee consent and x402 fee-term binding; not yet an npm publication or production deployment |
-| npm `@perkos/agent-sdk@0.8.0` | Stable line: v5/v4 defaults, MCP, optional QA custody, job discovery, confirmation policy and private-evidence client |
+| npm `@perkos/agent-sdk@0.9.0` | Stable line (`latest`, published 2026-09-13): mainnet v6/v5 defaults, explicit earned-fee consent and x402 fee-term binding; production consumer rollout remains a separate event |
+| Historical npm `@perkos/agent-sdk@0.8.0` | Previous stable line: v5/v4 defaults, MCP, optional QA custody, job discovery, confirmation policy and private-evidence client |
 | Historical npm `@perkos/agent-sdk@0.7.1` | Published v5/v4 baseline without later MCP/custody additions |
 | Reviewed QA source above | Tested v6/v5 opt-in fee path, local Hermes MCP, custody and evaluation admission |
 | Historical QA tarball used in the lifecycle | Reports version 0.7.1; source commit and artifact integrity distinguish it from npm |

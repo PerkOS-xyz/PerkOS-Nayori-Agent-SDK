@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Docs: describe npm `0.9.0` (published 2026-09-13, dist-tag `latest`; `next` remains
+  `0.8.0-rc.2`) as the stable public line and pin guides to it. The README bundled in the 0.9.0
+  tarball predates this correction; a docs-only 0.9.1 republish is a separate, not yet
+  authorized step.
+
 - Prepare SDK 0.9.0 as a pre-1.0 minor release because mainnet defaults now select
   `agentic-commerce-v6` and `sbtc-commerce-v5`; preserve generic testnet v5/v4 and explicit QA
   v6/v5.

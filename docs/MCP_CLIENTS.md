@@ -6,7 +6,7 @@ Shared prerequisites: [installation and public profile](HERMES_MCP.md), [clean i
 
 ## Choose your MCP client
 
-Optional [read-only job discovery](MCP_JOB_DISCOVERY.md) in stable 0.8.0
+Optional [read-only job discovery](MCP_JOB_DISCOVERY.md) in stable 0.9.0 (since 0.8.0)
 adds paginated on-chain reads for both roles. It is disabled by default, is separate from the
 historical six-tool connection evidence below, and does not authorize a provider to claim or execute a job.
 
@@ -50,7 +50,7 @@ Future conversations and funded workflows require separate verification and boun
 
 ### Prepare your own configuration
 
-Install the exact public `@perkos/agent-sdk@0.8.0` in a dedicated consumer directory and keep
+Install the exact public `@perkos/agent-sdk@0.9.0` in a dedicated consumer directory and keep
 its lockfile. Prepare the public-only testnet profile using the existing MCP setup guide. Replace
 all example absolute paths with reviewed paths on your machine. Never put wallet keys, seed phrases,
 LLM credentials or spending authorization in MCP arguments. Keep signing disabled for connection tests.

@@ -1,6 +1,6 @@
 # Earned service fee integration
 
-The SDK 0.9.0 source candidate selects `agentic-commerce-v6` (STX) and
+Published SDK 0.9.0 (npm `latest` since 2026-09-13) selects `agentic-commerce-v6` (STX) and
 `sbtc-commerce-v5` (sBTC) as mainnet defaults. Generic testnet remains v5/v4; the isolated QA
 adapter continues to pin testnet v6/v5 explicitly. Do not treat a source default, successful build
 or QA result as proof of mainnet deployment: require the separate immutable-source and configuration
@@ -27,7 +27,7 @@ override. Do not guess a treasury: read `getServiceFeePolicy(asset)` and
 `getJobServiceFee(asset, jobId)`. Historical jobs must instead use explicit v5/v4 overrides.
 
 ```ts
-// SDK 0.9.0 source candidate; run only after the mainnet postflight and publication gates.
+// SDK 0.9.0 (published); run only after the mainnet postflight for your own deployment.
 // nayori is a default mainnet client with a policy-limited signer.
 const job = await nayori.getJob("sbtc", jobId);
 if (!job) throw new Error("Job not found");

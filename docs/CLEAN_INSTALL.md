@@ -15,7 +15,7 @@ an unreviewed moving branch in a financial agent's environment.
 mkdir nayori-clean-consumer
 cd nayori-clean-consumer
 npm init -y
-npm install --save-exact --ignore-scripts @perkos/agent-sdk@0.8.0 @modelcontextprotocol/sdk@1.30.0
+npm install --save-exact --ignore-scripts @perkos/agent-sdk@0.9.0 @modelcontextprotocol/sdk@1.30.0
 cp node_modules/@perkos/agent-sdk/examples/onboarding-smoke.mjs ./onboarding-smoke.mjs
 ```
 
@@ -38,13 +38,13 @@ the installed `dist/mcp/cli.js`, never `src`, `tsx`, a local tarball or an inter
 It creates and removes only its own temporary public-fixture directory.
 
 Keep `package.json` and `package-lock.json`; review the SDK entry's integrity against
-[the stable release record](RELEASE_0.8.0.md). Reproduce with `npm ci --ignore-scripts` in a
+[the current release record](RELEASE_0.9.0.md). Reproduce with `npm ci --ignore-scripts` in a
 second clean copy of that consumer. Do not use unpinned `npx`, replace published bytes or assume
 `npm run quickstart` exists in the consumer: installing a dependency does not add its npm scripts.
 
 ## 3. Expected result and boundaries
 
-The JSON must report `result: PASS`, SDK 0.8.0 and 12 named checks:
+The JSON must report `result: PASS`, SDK 0.9.0 (the script asserts the exact installed version) and 12 named checks:
 
 - Unsigned testnet registration plan; policy0/6 accepted on testnet and refused on mainnet.
 - Both roles: exact six read/prepare tools, correct public context, no signing/broadcast/x402.

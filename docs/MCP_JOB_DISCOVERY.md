@@ -2,7 +2,7 @@
 
 ## Release boundary
 
-**Included in stable `@perkos/agent-sdk@0.8.0`.** This is a bounded local MCP read capability,
+**Included in stable `@perkos/agent-sdk@0.9.0` (first shipped in 0.8.0).** This is a bounded local MCP read capability,
 not a production remote-partner permission. Pin the package version and verify registry integrity;
 do not add the flag to an older installed prerelease binary.
 

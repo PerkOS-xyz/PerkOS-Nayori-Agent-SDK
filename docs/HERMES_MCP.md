@@ -1,12 +1,12 @@
 # Nayori MCP — framework-independent QA adapter
 
-Optional [job discovery](MCP_JOB_DISCOVERY.md) ships in stable 0.8.0 and leaves the default
+Optional [job discovery](MCP_JOB_DISCOVERY.md) ships in stable 0.9.0 (since 0.8.0) and leaves the default
 six-tool surface unchanged until explicitly enabled.
 
 The Node stdio adapter is not restricted to Hermes. See [MCP client setup](MCP_CLIENTS.md)
 for Hermes, OpenClaw, Codex and Claude Code, with client-specific validation boundaries.
 
-**Stable SDK 0.8.0, not a turnkey production wallet integration.**
+**Stable SDK 0.9.0, not a turnkey production wallet integration.**
 By default this packages read/prepare tools using the actual SDK.
 Optional [custody delegation](HERMES_CUSTODY.md) adds bounded register/create/fund/assign/submit/finalize
 requests to a separate operator-controlled signer. This is not deployed or funded by default.
@@ -24,13 +24,13 @@ version; initialize a package.json only if the directory does not already have o
 
 ```sh
 npm init -y
-npm install --save-exact @perkos/agent-sdk@0.8.0
+npm install --save-exact @perkos/agent-sdk@0.9.0
 ./node_modules/.bin/nayori-mcp --help
 ./node_modules/.bin/nayori-custody --help
 ```
 
-Keep the lockfile and verify that `latest` resolves to 0.8.0 before using an unqualified install.
-The [release notes](RELEASE_0.8.0.md) define the registry-integrity gate. Installation
+Keep the lockfile and verify that `latest` resolves to 0.9.0 (published 2026-09-13) before using an unqualified install.
+The [release notes](RELEASE_0.9.0.md) define the registry-integrity gate. Installation
 and offline checks for both roles passed; no funded wallet or LLM is needed for those checks.
 
 For source development only, build and verify the reviewed QA source, then pack outside the checkout:
@@ -45,15 +45,15 @@ In a clean consumer directory, install that exact reviewed tarball:
 
 ```sh
 npm init -y
-npm install --save-exact /absolute/private-artifacts/perkos-agent-sdk-0.8.0.tgz
+npm install --save-exact /absolute/private-artifacts/perkos-agent-sdk-0.9.0.tgz
 ./node_modules/.bin/nayori-mcp --help
 ```
 
-The current stable package is 0.8.0. Historical QA tests used
+The current stable package is 0.9.0; 0.8.0 is the previous stable line. Historical QA tests used
 older source tarballs and prereleases; do not confuse them with this distribution.
 Record the tarball SHA-256 and exact commit. Initializing the consumer's own package.json
 prevents npm from inheriting an unrelated parent project. See the
-[release checklist](RELEASE_0.8.0.md); do not overwrite or republish an existing npm version.
+[release checklist](RELEASE_0.9.0.md); do not overwrite or republish an existing npm version.
 Do not run an unpinned `npx -y` command for a financial agent.
 
 Follow [clean-install verification](CLEAN_INSTALL.md) for a reproducible key-free test of both

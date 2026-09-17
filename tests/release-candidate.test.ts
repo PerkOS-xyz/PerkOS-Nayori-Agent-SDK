@@ -19,7 +19,7 @@ describe("release metadata", () => {
     });
   });
 
-  it("records the mainnet v6/v5 source boundary without claiming publication", () => {
+  it("records the mainnet v6/v5 boundary and the 2026-09-13 npm publication", () => {
     const notes = read("docs/RELEASE_0.9.0.md");
     for (const phrase of [
       "0.9.0",
@@ -27,7 +27,8 @@ describe("release metadata", () => {
       "sbtc-commerce-v5",
       "generic",
       "acceptServiceFee",
-      "does **not** claim that npm 0.9.0 is already published",
+      "published on 2026-09-13",
+      "Publication record",
     ]) {
       expect(notes).toContain(phrase);
     }

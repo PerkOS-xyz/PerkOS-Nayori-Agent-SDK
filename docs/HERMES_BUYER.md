@@ -5,7 +5,7 @@ The consumer requests and funds work; its SDK role remains `client` (the buyer).
 Choose [Hermes, OpenClaw, Codex or Claude Code](MCP_CLIENTS.md). Hermes is the verified internal
 example; other client-specific E2Es remain pending. This filename is retained for link compatibility.
 
-**Stable SDK 0.8.0; supervised npm lifecycle verified (job 16).** Follow this with a
+**Stable SDK 0.9.0; supervised npm lifecycle verified (job 16, a historical 0.8.0-rc.2 run).** Follow this with a
 separate provider operator. Do not substitute mainnet URLs for this QA walkthrough.
 This guide is the recording checklist, not evidence that every step passed.
 
@@ -31,7 +31,7 @@ prompts, MCP arguments and recordings. Your agent's model is separate from Nayor
   recovery material, environment contents or authorization headers in a recording.
 - Keep the buyer key only inside its signer boundary. The agent must not share that UID,
   key mount, writable policy, Docker socket, sudo or access to the provider's socket.
-- Install `@perkos/agent-sdk@0.8.0` with `--save-exact` as described in [MCP client setup](MCP_CLIENTS.md).
+- Install `@perkos/agent-sdk@0.9.0` with `--save-exact` as described in [MCP client setup](MCP_CLIENTS.md).
   Preserve the lockfile and registry integrity.
   Do not use unpinned `npx` or mistake installation for permission to sign.
 

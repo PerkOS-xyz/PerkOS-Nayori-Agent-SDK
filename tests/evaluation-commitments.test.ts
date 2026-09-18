@@ -11,6 +11,14 @@ const input = {
   acceptanceCriteria: [{ id: "count", requirement: "Count is 3", verification: "Parse JSON and compare count" }],
   evidence: [{ id: "result", uri: "https://example.com/result.json", sha256: "11".repeat(32), mediaType: "application/json", sizeBytes: 11 }],
 };
+const mainnetInput = {
+  ...input,
+  network: "mainnet" as const,
+  contract: "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH.sbtc-commerce-v5",
+  client: "SP2K7PV5NXBNRV510S6DCA6RFMTFHAF3ZPK6ZSXPH",
+  evaluator: "SP3GRG5CKEFNYM5BV0NPPHCM51FT176JQ02QWQ9T3",
+  provider: "SP1NT1V4X6GQR6T32Z8MSMNECZ6GSWX9HZ81SM1Y8",
+};
 describe("Nayori v1 wire commitments", () => {
   it("round-trips and fits the existing description and buff64 ABIs", async () => {
     const result = await prepareEvaluationSubmission(input);
@@ -56,8 +64,23 @@ describe("Nayori v1 wire commitments", () => {
   it.each(["http://example.com/a", "https://user:password@example.com/a", "file:///tmp/evidence", "https://example.com/a#b"])("rejects unsafe evidence URI %s", async uri => {
     await expect(prepareEvaluationSubmission({ ...input, evidence: [{ ...input.evidence[0]!, uri }] })).rejects.toThrow();
   });
-  it("rejects mainnet and oversized/non-canonical job IDs", async () => {
-    await expect(prepareEvaluationJob({ ...input, network: "mainnet" as "testnet" })).rejects.toThrow();
+  it("supports mainnet commitments while rejecting crossed address families", async () => {
+    const prepared = await prepareEvaluationSubmission(mainnetInput);
+    expect(prepared.criteriaHash).toMatch(/^[0-9a-f]{64}$/);
+    expect(prepared.evidenceHash).toMatch(/^[0-9a-f]{64}$/);
+    expect(await evaluationJobId({ network: mainnetInput.network, contract: mainnetInput.contract,
+      jobId: mainnetInput.jobId })).toMatch(/^[0-9a-f-]{36}$/);
+    await expect(prepareEvaluationJob({ ...mainnetInput, client: input.client })).rejects.toThrow();
+    await expect(prepareEvaluationJob({ ...input, contract: mainnetInput.contract })).rejects.toThrow();
+  });
+  it("has a stable mainnet cross-repository fixture", async () => {
+    const result = await prepareEvaluationSubmission(mainnetInput);
+    expect(result.criteriaHash).toBe("cda522ab7de4f1f9f392021baf6b2d1f349a7ee2ebcd5f26b5d5c3068113b413");
+    expect(result.evidenceHash).toBe("6f85484d03505343f8bd6827781fb9cd3dbfb70f978c1e14d3931ee94c898b51");
+    expect(await evaluationJobId({ network: "mainnet", contract: mainnetInput.contract, jobId: mainnetInput.jobId }))
+      .toBe("55e44561-9516-59df-ae28-4134a0d61b52");
+  });
+  it("rejects oversized and non-canonical job IDs", async () => {
     for (const jobId of ["0", "01", "-1", (2n ** 128n).toString()]) {
       await expect(prepareEvaluationSubmission({ ...input, jobId })).rejects.toThrow();
     }

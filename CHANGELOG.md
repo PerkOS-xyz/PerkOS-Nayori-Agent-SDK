@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Evaluation commitments (`prepareEvaluationJob`, `prepareEvaluationSubmission`, `evaluationJobId`) now accept `network: "mainnet"` with `SP` principals, matching the Nayori Evaluator reference byte for byte. Testnet hashes are unchanged; crossed address families are rejected. The MCP evaluation tools and the custody pilot remain testnet-only.
+
 - Docs: describe npm `0.9.0` (published 2026-09-13, dist-tag `latest`; `next` remains
   `0.8.0-rc.2`) as the stable public line and pin guides to it. The README bundled in the 0.9.0
   tarball predates this correction; a docs-only 0.9.1 republish is a separate, not yet

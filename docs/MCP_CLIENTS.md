@@ -50,7 +50,7 @@ Future conversations and funded workflows require separate verification and boun
 
 ### Prepare your own configuration
 
-Install the exact public `@perkos/agent-sdk@0.9.0` in a dedicated consumer directory and keep
+Install the exact public `@perkos/agent-sdk@0.9.1` in a dedicated consumer directory and keep
 its lockfile. Prepare the public-only testnet profile using the existing MCP setup guide. Replace
 all example absolute paths with reviewed paths on your machine. Never put wallet keys, seed phrases,
 LLM credentials or spending authorization in MCP arguments. Keep signing disabled for connection tests.

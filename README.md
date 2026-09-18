@@ -9,7 +9,7 @@ This repository is the continuation of `PerkOS-xyz/PerkOS-Agent-SDK`, renamed to
 public SDK with the Nayori product identity. The npm package remains `@perkos/agent-sdk` and the
 complete Git history, releases, issues, and pull requests are preserved.
 
-> Release status: `@perkos/agent-sdk@0.9.0` is the published stable public line (npm `latest`
+> Release status: `@perkos/agent-sdk@0.9.1` is the published stable public line (npm `latest`
 > since 2026-09-13). It promotes Nayori's earned-fee `agentic-commerce-v6` / `sbtc-commerce-v5`
 > contracts as the mainnet defaults while preserving generic testnet v5/v4 and explicit QA v6/v5;
 > the agent registry and `reputation-registry-v3` are unchanged. Read clients,
@@ -31,9 +31,10 @@ complete Git history, releases, issues, and pull requests are preserved.
 mainnet defaults `agentic-commerce-v6` / `sbtc-commerce-v5`.** Pin it exactly:
 
 ```sh
-npm install --save-exact @perkos/agent-sdk@0.9.0
+npm install --save-exact @perkos/agent-sdk@0.9.1
 ```
 
+The current patch is [0.9.1](docs/RELEASE_0.9.1.md), which adds mainnet evaluation commitments.
 See [0.9.0 release and migration notes](docs/RELEASE_0.9.0.md), including its publication
 record, and the immutable [0.8.0 release record](docs/RELEASE_0.8.0.md).
 The [rc.1 release record](docs/RELEASE_0.8.0_RC1.md) remains available for historical reproduction.
@@ -118,7 +119,7 @@ to select v6/v5 explicitly. Existing jobs remain bound to their original contrac
 ## Install
 
 ```bash
-npm install --save-exact @perkos/agent-sdk@0.9.0
+npm install --save-exact @perkos/agent-sdk@0.9.1
 ```
 
 npm `latest` resolves to 0.9.0 (published 2026-09-13); dist-tag `next` still points at the

@@ -24,7 +24,7 @@ version; initialize a package.json only if the directory does not already have o
 
 ```sh
 npm init -y
-npm install --save-exact @perkos/agent-sdk@0.9.0
+npm install --save-exact @perkos/agent-sdk@0.9.1
 ./node_modules/.bin/nayori-mcp --help
 ./node_modules/.bin/nayori-custody --help
 ```

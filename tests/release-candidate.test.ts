@@ -7,7 +7,7 @@ describe("release metadata", () => {
   it("keeps manifest, lockfile and candidate distribution policy aligned", () => {
     const pkg = JSON.parse(read("package.json"));
     const lock = JSON.parse(read("package-lock.json"));
-    expect(pkg.version).toBe("0.9.0");
+    expect(pkg.version).toBe("0.9.1");
     expect(lock.version).toBe(pkg.version);
     expect(lock.packages[""].version).toBe(pkg.version);
     expect(pkg.publishConfig.tag).toBe("latest");
@@ -33,6 +33,14 @@ describe("release metadata", () => {
       expect(notes).toContain(phrase);
     }
     expect(read("README.md")).toContain("RELEASE_0.9.0.md");
+  });
+
+  it("records the 0.9.1 mainnet commitment patch without changing boundaries", () => {
+    const notes = read("docs/RELEASE_0.9.1.md");
+    for (const phrase of ["0.9.1", "mainnet", "byte-identical", "testnet-only", "never overwritten"]) {
+      expect(notes).toContain(phrase);
+    }
+    expect(read("README.md")).toContain("RELEASE_0.9.1.md");
   });
 
   it("preserves the immutable 0.8.0 publication record", () => {

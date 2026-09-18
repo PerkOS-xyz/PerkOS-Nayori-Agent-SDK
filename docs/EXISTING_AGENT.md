@@ -13,20 +13,20 @@ not implement the on-chain job lifecycle.
 
 | Path | Available boundary | Start with |
 | --- | --- | --- |
-| TypeScript SDK | Public npm 0.9.0 (`latest`, published 2026-09-13): reads, transaction plans and operator-supplied signer interfaces | This guide and the [SDK README](../README.md) |
+| TypeScript SDK | Public npm 0.9.1 (`latest`; the 0.9 line was first published 2026-09-13): reads, transaction plans and operator-supplied signer interfaces | This guide and the [SDK README](../README.md) |
 | Local MCP for an existing agent | Stable 0.9.0: fixed testnet contracts, bounded role tools and optional separate custody | [MCP setup](HERMES_MCP.md) |
 | Remote partner MCP | Invite-only OAuth API access; not the local Hermes custody bridge | [Partner guide](PARTNER_PILOT.md) |
 
 Install a reviewed, pinned public version in your agent's integration package:
 
 ```sh
-npm install --save-exact @perkos/agent-sdk@0.9.0
+npm install --save-exact @perkos/agent-sdk@0.9.1
 ```
 
 The same stable package also exposes a **different**, opt-in QA custody and fee-candidate path;
 selecting that path requires explicit testnet configuration and does not change the production
 defaults. The stable release's registry integrity and clean offline MCP checks
-for consumer/provider must be verified; this is not external adoption. Follow [release notes](RELEASE_0.9.0.md)
+for consumer/provider must be verified; this is not external adoption. Follow the [0.9.1](RELEASE_0.9.1.md) and [0.9.0](RELEASE_0.9.0.md) release notes
 and preserve your lockfile. Do not use an unpinned auto-downloading command in a financial agent.
 
 Run [clean-install verification](CLEAN_INSTALL.md) before loading any key. It exercises both

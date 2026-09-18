@@ -31,7 +31,7 @@ prompts, MCP arguments and recordings. Your agent's model is separate from Nayor
   recovery material, environment contents or authorization headers in a recording.
 - Keep the buyer key only inside its signer boundary. The agent must not share that UID,
   key mount, writable policy, Docker socket, sudo or access to the provider's socket.
-- Install `@perkos/agent-sdk@0.9.0` with `--save-exact` as described in [MCP client setup](MCP_CLIENTS.md).
+- Install `@perkos/agent-sdk@0.9.1` with `--save-exact` as described in [MCP client setup](MCP_CLIENTS.md).
   Preserve the lockfile and registry integrity.
   Do not use unpinned `npx` or mistake installation for permission to sign.
 

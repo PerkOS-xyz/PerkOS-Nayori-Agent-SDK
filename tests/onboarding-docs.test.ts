@@ -18,12 +18,12 @@ describe("existing-agent onboarding contract", () => {
     for (const file of ["README.md", "docs/HERMES_BUYER.md", "docs/HERMES_PROVIDER.md"])
       expect(read(file)).toContain("MCP_CLIENTS.md");
   });
-  it("keeps current role guides on the published 0.9.0 line and the diagnostic key-free", () => {
+  it("keeps current role guides on the published 0.9 line and the diagnostic key-free", () => {
     expect(read("docs/HERMES_BUYER.md")).toContain("# Agent consumer manual");
     expect(read("docs/HERMES_BUYER.md")).toContain("SDK role remains `client`");
     for (const file of ["HERMES_BUYER.md", "HERMES_PROVIDER.md", "HERMES_MCP.md", "EXISTING_AGENT.md"]) {
       const guide = read("docs/" + file);
-      expect(guide).toContain("0.9.0");
+      expect(guide).toMatch(/0\.9\.1/);
       expect(guide).not.toContain("npm install --save-exact @perkos/agent-sdk@0.8.0-rc.1");
       expect(guide).not.toContain("npm install --save-exact @perkos/agent-sdk@0.8.0\n");
       expect(guide).toContain("CLEAN_INSTALL.md");
@@ -81,7 +81,7 @@ describe("existing-agent onboarding contract", () => {
     expect(guide).toContain("after your agent is installed and working with your own LLM");
     expect(guide).toContain("No PerkOS-LLM account or credentials are required");
     expect(guide).toContain("Hermes is an example integration, not a requirement");
-    expect(guide).toContain("Public npm 0.9.0");
+    expect(guide).toContain("Public npm 0.9.1");
     expect(guide).toContain("different");
   });
 

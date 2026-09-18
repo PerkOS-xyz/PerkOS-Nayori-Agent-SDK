@@ -15,7 +15,7 @@ an unreviewed moving branch in a financial agent's environment.
 mkdir nayori-clean-consumer
 cd nayori-clean-consumer
 npm init -y
-npm install --save-exact --ignore-scripts @perkos/agent-sdk@0.9.0 @modelcontextprotocol/sdk@1.30.0
+npm install --save-exact --ignore-scripts @perkos/agent-sdk@0.9.1 @modelcontextprotocol/sdk@1.30.0
 cp node_modules/@perkos/agent-sdk/examples/onboarding-smoke.mjs ./onboarding-smoke.mjs
 ```
 
@@ -44,7 +44,7 @@ second clean copy of that consumer. Do not use unpinned `npx`, replace published
 
 ## 3. Expected result and boundaries
 
-The JSON must report `result: PASS`, SDK 0.9.0 (the script asserts the exact installed version) and 12 named checks:
+The JSON must report `result: PASS`, SDK 0.9.1 (the script asserts the exact installed version) and 12 named checks:
 
 - Unsigned testnet registration plan; policy0/6 accepted on testnet and refused on mainnet.
 - Both roles: exact six read/prepare tools, correct public context, no signing/broadcast/x402.

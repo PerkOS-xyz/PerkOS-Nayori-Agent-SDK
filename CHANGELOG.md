@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Add the next contract generation (`nayori-escrow-sbtc`, `nayori-escrow-stx`, `nayori-permissions`,
+  `nayori-roles`, `nayori-reputation`, `nayori-agents`, `nayori-applications`) beside the current one.
+  **Upcoming, not deployed yet:** the default deployer on both networks is a placeholder and
+  `NayoriNextClient` / `NayoriNextTransactionBuilder` refuse to build, read or broadcast until a
+  `deployer` is configured. New exports: `NayoriNextClient`, `NayoriNextTransactionBuilder`,
+  `resolveNayoriNextConfig`, `NAYORI_NEXT_*` constants, `parseNayoriNext*` parsers and
+  `describeNayoriNextError`. Current-generation exports, defaults and behaviour are unchanged; the
+  spending policy also counts `apply-to-job` deposits. See `docs/NEXT_CONTRACTS.md`.
+
 ## 0.9.1 — mainnet evaluation commitments (2026-09-18 UTC)
 
 - Evaluation commitments (`prepareEvaluationJob`, `prepareEvaluationSubmission`, `evaluationJobId`) now accept `network: "mainnet"` with `SP` principals, matching the Nayori Evaluator reference byte for byte. Testnet hashes are unchanged; crossed address families are rejected. The MCP evaluation tools and the custody pilot remain testnet-only.

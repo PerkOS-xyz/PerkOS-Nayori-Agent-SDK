@@ -16,6 +16,7 @@ export {
 } from "./constants.js";
 export type { NayoriNextErrorInfo } from "./constants.js";
 export { assertNayoriNextDeployed, resolveNayoriNextConfig } from "./config.js";
+export { NayoriNextTransactionBuilder } from "./builders.js";
 export type {
   NayoriNextAgent,
   NayoriNextAgentInput,

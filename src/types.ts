@@ -139,7 +139,25 @@ export type PerkOSOperation =
   | "rate-provider"
   | "initialize-protocol"
   | "waive-service-fee"
-  | "refund-service-fee";
+  | "refund-service-fee"
+  // Next contract generation (nayori-*), upcoming.
+  | "name-provider"
+  | "accept-job"
+  | "record-default-approval"
+  | "appeal"
+  | "settle-job"
+  | "refund-no-delivery"
+  | "close-unfunded"
+  | "retry-reputation"
+  | "allow-contract-caller"
+  | "disallow-contract-caller"
+  | "propose-handover"
+  | "cancel-handover"
+  | "accept-handover"
+  | "apply-to-job"
+  | "withdraw-application"
+  | "decline-application"
+  | "release-application";
 
 export interface TransactionIntent {
   readonly operation: PerkOSOperation;

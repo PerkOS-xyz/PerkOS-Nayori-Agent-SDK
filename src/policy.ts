@@ -2,6 +2,7 @@ import { PerkOSError } from "./errors.js";
 import type {
   ContractCallPlan,
   PaymentAsset,
+  PerkOSOperation,
   ResolvedPerkOSConfig,
   SpendingApproval,
   SpendingPolicyInput,
@@ -9,6 +10,17 @@ import type {
 import { toUint } from "./validation.js";
 
 type AmountLimits = Partial<Record<PaymentAsset, bigint>>;
+
+/** Operations whose amount leaves the signer's wallet and counts toward the limits. */
+const SPENDING_OPERATIONS: ReadonlySet<PerkOSOperation> = new Set<PerkOSOperation>([
+  "fund-job",
+  "refund-service-fee",
+  "apply-to-job",
+]);
+
+/** The network, plus the current-generation contracts used as the default allowlist. */
+export type SpendingPolicyScope = Pick<ResolvedPerkOSConfig, "network"> &
+  Partial<Pick<ResolvedPerkOSConfig, "contracts">>;
 
 function limitsFrom(
   input: Partial<Record<PaymentAsset, bigint | number | string>> | undefined,
@@ -30,15 +42,18 @@ export class SpendingPolicy {
   private readonly maxPerSession: AmountLimits;
   private readonly spent: Record<PaymentAsset, bigint> = { sbtc: 0n, stx: 0n };
 
-  constructor(config: ResolvedPerkOSConfig, input: SpendingPolicyInput = {}) {
+  constructor(config: SpendingPolicyScope, input: SpendingPolicyInput = {}) {
     this.allowedNetworks = new Set(input.allowedNetworks ?? [config.network]);
     this.allowedContracts = new Set(
-      input.allowedContracts ?? [
-        config.contracts.agentRegistry,
-        config.contracts.stxCommerce,
-        config.contracts.sbtcCommerce,
-        config.contracts.reputationRegistry,
-      ]
+      input.allowedContracts ??
+        (config.contracts
+          ? [
+              config.contracts.agentRegistry,
+              config.contracts.stxCommerce,
+              config.contracts.sbtcCommerce,
+              config.contracts.reputationRegistry,
+            ]
+          : [])
     );
     this.allowedAssets = new Set(input.allowedAssets ?? ["sbtc", "stx"]);
     this.maxPerTransaction = limitsFrom(
@@ -67,7 +82,7 @@ export class SpendingPolicy {
       !asset ||
       amount === undefined ||
       amount === 0n ||
-      !["fund-job", "refund-service-fee"].includes(plan.intent.operation)
+      !SPENDING_OPERATIONS.has(plan.intent.operation)
     ) {
       return { operation: plan.intent.operation, ...(asset ? { asset } : {}) };
     }
@@ -108,7 +123,7 @@ export class SpendingPolicy {
   record(plan: ContractCallPlan): void {
     const { asset, amount, operation } = plan.intent;
     if (
-      (operation === "fund-job" || operation === "refund-service-fee") &&
+      SPENDING_OPERATIONS.has(operation) &&
       asset &&
       amount !== undefined
     ) {

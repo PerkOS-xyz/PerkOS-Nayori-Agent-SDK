@@ -19,6 +19,7 @@ export type {
 } from "./types.js";
 export { PerkOSTransactionBuilder } from "./builders.js";
 export { SpendingPolicy } from "./policy.js";
+export type { SpendingPolicyScope } from "./policy.js";
 export { HeadlessSigner, StacksConnectSigner } from "./signers.js";
 export { TransactionTracker } from "./tracker.js";
 export { PerkOSError } from "./errors.js";

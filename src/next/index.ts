@@ -17,6 +17,21 @@ export {
 export type { NayoriNextErrorInfo } from "./constants.js";
 export { assertNayoriNextDeployed, resolveNayoriNextConfig } from "./config.js";
 export { NayoriNextTransactionBuilder } from "./builders.js";
+export { NayoriNextClient } from "./client.js";
+export {
+  nayoriNextJobStatus,
+  parseNayoriNextAgent,
+  parseNayoriNextAllowance,
+  parseNayoriNextApplication,
+  parseNayoriNextApplications,
+  parseNayoriNextDecision,
+  parseNayoriNextHandover,
+  parseNayoriNextJob,
+  parseNayoriNextOutcome,
+  parseNayoriNextProviderStats,
+  parseNayoriNextReputationPending,
+  parseNayoriNextSubmission,
+} from "./parsers.js";
 export type {
   NayoriNextAgent,
   NayoriNextAgentInput,

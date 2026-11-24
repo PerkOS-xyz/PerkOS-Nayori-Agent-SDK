@@ -7,7 +7,7 @@ describe("release metadata", () => {
   it("keeps manifest, lockfile and candidate distribution policy aligned", () => {
     const pkg = JSON.parse(read("package.json"));
     const lock = JSON.parse(read("package-lock.json"));
-    expect(pkg.version).toBe("0.9.1");
+    expect(pkg.version).toBe("0.10.0");
     expect(lock.version).toBe(pkg.version);
     expect(lock.packages[""].version).toBe(pkg.version);
     expect(pkg.publishConfig.tag).toBe("latest");

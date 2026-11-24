@@ -39,13 +39,6 @@ const job = {
 };
 
 describe("next generation transaction builders", () => {
-  it("refuses to build against the not-deployed placeholders", () => {
-    const placeholder = new NayoriNextTransactionBuilder(
-      resolveNayoriNextConfig({ network: "testnet" })
-    );
-    expect(() => placeholder.createJob(job)).toThrow(/not deployed/);
-  });
-
   it("creates a job with no token argument", () => {
     const plan = builder.createJob({ ...job, client: CLIENT });
     expect(plan.contract).toBe(ESCROW_SBTC);

@@ -1,4 +1,4 @@
-// Next Nayori contract generation: upcoming, not deployed yet.
+// Next Nayori contract generation, live on mainnet and testnet since 2026-11-24.
 export {
   NAYORI_NEXT_CONTRACT_KEYS,
   NAYORI_NEXT_CONTRACT_NAMES,
@@ -7,7 +7,7 @@ export {
   NAYORI_NEXT_ERRORS,
   NAYORI_NEXT_JOB_STATUS,
   NAYORI_NEXT_LIMITS,
-  NAYORI_NEXT_PLACEHOLDER_DEPLOYERS,
+  NAYORI_NEXT_DEPLOYERS,
   NAYORI_NEXT_ROLE_CODES,
   NAYORI_NEXT_SBTC_TOKENS,
   describeNayoriNextError,

@@ -174,11 +174,6 @@ describe("next generation parsers", () => {
 });
 
 describe("NayoriNextClient", () => {
-  it("refuses reads and broadcasts while the contracts are not deployed", async () => {
-    const client = new NayoriNextClient({ network: "testnet" });
-    await expect(client.getJobCount("sbtc")).rejects.toThrow(/not deployed/);
-  });
-
   it("reads escrow, reputation, agents, roles and applications", async () => {
     const { client, calls } = makeClient({
       "get-job-count": Cl.uint(4n),

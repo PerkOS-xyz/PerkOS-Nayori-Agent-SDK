@@ -140,7 +140,7 @@ export type PerkOSOperation =
   | "initialize-protocol"
   | "waive-service-fee"
   | "refund-service-fee"
-  // Next contract generation (nayori-*), upcoming.
+  // Next contract generation (nayori-*).
   | "name-provider"
   | "accept-job"
   | "record-default-approval"

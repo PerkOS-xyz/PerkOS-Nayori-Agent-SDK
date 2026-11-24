@@ -1,24 +1,29 @@
-# Next contract generation (upcoming, not deployed yet)
+# Next contract generation
 
 The SDK supports the next Nayori contracts beside the current generation
 (`sbtc-commerce-v5`, `agentic-commerce-v6`, `reputation-registry-v3`, `agent-registry`). Jobs on
 the current contracts keep working through `PerkOSClient`; the next generation has its own
 `NayoriNextClient` and `NayoriNextTransactionBuilder`.
 
-**Status: not deployed.** No deployer address exists yet on mainnet or testnet. The defaults
-point at a placeholder (`NAYORI_NEXT_DEPLOYMENTS[network].deployed === false`) and every build,
-read and broadcast is refused until you configure a deployment:
+**Status: live** on mainnet and testnet since 2026-11-24 (Clarity 6). The defaults point at the
+live deployments (`NAYORI_NEXT_DEPLOYERS`), so no deployer needs to be configured:
+
+| Network | Deployer | Treasury | Appeal authority |
+|---|---|---|---|
+| mainnet | `SP2BM4WCNQM286PFHPGA1BG2YXER0PCG1PKQ5MF1X` | `SMFE58EKCK5ZPD7YCYM1CQY7K3H8SEXQH7C3YT8S` (multisig) | `SM3950RVR364J25ZRFFNHB5TCNJ7VKPKKGD4N2RP9` (multisig) |
+| testnet | `ST3MRPNX0VNWYRSJ07PNTASE5BZ9K5XE57ARZ39DY` | `STHV38DZX23VB42EX9PE44S3WCC20DNC3V62T4N3` | `ST12SP3EXFGP6GNK0WJ9GKJ2NSHE9243MHG4JBHPS` |
 
 ```ts
 import { NayoriNextClient } from "@perkos/agent-sdk";
 
 const nayori = new NayoriNextClient({
-  network: "testnet",
-  deployer: "ST...", // the address that deployed the seven nayori-* contracts
+  network: "mainnet",
   signer,
   spendingPolicy: { maxPerTransaction: { sbtc: 100_000n }, maxPerSession: { sbtc: 500_000n } },
 });
 ```
+
+Pass `deployer` only to target another deployment, for example a local devnet.
 
 ## What changes
 

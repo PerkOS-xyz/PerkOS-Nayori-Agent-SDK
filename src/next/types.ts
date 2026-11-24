@@ -49,7 +49,7 @@ export interface NayoriNextConfig {
 export interface ResolvedNayoriNextConfig {
   readonly network: PerkOSNetwork;
   readonly apiUrl?: string;
-  /** False while any contract still points at the placeholder deployer. */
+  /** Always true: the defaults are the live deployments, and a custom deployer is taken as deployed. */
   readonly deployed: boolean;
   readonly contracts: NayoriNextContracts;
 }

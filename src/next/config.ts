@@ -7,7 +7,7 @@ import {
 } from "../validation.js";
 import {
   NAYORI_NEXT_CONTRACT_KEYS,
-  NAYORI_NEXT_PLACEHOLDER_DEPLOYERS,
+  NAYORI_NEXT_DEPLOYERS,
   nayoriNextContractIds,
 } from "./constants.js";
 import type {
@@ -22,7 +22,6 @@ export function resolveNayoriNextConfig(
   if (input.network !== "mainnet" && input.network !== "testnet") {
     throw new PerkOSError("CONFIG_INVALID", 'network must be "mainnet" or "testnet".');
   }
-  const placeholder = NAYORI_NEXT_PLACEHOLDER_DEPLOYERS[input.network];
   if (input.deployer !== undefined) {
     assertPrincipal(input.deployer, "deployer", input.network);
     if (input.deployer.includes(".")) {
@@ -30,7 +29,7 @@ export function resolveNayoriNextConfig(
     }
   }
   const contracts: NayoriNextContracts = {
-    ...nayoriNextContractIds(input.deployer ?? placeholder, input.network),
+    ...nayoriNextContractIds(input.deployer ?? NAYORI_NEXT_DEPLOYERS[input.network], input.network),
     ...input.contracts,
   };
   for (const key of NAYORI_NEXT_CONTRACT_KEYS) {
@@ -38,14 +37,11 @@ export function resolveNayoriNextConfig(
   }
   parseContractId(contracts.sbtcToken, "contracts.sbtcToken", input.network);
   assertAscii(contracts.sbtcAssetName, "contracts.sbtcAssetName", 128);
-  const deployed = NAYORI_NEXT_CONTRACT_KEYS.every(
-    (key) => parseContractId(contracts[key], key).address !== placeholder
-  );
   const apiUrl = input.apiUrl ? normalizeApiUrl(input.apiUrl) : undefined;
   return {
     network: input.network,
     ...(apiUrl ? { apiUrl } : {}),
-    deployed,
+    deployed: true,
     contracts,
   };
 }

@@ -69,7 +69,7 @@ import type {
 type JobIdLike = AmountLike;
 
 /**
- * Client for the next Nayori contract generation (upcoming, not deployed yet).
+ * Client for the next Nayori contract generation (live on mainnet and testnet).
  * Reads return parsed records; writes read the live job or application first
  * so the post-conditions carry the exact amounts the contract will move.
  */

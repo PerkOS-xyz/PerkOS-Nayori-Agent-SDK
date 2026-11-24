@@ -9,14 +9,13 @@ import type {
 
 /**
  * Next Nayori contract generation (nayori-escrow-sbtc, nayori-escrow-stx and
- * their companions). UPCOMING, NOT DEPLOYED YET: the deployer addresses below
- * are placeholders (the Stacks boot address, which can never hold these
- * contracts). Builders and the client refuse to target them; point the SDK at
- * a real deployment with `deployer` or `contracts` in the config.
+ * their companions), deployed on 2026-11-24 in Clarity 6. The deployer has no
+ * powers over the contracts; the treasury and the appeal authority are
+ * multisig accounts held in nayori-roles.
  */
-export const NAYORI_NEXT_PLACEHOLDER_DEPLOYERS: Readonly<Record<PerkOSNetwork, string>> = {
-  mainnet: "SP000000000000000000002Q6VF78",
-  testnet: "ST000000000000000000002AMW42H",
+export const NAYORI_NEXT_DEPLOYERS: Readonly<Record<PerkOSNetwork, string>> = {
+  mainnet: "SP2BM4WCNQM286PFHPGA1BG2YXER0PCG1PKQ5MF1X",
+  testnet: "ST3MRPNX0VNWYRSJ07PNTASE5BZ9K5XE57ARZ39DY",
 };
 
 export const NAYORI_NEXT_CONTRACT_NAMES: Readonly<Record<NayoriNextContractKey, string>> = {
@@ -56,17 +55,17 @@ export function nayoriNextContractIds(
   };
 }
 
-/** Placeholder ids, marked `deployed: false`. Not usable for transactions or reads. */
+/** The live deployments of the next contracts on each network. */
 export const NAYORI_NEXT_DEPLOYMENTS: Readonly<
-  Record<PerkOSNetwork, NayoriNextContracts & { readonly deployed: false }>
+  Record<PerkOSNetwork, NayoriNextContracts & { readonly deployed: true }>
 > = {
   mainnet: {
-    ...nayoriNextContractIds(NAYORI_NEXT_PLACEHOLDER_DEPLOYERS.mainnet, "mainnet"),
-    deployed: false,
+    ...nayoriNextContractIds(NAYORI_NEXT_DEPLOYERS.mainnet, "mainnet"),
+    deployed: true,
   },
   testnet: {
-    ...nayoriNextContractIds(NAYORI_NEXT_PLACEHOLDER_DEPLOYERS.testnet, "testnet"),
-    deployed: false,
+    ...nayoriNextContractIds(NAYORI_NEXT_DEPLOYERS.testnet, "testnet"),
+    deployed: true,
   },
 };
 

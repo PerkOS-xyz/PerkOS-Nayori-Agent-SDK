@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_DEPLOYMENTS,
   NAYORI_NEXT_DEPLOYMENTS,
-  NAYORI_NEXT_PLACEHOLDER_DEPLOYERS,
+  NAYORI_NEXT_DEPLOYERS,
   PerkOSError,
   describeNayoriNextError,
   quoteNayoriNextFee,
@@ -12,14 +12,18 @@ import {
 const TESTNET_DEPLOYER = "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM";
 
 describe("next contract generation config", () => {
-  it("defaults to placeholders marked as not deployed", () => {
+  it("defaults to the live deployments", () => {
+    expect(NAYORI_NEXT_DEPLOYERS).toEqual({
+      mainnet: "SP2BM4WCNQM286PFHPGA1BG2YXER0PCG1PKQ5MF1X",
+      testnet: "ST3MRPNX0VNWYRSJ07PNTASE5BZ9K5XE57ARZ39DY",
+    });
     for (const network of ["mainnet", "testnet"] as const) {
       const config = resolveNayoriNextConfig({ network });
-      expect(config.deployed).toBe(false);
+      expect(config.deployed).toBe(true);
       expect(config.contracts.escrowSbtc).toBe(
-        `${NAYORI_NEXT_PLACEHOLDER_DEPLOYERS[network]}.nayori-escrow-sbtc`
+        `${NAYORI_NEXT_DEPLOYERS[network]}.nayori-escrow-sbtc`
       );
-      expect(NAYORI_NEXT_DEPLOYMENTS[network].deployed).toBe(false);
+      expect(NAYORI_NEXT_DEPLOYMENTS[network].deployed).toBe(true);
     }
   });
 
@@ -46,13 +50,6 @@ describe("next contract generation config", () => {
     });
   });
 
-  it("stays not deployed while any contract keeps the placeholder", () => {
-    const config = resolveNayoriNextConfig({
-      network: "testnet",
-      contracts: { escrowSbtc: `${TESTNET_DEPLOYER}.nayori-escrow-sbtc` },
-    });
-    expect(config.deployed).toBe(false);
-  });
 
   it("rejects a deployer from the other network", () => {
     expect(() =>

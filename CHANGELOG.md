@@ -1,12 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.10.0 — next contract generation (2026-11-24 UTC)
 
 - Add the next contract generation (`nayori-escrow-sbtc`, `nayori-escrow-stx`, `nayori-permissions`,
-  `nayori-roles`, `nayori-reputation`, `nayori-agents`, `nayori-applications`) beside the current one.
-  **Upcoming, not deployed yet:** the default deployer on both networks is a placeholder and
-  `NayoriNextClient` / `NayoriNextTransactionBuilder` refuse to build, read or broadcast until a
-  `deployer` is configured. New exports: `NayoriNextClient`, `NayoriNextTransactionBuilder`,
+  `nayori-roles`, `nayori-reputation`, `nayori-agents`, `nayori-applications`) beside the current one,
+  live on mainnet (`SP2BM4WCNQM286PFHPGA1BG2YXER0PCG1PKQ5MF1X`) and testnet
+  (`ST3MRPNX0VNWYRSJ07PNTASE5BZ9K5XE57ARZ39DY`). The defaults point at these deployments
+  (`NAYORI_NEXT_DEPLOYERS`); the treasury and the appeal authority are multisig accounts. New exports: `NayoriNextClient`, `NayoriNextTransactionBuilder`,
   `resolveNayoriNextConfig`, `NAYORI_NEXT_*` constants, `parseNayoriNext*` parsers and
   `describeNayoriNextError`. Current-generation exports, defaults and behaviour are unchanged; the
   spending policy also counts `apply-to-job` deposits. See `docs/NEXT_CONTRACTS.md`.

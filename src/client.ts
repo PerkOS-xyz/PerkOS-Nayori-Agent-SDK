@@ -92,7 +92,8 @@ function contractForAsset(
   return asset === "sbtc" ? contracts.sbtcCommerce : contracts.stxCommerce;
 }
 
-async function defaultReadOnlyTransport(
+/** Internal: also used by the next-generation client. */
+export async function defaultReadOnlyTransport(
   call: ReadOnlyCall
 ): Promise<ClarityValue> {
   const { address, name } = parseContractId(

@@ -103,7 +103,8 @@ function exactTransfer(
     );
 }
 
-function deliverableBuffer(value: string | Uint8Array): Uint8Array {
+/** Internal: shared with the next-generation builders. */
+export function deliverableBuffer(value: string | Uint8Array): Uint8Array {
   const bytes =
     typeof value === "string"
       ? new TextEncoder().encode(value)

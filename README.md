@@ -35,6 +35,8 @@ npm install --save-exact @perkos/agent-sdk@0.9.1
 ```
 
 The current patch is [0.9.1](docs/RELEASE_0.9.1.md), which adds mainnet evaluation commitments.
+The next release is [0.10.0](docs/RELEASE_0.10.0.md), which adds the next contract generation,
+live on mainnet and testnet since 2026-11-24 ([NEXT_CONTRACTS.md](docs/NEXT_CONTRACTS.md)).
 See [0.9.0 release and migration notes](docs/RELEASE_0.9.0.md), including its publication
 record, and the immutable [0.8.0 release record](docs/RELEASE_0.8.0.md).
 The [rc.1 release record](docs/RELEASE_0.8.0_RC1.md) remains available for historical reproduction.
